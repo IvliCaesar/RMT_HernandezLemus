@@ -9,20 +9,27 @@ en cada línea.
 
 ## Contenido
 
+- **`article.tex`** / **`.pdf`** — el artículo de investigación (inglés,
+  14pp, formato tipo BMC Bioinformatics), con análisis real sobre
+  TCGA-BRCA: umbral RMT (Luo et al. 2007) comparando TNBC vs. Luminal A,
+  chequeo de robustez a tamaño de muestra, descomposición multiescala
+  por wavelets, trayectorias de eigenvalores tipo Dyson (repulsión de
+  niveles), y una prueba de reconocimiento por ML — incluyendo un
+  resultado nulo honesto (ver abstract). Roadmap explícito para lo que
+  aún no está corrido con datos reales (Hi-C, célula única, dinámica de
+  Dyson del propio clasificador).
 - **`programa_investigacion_RMT_HernandezLemus.tex`** / **`.pdf`** — la
-  propuesta completa: justificación científica, hipótesis, 6 líneas de
+  propuesta original: justificación científica, hipótesis, 6 líneas de
   trabajo, núcleo matemático, protocolo de validación, datos, productos
   esperados, ruta de 12–18 meses.
 - **`data/README.md`** — los 4 conjuntos de datos públicos identificados
-  (GSE171958, GSE176078, TCGA-BRCA, METABRIC), con instrucciones de
-  acceso y qué línea de trabajo usa cada uno.
-- **`scripts/rmt_threshold_demo.py`** — implementación de referencia,
-  real y verificada, del método clásico de umbral espectral de Luo et
-  al. (BMC Bioinformatics 2007): construye datos sintéticos con
-  estructura modular conocida, calcula el borde de Marchenko–Pastur, el
-  *inverse participation ratio*, y localiza la transición
-  Poisson→Wigner-Dyson (GOE) que selecciona el umbral de correlación —
-  sin tocar datos reales, como primera prueba de correctitud.
+  (GSE171958, GSE176078, TCGA-BRCA, METABRIC); `data/TCGA-BRCA/README.md`
+  documenta la descarga real ya hecha y cómo reproducirla.
+- **`scripts/`** — pipeline completo, numerado en orden de ejecución
+  (`01_build_cohorts.py` … `08_spiked_eigenvalues.py`), más
+  `rmt_threshold_demo.py` (implementación de referencia del método de
+  Luo et al. 2007, validada primero sobre datos sintéticos con
+  estructura modular conocida antes de aplicarse a TCGA-BRCA).
 
 ## Líneas de trabajo (resumen)
 
@@ -54,8 +61,10 @@ método mismo).
 
 ## Estado
 
-Primera versión del programa, lista para servir como nota conceptual de
-arranque (ver "Primeros pasos sugeridos" en la propuesta). No incluye
-datos clínicos ni multi-ómicos propios del grupo del Dr. Hernández-Lemus
-— solo datos públicos ya identificados, suficientes para un primer ciclo
-completo de desarrollo y validación metodológica.
+2026-09-04: primer borrador de artículo completo, corrido sobre datos
+reales de TCGA-BRCA (no sintéticos), con Enrique Hernández-Lemus
+confirmado como coautor. Compila 0 errores, 14pp. No incluye datos
+clínicos ni multi-ómicos propios del grupo — solo datos públicos ya
+descargados (TCGA-BRCA) o identificados (GSE171958, GSE176078,
+METABRIC), suficientes para un primer ciclo completo de desarrollo y
+validación metodológica.
