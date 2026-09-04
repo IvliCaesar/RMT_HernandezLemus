@@ -36,7 +36,12 @@ full, to real bulk RNA-seq data from The Cancer Genome Atlas breast
 cancer cohort (TCGA-BRCA). Two clinically defined, non-overlapping
 cohorts are built from real clinical annotation (triple-negative breast
 cancer, TNBC, $n=119$; luminal A, LumA, $n=430$; 1500 genes selected by
-variance across the full 1218-sample cohort, cohort-blind). The
+variance across the full 1218-sample cohort, cohort-blind). Fewer than
+2\% of candidate genes' correlation directions already exceed the
+Marchenko--Pastur noise bulk and capture roughly half the total
+variance in each cohort, and the leading such directions are
+thematically coherent multi-gene programs (collagen/ECM, interferon,
+keratin) rather than single-gene artifacts. The
 classical Luo et al. correlation-threshold method selects a
 network-defining threshold of $\tau^*=0.45$ for TNBC and $\tau^*=0.25$
 for LumA; this gap survives a matched-sample-size robustness check
@@ -46,9 +51,11 @@ value). A wavelet decomposition of each gene's expression trace along
 the dominant principal-component ordering of the TNBC cohort produces
 two coexpression networks --- one from coarse (approximation) and one
 from fine (detail) wavelet coefficients --- whose top-degree hub genes
-do not overlap at all (0 of 10 shared), a direct, real-data
-confirmation of the multiscale claim that different correlation
-structure lives at different scales. Tracking the top eigenvalues of
+do not overlap at all (0 of 10 shared); a random-ordering control,
+however, shows the same zero overlap in 19 of 20 replicates, so this
+result does not, on its own, confirm that the ordering axis carries
+real biological signal, and we report it as an inconclusive negative
+control rather than a positive finding. Tracking the top eigenvalues of
 the TNBC correlation matrix as the patient sample is grown one patient
 at a time reveals several adjacent-eigenvalue pairs whose gap shrinks
 to a local minimum and then reopens by a factor of five to ten within
@@ -190,13 +197,27 @@ really correlated with each other, purely as an artifact of estimating
 a correlation matrix from a finite sample of $n$ patients.
 \end{definition}
 
-An eigenvalue exceeding $\lambda_+$ is therefore evidence of real
-low-rank structure (a ``spike''), not just an artifact of $q$; the
-BBP transition names the threshold, as a function of the true spike
-strength and $q$, above which a spike is detectable at all above the
-bulk. We use the count of observed spikes only descriptively
+An eigenvalue exceeding $\lambda_+$ is suggestive of real low-rank
+structure (a ``spike''), not merely an artifact of $q$; the BBP
+transition \citep{baik2005} names the threshold, as a function of the
+true spike strength and $q$, above which a spike is detectable at all
+above the bulk. We use the count of observed spikes only descriptively
 (Table~\ref{tab:spiked}) and do not fit a formal spike-strength model
-in this paper.
+in this paper; we also do not claim every eigenvalue above $\lambda_+$
+is individually significant in a formal hypothesis-testing sense ---
+finite-$n$ edge fluctuations of the bulk itself follow a Tracy--Widom
+law at the $n^{-2/3}$ scale, so a handful of eigenvalues only marginally
+above $\lambda_+$ could in principle be bulk fluctuations rather than
+true spikes. Checking this directly: of TNBC's 14 spiked eigenvalues,
+7 exceed $\lambda_+$ by a factor of at least 2 (up to $7.6\times$ for
+the largest) and are implausible as edge fluctuations, while the
+remaining 7 sit within a factor of $1.04$--$1.8\times\lambda_+$ and are
+the ones this caveat applies to directly; LumA is similar in kind but
+better separated in practice (13 of 29 spikes exceed $2\times\lambda_+$,
+up to $25\times$ for the largest, reflecting its larger $n$ and
+correspondingly less noisy bulk edge). Table~\ref{tab:spiked} reports
+the top eigenvalue only; the full ratio-to-$\lambda_+$ list for every
+spike, in both cohorts, is in \texttt{results/spiked\_eigenvalues.csv}.
 
 \begin{definition}[Spectral unfolding]
 Because the local density of eigenvalues varies across the spectrum
@@ -231,6 +252,28 @@ visible when ``time'' is instead sample size, applied directly to a
 real gene-correlation matrix rather than a trained model.
 \end{definition}
 
+Figure~\ref{fig:vectorfield} plots the deterministic part of this SDE
+directly, restricted to a single pair $(\lambda_i,\lambda_j)$: the
+vector field $(\dot\lambda_i,\dot\lambda_j)=(1/(\lambda_i-\lambda_j),
+-1/(\lambda_i-\lambda_j))$ points away from the diagonal
+$\lambda_i=\lambda_j$ everywhere and diverges on it --- not a
+schematic, but the literal drift term already written above, which is
+the mechanical reason the two real eigenvalue trajectories in
+Fig.~\ref{fig:avoided} bounce apart near $n=59$ rather than crossing.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/fig5_dyson_vector_field.pdf}
+\caption{The Dyson drift term as a vector field on the
+$(\lambda_i,\lambda_j)$ plane (arrows normalized to unit length; color
+encodes true drift magnitude on a log scale). Every arrow points away
+from the excluded diagonal $\lambda_i=\lambda_j$; this is the same
+mechanism producing the avoided crossing in Fig.~\ref{fig:avoided},
+here for an idealized two-eigenvalue system rather than the real
+60-gene TNBC correlation matrix.}
+\label{fig:vectorfield}
+\end{figure}
+
 \begin{remark}
 None of the four pieces above requires Gaussian gene-expression data in
 practice: the GOE/Poisson NNSD contrast, the Marchenko--Pastur bulk, and
@@ -255,7 +298,14 @@ are two independently recorded clinical fields in the same TCGA Nature
 subtype call \citep{pam502009} for the latter), not derived from one
 another. Intersecting these fields with the expression matrix gives
 $n=119$ TNBC and $n=430$ LumA patients with no overlap (4 patients
-flagged by both criteria were dropped from both cohorts as ambiguous).
+satisfied both definitions and were dropped from both cohorts as
+ambiguous). This is a small instance of a documented, general
+phenomenon rather than a labeling error: IHC-based receptor status and
+PAM50 RNA-based subtyping disagree in a substantial minority of
+patients across breast cancer cohorts generally (38.4\% of 607 patients
+in one direct comparison, \citealp{kim2019discordance}), so a handful
+of TCGA-BRCA patients satisfying both a triple-negative IHC profile and
+a luminal-A PAM50 call is expected, not anomalous.
 We selected the 1500 most variable genes across all 1218 samples
 \emph{before} splitting into cohorts, so gene selection cannot leak
 cohort-label information; this also keeps the $1500\times1500$
@@ -326,6 +376,32 @@ smaller) and, correspondingly, more eigenvalues clearing that lower bar
 Sec.~\ref{sec:robustness} below, that raw eigenvalue counts across
 cohorts of very different size are not directly comparable without
 first accounting for $q$.
+
+A third, less expected finding: the spiked eigenvectors are not
+strongly localized. Their inverse participation ratio
+(Sec.~\ref{sec:math}, IPR $=\sum_i v_i^4$ for a unit-norm eigenvector)
+averages $0.0020$ for TNBC and $0.0023$ for LumA, only 3--4$\times$ the
+fully delocalized reference $1/p=0.00067$ and, in TNBC,
+\emph{lower} than the mean IPR of the non-spiked, noise eigenvectors
+($0.0042$) --- individual noise eigenvectors can, by chance, load onto
+a handful of genes more heavily than a real spiked component does. This
+means IPR alone, eigenvector by eigenvector, does not separate signal
+from noise here; it is the Marchenko--Pastur threshold on the
+\emph{eigenvalue}, not the eigenvector's localization, that does the
+separating, and IPR is better read as a property of what a spike
+\emph{contains} once it is already identified, not as an independent
+detector. Read that way, it says something concrete: the largest
+spikes' top-loading genes form thematically coherent sets rather than
+single-gene artifacts --- extracellular-matrix/collagen remodeling
+genes (\emph{MMP13}, \emph{COL10A1}, \emph{COL11A1}) on one TNBC spike,
+interferon/immune genes (\emph{GBP5}, \emph{CD38}, \emph{IDO1}) on
+another, keratin/epithelial genes (\emph{KRT6C}, \emph{KRT16},
+\emph{DEFB1}) on a third --- consistent with each leading spike
+tracking a real, biologically interpretable coexpressed program rather
+than a single outlier gene. The full per-spike breakdown (eigenvalue,
+IPR, top-5 loading genes) is in
+\texttt{results/spiked\_eigenvalues.csv}, produced by
+\texttt{scripts/08\_spiked\_eigenvalues.py}.
 
 \subsection*{RMT threshold selection separates TNBC from LumA}
 \label{sec:tau-sweep}
@@ -446,14 +522,37 @@ on the coarse-signal and fine-signal correlation matrices separately
 The coarse-scale network selects $\tau^*=0.70$, with hub genes
 including \emph{TFF1}, \emph{MLPH}, and \emph{HMGCS2}; the fine-scale
 network selects $\tau^*=0.50$, with hub genes including \emph{ABCA8},
-\emph{CD300LG}, and \emph{ADIPOQ}. \textbf{None of the ten top-degree
-hub genes at either scale appear in the other scale's top ten.} This is
-a direct, real-data instance of the phenomenon \citet{konig2006}
-report in \emph{E.\ coli} metabolic data: a single-scale threshold, by
-construction, can only see one of these two structures at a time, and
-which one it sees is not obviously the more biologically important
-one --- it depends entirely on where in the coarse/fine split the
-threshold happens to fall.
+\emph{CD300LG}, and \emph{ADIPOQ}. None of the ten top-degree hub genes
+at either scale appear in the other scale's top ten.
+
+This zero overlap is real but, on its own, weaker evidence than it
+first looks like. We checked directly
+(\texttt{scripts/04b\_wavelet\_random\_order\_control.py}) whether the
+same zero-overlap result would appear under an ordering with no
+biological meaning at all: rerunning the identical coarse/fine split
+and RMT threshold selection 20 times, each time with an independent
+uniformly random patient permutation instead of the PC1 ordering, gives
+zero overlap in 19 of 20 replicates (mean $0.05/10$, range
+$[0,1]$) --- statistically indistinguishable from the PC1-ordering
+result. \textbf{This means the zero-overlap finding does not, by
+itself, demonstrate that PC1 captures a real biological axis worth
+decomposing along}; it is more likely a generic consequence of
+splitting any sequence into a low-frequency approximation and a
+high-frequency detail component, which are close to uncorrelated by
+construction of the wavelet transform regardless of whether the
+sequence order carries information. We report this as a real negative
+control result, not as a failure to find something: it means the
+version of \citet{konig2006}'s multiscale claim tested here (patients
+ordered by a weak, $10.2\%$-of-variance proxy axis) is not verified,
+and a fair test needs either (a) an ordering axis independently known
+to carry real biological signal --- single-cell pseudo-time, per the
+Line 4 roadmap below, rather than bulk-patient PC1 --- or (b) a
+synthetic positive control with a planted true multiscale signal, to
+first confirm the pipeline can detect one when it is actually there,
+before trusting a positive result on real data where the ground truth
+is unknown. Neither check was available within this paper's scope; the
+coarse/fine hub tables above are kept as a description of what the
+pipeline outputs, not as evidence for the multiscale hypothesis.
 
 \subsection*{Eigenvalue trajectories show Dyson-type level repulsion}
 \label{sec:results-dyson}
@@ -556,7 +655,12 @@ RMT hub genes (20 genes) & $0.982\pm0.011$ & $0.988\pm0.013$ \\
 \end{table}
 
 All three feature sets --- including a random one --- classify TNBC
-against LumA at $\approx\!98\%$ accuracy. This is an honest null
+against LumA at $\approx\!98\%$ accuracy, well above the $78.3\%$
+majority-class baseline (always predicting LumA, the larger of the two
+classes) and confirmed by ROC-AUC $\approx\!0.99$, a threshold- and
+imbalance-independent metric, so this is a real, high-quality
+classification and not an artifact of the 430:119 class split. This is
+an honest null
 result, not a failure to report: TNBC and LumA are defined by receptor
 status and PAM50 call respectively, both of which are themselves
 strongly transcriptional signals, so essentially any moderately sized
@@ -573,11 +677,14 @@ enough events for a properly powered survival analysis.
 \section*{Discussion}
 \label{sec:limitations}
 
-Three of the six original program lines are backed by real analysis in
-this paper (RMT coexpression thresholding, multiscale wavelet
-decomposition, and a first Dyson-repulsion diagnostic), one is tested
-and reported as a genuine null (ML recognition on the TNBC-vs-LumA
-task), and two are not yet attempted with real data: 3D genomic
+Four of the six original program lines were run on real data in this
+paper (RMT coexpression thresholding, spectral denoising/spiked
+eigenvalues, wavelet multiscale decomposition, and a first
+Dyson-repulsion diagnostic), two of those four came back as honest
+nulls rather than positive findings (the wavelet multiscale separation
+is indistinguishable from a random-ordering control, and TNBC-vs-LumA
+classification does not discriminate feature-selection methods), and
+two lines are not yet attempted with real data at all: 3D genomic
 structure (Hi-C) and single-cell resolution. We had already identified
 concrete real public datasets for both --- GSE176078 (TNBC single-cell
 RNA-seq, 10 patients) for the latter --- and downloading and running
@@ -587,7 +694,7 @@ studied here, is the direct next step for Line 4. No public Hi-C
 dataset specific to this cohort has yet been identified; Line 3 remains
 at the proposal stage.
 
-The Dyson-repulsion result (Sec.~Results) is the newest and least
+The Dyson-repulsion result (Sec.~\ref{sec:results-dyson}) is the newest and least
 tested of the four executed lines: it uses one cohort, one 60-gene
 subset chosen by variance, and one random patient-inclusion order.
 Repeating the trajectory scan over multiple random orders and reporting
@@ -625,6 +732,32 @@ per chromosome, and apply the identical RMT threshold-selection
 machinery from Sec.~\ref{sec:tau-sweep} to contact-frequency
 correlations instead of expression correlations, which requires no new
 methodology, only new data.
+
+\subsection*{Line 5 revisited: a fair test of the multiscale claim}
+The random-ordering control above shows the wavelet coarse/fine
+separation as tested here does not confirm the multiscale hypothesis;
+it neither confirms nor refutes it, since the test could not
+distinguish a real weak signal (PC1, $10.2\%$ of variance) from no
+signal at all. Two concrete fixes, either sufficient on its own: (a)
+plant a known multiscale correlation signal in synthetic data (a
+coarse-scale module and an independent fine-scale module, analogous to
+\texttt{rmt\_threshold\_demo.py}'s planted-block design) and confirm
+the pipeline recovers both distinctly before trusting it on real data;
+or (b) rerun on GSE176078 single-cell data ordered by a real inferred
+pseudo-time rather than bulk-patient PC1, where the ordering axis is
+independently validated rather than a proxy.
+
+\subsection*{Line 1 extension: multi-omic spectral denoising}
+Sec.~\ref{sec:spiked}'s spiked-eigenvalue analysis was run on RNA-seq
+alone. GSE171958 \citep{tnbcmultiomics2021} pairs DNA methylation,
+RNA-seq, and proteomics on the same TNBC cell lines and is public; the
+direct extension is a joint spiked-eigenvalue analysis across omic
+layers (a block correlation matrix with one block per layer), asking
+whether any spike loads across layers rather than within a single one
+--- a real, checkable version of the ``multi-omic denoising'' claim in
+Line 1 of the original proposal, not attempted here since GSE171958
+covers only three cell lines, too few for the patient-cohort framing
+used throughout this paper.
 
 \subsection*{Line 4: single-cell resolution}
 GSE176078 \citep{tnbcsc2021} --- TNBC single-cell RNA-seq across 10
@@ -679,20 +812,27 @@ decomposition, and a Dyson-repulsion eigenvalue diagnostic into one
 pipeline, and running that pipeline once on real TCGA-BRCA data, is
 enough to surface real, non-trivial structure: a sample-size-robust
 difference in coexpression-network density between TNBC and luminal A,
-a clean separation between coarse- and fine-scale hub genes that a
-single-scale method would have conflated, and a first real-data sighting
-of level repulsion among coexpression-matrix eigenvalues as sample size
-grows. It is also enough to surface a real negative result --- that
-TNBC-vs-LumA classification is too easy a benchmark to distinguish
-feature-selection methods --- which is exactly the kind of finding a
-validation-first collaboration should want reported rather than
-quietly dropped. The next concrete steps, in order of how directly they
-extend what is already running, are: reproducing the repulsion result
-across multiple random orders with a confidence interval; applying the
-same RMT/wavelet pipeline to GSE176078 single-cell data at the
-resolution Line 4 originally proposed; and replacing the classification
-benchmark with a within-TNBC or survival-outcome task where a
-feature-selection advantage, if real, would actually be visible.
+biologically coherent (collagen/ECM, interferon, keratin) spiked
+correlation components identified by a Marchenko--Pastur threshold
+rather than by eigenvector localization alone, and a first real-data
+sighting of level repulsion among coexpression-matrix eigenvalues as
+sample size grows. It is also enough to surface two honest negative
+results, reported as such rather than dropped: TNBC-vs-LumA
+classification is too easy a benchmark to distinguish feature-selection
+methods, and the wavelet coarse/fine hub-gene separation is
+statistically indistinguishable from what a biologically meaningless
+random patient ordering produces, so it does not yet confirm the
+multiscale hypothesis it was meant to test. A validation-first
+collaboration should want both reported exactly this way. The next
+concrete steps, in order of how directly they extend what is already
+running, are: reproducing the repulsion result across multiple random
+orders with a confidence interval; applying the same RMT/wavelet
+pipeline to GSE176078 single-cell data at the resolution Line 4
+originally proposed, which also gives the wavelet test a real
+pseudo-time ordering axis instead of the weak bulk-PC1 proxy used here
+(Line 5, revisited); and replacing the classification benchmark with a
+within-TNBC or survival-outcome task where a feature-selection
+advantage, if real, would actually be visible.
 
 \section*{Methods}
 
@@ -791,73 +931,90 @@ The authors declare no competing interests.
 \bibliographystyle{plainnat}
 \begin{thebibliography}{99}
 
-\bibitem[Foulkes et al.(2010)]{foulkes2010}
-W.~D.~Foulkes, I.~E.~Smith, J.~S.~Reis-Filho,
-\newblock ``Triple-Negative Breast Cancer,''
-\newblock \emph{New England Journal of Medicine} \textbf{363}(20), 1938--1948 (2010).
+\bibitem[Aarts et al.(2024)]{aarts2024}
+G.~Aarts, O.~Hajizadeh, B.~Lucini, C.~Park,
+\newblock ``Dyson Brownian motion and random matrix dynamics of weight matrices during learning,''
+\newblock arXiv:2411.13512 (2024). NeurIPS 2024 Workshop on Machine Learning and the Physical Sciences.
 
-\bibitem[Multilayer(2021)]{multilayer2021}
-Grupo Hern\'andez-Lemus,
-\newblock ``An Information Theoretical Multilayer Network Approach to Breast Cancer Transcriptional Regulation,''
-\newblock \emph{Frontiers in Genetics}, 2021.
-
-\bibitem[$k$-core(2021)]{kcore2021}
-Grupo Hern\'andez-Lemus,
-\newblock ``$k$-core genes underpin structural features of breast cancer,''
-\newblock \emph{Scientific Reports}, 2021.
-
-\bibitem[Multi-omic(2022)]{multiomic2022}
-Grupo Hern\'andez-Lemus,
-\newblock ``Functional impact of multi-omic interactions in breast cancer subtypes,''
-\newblock \emph{Frontiers in Genetics}, 2022.
-
-\bibitem[Margolin et al.(2006)]{margolin2006}
-A.~A.~Margolin, I.~Nemenman, K.~Basso, C.~Wiggins, G.~Stolovitzky, R.~Dalla~Favera, A.~Califano,
-\newblock ``ARACNE: An Algorithm for the Reconstruction of Gene Regulatory Networks in a Mammalian Cellular Context,''
-\newblock \emph{BMC Bioinformatics} \textbf{7}(Suppl 1), S7 (2006).
-
-\bibitem[Luo et al.(2007)]{luo2007}
-F.~Luo, Y.~Yang, J.~Zhong, H.~Gao, L.~Khan, D.~K.~Thompson, J.~Zhou,
-\newblock ``Constructing gene co-expression networks and predicting functions of unknown genes by random matrix theory,''
-\newblock \emph{BMC Bioinformatics} \textbf{8}, 299 (2007).
-
-\bibitem[Gao et al.(2012)]{gao2012}
-\newblock ``Massive-scale gene co-expression network construction and robustness testing using random matrix theory,''
-\newblock \emph{PLOS ONE} (2012). \url{https://doi.org/10.1371/journal.pone.0055871}
-
-\bibitem[Sci.\ Rep.(2018)]{cancer2018}
-\newblock ``Random matrix analysis for gene interaction networks in cancer cells,''
-\newblock \emph{Scientific Reports} \textbf{8} (2018). \url{https://doi.org/10.1038/s41598-018-28954-1}
-
-\bibitem[K\"onig et al.(2006)]{konig2006}
-R.~K\"onig, G.~Schramm, M.~Oswald, et al.,
-\newblock ``Discovering functional gene expression patterns in the metabolic network of \emph{Escherichia coli} with wavelets transforms,''
-\newblock \emph{BMC Bioinformatics} \textbf{7}, 119 (2006).
+\bibitem[Baik et al.(2005)]{baik2005}
+J.~Baik, G.~Ben~Arous, S.~P\'ech\'e,
+\newblock ``Phase transition of the largest eigenvalue for nonnull complex sample covariance matrices,''
+\newblock \emph{Annals of Probability} \textbf{33}(5), 1643--1697 (2005).
 
 \bibitem[Dyson(1962)]{dyson1962}
 F.~J.~Dyson,
 \newblock ``A Brownian-Motion Model for the Eigenvalues of a Random Matrix,''
 \newblock \emph{Journal of Mathematical Physics} \textbf{3}, 1191--1198 (1962).
 
-\bibitem[Aarts et al.(2024)]{aarts2024}
-G.~Aarts, O.~Hajizadeh, B.~Lucini, C.~Park,
-\newblock ``Dyson Brownian motion and random matrix dynamics of weight matrices during learning,''
-\newblock arXiv:2411.13512 (2024). NeurIPS 2024 Workshop on Machine Learning and the Physical Sciences.
+\bibitem[Foulkes et al.(2010)]{foulkes2010}
+W.~D.~Foulkes, I.~E.~Smith, J.~S.~Reis-Filho,
+\newblock ``Triple-Negative Breast Cancer,''
+\newblock \emph{New England Journal of Medicine} \textbf{363}(20), 1938--1948 (2010).
+
+\bibitem[Gibson et al.(2013)]{gao2012}
+S.~M.~Gibson, S.~P.~Ficklin, S.~Isaacson, F.~Luo, F.~A.~Feltus, M.~C.~Smith,
+\newblock ``Massive-Scale Gene Co-Expression Network Construction and Robustness Testing Using Random Matrix Theory,''
+\newblock \emph{PLOS ONE} \textbf{8}(2), e55871 (2013).
+
+\bibitem[Goldman et al.(2020)]{xena2020}
+M.~J.~Goldman, B.~Craft, M.~Hastie, et al.,
+\newblock ``Visualizing and interpreting cancer genomics data via the Xena platform,''
+\newblock \emph{Nature Biotechnology} \textbf{38}, 675--678 (2020).
+
+\bibitem[$k$-core(2021)]{kcore2021}
+R.~Dorantes-Gilardi, D.~Garc\'ia-Cort\'es, E.~Hern\'andez-Lemus, J.~Espinal-Enr\'iquez,
+\newblock ``$k$-core genes underpin structural features of breast cancer,''
+\newblock \emph{Scientific Reports} \textbf{11}, 16284 (2021).
+
+\bibitem[Kikkawa(2018)]{cancer2018}
+A.~Kikkawa,
+\newblock ``Random Matrix Analysis for Gene Interaction Networks in Cancer Cells,''
+\newblock \emph{Scientific Reports} \textbf{8}, 10607 (2018).
+
+\bibitem[Kim et al.(2019)]{kim2019discordance}
+H.~K.~Kim, K.~H.~Park, Y.~Kim, S.~E.~Park, H.~S.~Lee, S.~W.~Lim, J.~H.~Cho, J.-Y.~Kim, J.~E.~Lee, J.~S.~Ahn, Y.-H.~Im, J.~H.~Yu, Y.~H.~Park,
+\newblock ``Discordance of the PAM50 Intrinsic Subtypes Compared with Immunohistochemistry-Based Surrogate in Breast Cancer Patients: Potential Implication of Genomic Alterations of Discordance,''
+\newblock \emph{Cancer Research and Treatment} \textbf{51}(2), 737--747 (2019).
+
+\bibitem[K\"onig et al.(2006)]{konig2006}
+R.~K\"onig, G.~Schramm, M.~Oswald, et al.,
+\newblock ``Discovering functional gene expression patterns in the metabolic network of \emph{Escherichia coli} with wavelets transforms,''
+\newblock \emph{BMC Bioinformatics} \textbf{7}, 119 (2006).
+
+\bibitem[Lee et al.(2019)]{pywavelets2019}
+G.~R.~Lee, R.~Gommers, F.~Wasilewski, K.~Wohlfahrt, A.~O'Leary,
+\newblock ``PyWavelets: A Python package for wavelet analysis,''
+\newblock \emph{Journal of Open Source Software} \textbf{4}(36), 1237 (2019).
+
+\bibitem[Luo et al.(2007)]{luo2007}
+F.~Luo, Y.~Yang, J.~Zhong, H.~Gao, L.~Khan, D.~K.~Thompson, J.~Zhou,
+\newblock ``Constructing gene co-expression networks and predicting functions of unknown genes by random matrix theory,''
+\newblock \emph{BMC Bioinformatics} \textbf{8}, 299 (2007).
 
 \bibitem[Marchenko \& Pastur(1967)]{marchenkopastur1967}
 V.~A.~Marchenko, L.~A.~Pastur,
 \newblock ``Distribution of eigenvalues for some sets of random matrices,''
 \newblock \emph{Mathematics of the USSR-Sbornik} \textbf{1}(4), 457--483 (1967).
 
-\bibitem[TCGA(2012)]{tcga2012}
-The Cancer Genome Atlas Network,
-\newblock ``Comprehensive molecular portraits of human breast tumours,''
-\newblock \emph{Nature} \textbf{490}, 61--70 (2012).
+\bibitem[Margolin et al.(2006)]{margolin2006}
+A.~A.~Margolin, I.~Nemenman, K.~Basso, C.~Wiggins, G.~Stolovitzky, R.~Dalla~Favera, A.~Califano,
+\newblock ``ARACNE: An Algorithm for the Reconstruction of Gene Regulatory Networks in a Mammalian Cellular Context,''
+\newblock \emph{BMC Bioinformatics} \textbf{7}(Suppl 1), S7 (2006).
 
-\bibitem[Goldman et al.(2020)]{xena2020}
-M.~J.~Goldman, B.~Craft, M.~Hastie, et al.,
-\newblock ``Visualizing and interpreting cancer genomics data via the Xena platform,''
-\newblock \emph{Nature Biotechnology} \textbf{38}, 675--678 (2020).
+\bibitem[Multi-omics TNBC(2021)]{tnbcmultiomics2021}
+\newblock ``Multi-omics data integration reveals correlated regulatory features of triple negative breast cancer,''
+\newblock \emph{Molecular Omics} (2021). Data: GEO GSE171958, ProteomeXchange PXD025238.
+\newblock \url{https://doi.org/10.1039/D1MO00117E}
+
+\bibitem[Ochoa et al.(2021)]{multilayer2021}
+S.~Ochoa, G.~de~Anda-J\'auregui, E.~Hern\'andez-Lemus,
+\newblock ``An Information Theoretical Multilayer Network Approach to Breast Cancer Transcriptional Regulation,''
+\newblock \emph{Frontiers in Genetics} \textbf{12}, 617512 (2021).
+
+\bibitem[Ochoa \& Hern\'andez-Lemus(2022)]{multiomic2022}
+S.~Ochoa, E.~Hern\'andez-Lemus,
+\newblock ``Functional impact of multi-omic interactions in breast cancer subtypes,''
+\newblock \emph{Frontiers in Genetics} \textbf{13}, 1078609 (2022).
 
 \bibitem[Parker et al.(2009)]{pam502009}
 J.~S.~Parker, M.~Mullins, M.~C.~U.~Cheang, et al.,
@@ -869,20 +1026,15 @@ F.~Pedregosa, G.~Varoquaux, A.~Gramfort, et al.,
 \newblock ``Scikit-learn: Machine Learning in Python,''
 \newblock \emph{Journal of Machine Learning Research} \textbf{12}, 2825--2830 (2011).
 
-\bibitem[Lee et al.(2019)]{pywavelets2019}
-G.~R.~Lee, R.~Gommers, F.~Wasilewski, K.~Wohlfahrt, A.~O'Leary,
-\newblock ``PyWavelets: A Python package for wavelet analysis,''
-\newblock \emph{Journal of Open Source Software} \textbf{4}(36), 1237 (2019).
-
-\bibitem[Multi-omics TNBC(2021)]{tnbcmultiomics2021}
-\newblock ``Multi-omics data integration reveals correlated regulatory features of triple negative breast cancer,''
-\newblock \emph{Molecular Omics} (2021). Data: GEO GSE171958, ProteomeXchange PXD025238.
-\newblock \url{https://doi.org/10.1039/D1MO00117E}
-
 \bibitem[scRNA-seq TNBC(2021)]{tnbcsc2021}
 \newblock ``Single-cell RNA-seq of triple negative breast cancer tumors (10 patients),''
 \newblock GEO accession GSE176078.
 \newblock \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE176078}
+
+\bibitem[TCGA(2012)]{tcga2012}
+The Cancer Genome Atlas Network,
+\newblock ``Comprehensive molecular portraits of human breast tumours,''
+\newblock \emph{Nature} \textbf{490}, 61--70 (2012).
 
 \end{thebibliography}
 
