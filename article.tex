@@ -81,7 +81,24 @@ and the Hern\'andez-Lemus group has applied several such approaches
 directly to breast cancer: multilayer information-theoretic
 transcriptional networks \citep{multilayer2021}, $k$-core structural
 analysis \citep{kcore2021}, and multi-omic subtype-specific interaction
-networks \citep{multiomic2022}.
+networks \citep{multiomic2022}. The group's own network-inference
+pipeline for breast cancer, publicly available as the CSB-IG
+\texttt{breast\_cancer\_networks} and \texttt{parallel-aracne}
+repositories, is built on ARACNE \citep{margolin2006}: mutual
+information between every gene pair, pruned by the Data Processing
+Inequality, with a bootstrap procedure (the NIMEA pipeline,
+\texttt{CSB-IG/BioNetworkInference\_ModularAnalysis}) used to set the
+mutual-information significance threshold and Infomap used for module
+detection --- an information-theoretic route to the same underlying
+question this paper asks with a spectral one: given a noisy,
+finite-sample gene-expression matrix, which pairwise associations are
+real? The RMT threshold in Sec.~\ref{sec:tau-sweep} and the
+group's own bootstrap-calibrated mutual-information threshold are two
+different statistical routes to a threshold-selection problem neither
+one has an obviously superior claim to; running both on the same TNBC
+cohort and comparing the resulting hub genes and modules is a direct,
+concrete extension of this paper, using tooling the group already has
+in production rather than anything new.
 
 A separate line of work asks a narrower but sharper question: given a
 correlation matrix built from noisy, finite-sample gene-expression
@@ -644,6 +661,17 @@ whether the matrix sequence it is handed comes from growing $n$ or from
 successive SGD steps, so applying it to training dynamics is a data
 plumbing change, not a new method.
 
+\subsection*{RMT threshold vs.\ ARACNE on the same cohort}
+The comparison sketched in Background --- RMT spectral thresholding
+against the group's own bootstrap-calibrated ARACNE/NIMEA pipeline
+--- can be run directly on the TNBC cohort already built in
+\texttt{data/TCGA-BRCA/tnbc\_expr.csv}: both methods take the same
+gene-by-patient matrix as input and each returns a thresholded network
+and a hub/module list, so the natural first check is how much the two
+methods' hub genes and modules agree, using the group's existing
+\texttt{parallel-aracne} pipeline unmodified and comparing its output
+against Table~\ref{tab:hubs} directly.
+
 \section*{Conclusions}
 
 Combining a static RMT correlation threshold, a wavelet multiscale
@@ -782,6 +810,11 @@ Grupo Hern\'andez-Lemus,
 Grupo Hern\'andez-Lemus,
 \newblock ``Functional impact of multi-omic interactions in breast cancer subtypes,''
 \newblock \emph{Frontiers in Genetics}, 2022.
+
+\bibitem[Margolin et al.(2006)]{margolin2006}
+A.~A.~Margolin, I.~Nemenman, K.~Basso, C.~Wiggins, G.~Stolovitzky, R.~Dalla~Favera, A.~Califano,
+\newblock ``ARACNE: An Algorithm for the Reconstruction of Gene Regulatory Networks in a Mammalian Cellular Context,''
+\newblock \emph{BMC Bioinformatics} \textbf{7}(Suppl 1), S7 (2006).
 
 \bibitem[Luo et al.(2007)]{luo2007}
 F.~Luo, Y.~Yang, J.~Zhong, H.~Gao, L.~Khan, D.~K.~Thompson, J.~Zhou,
