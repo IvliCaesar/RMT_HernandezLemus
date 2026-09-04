@@ -1,0 +1,307 @@
+\documentclass[11pt]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\geometry{margin=2.6cm}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+\setlength{\parskip}{0.6em}
+\setlength{\parindent}{0pt}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.6em}{}
+
+\title{\vspace{-1cm}
+Programa de investigación conjunta (informe rápido)\\[0.3em]
+\large Random Matrix Theory y Genómica Computacional\\
+\normalsize Propuesta de colaboración con el Dr. Enrique Hernández-Lemus}
+\author{}
+\date{Septiembre de 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\section*{Resumen ejecutivo}
+Se propone un programa de investigación conjunta que use \emph{Random Matrix Theory} (RMT) --- estática (ensambles, umbrales espectrales) y dinámica (movimiento browniano de Dyson, repulsión de niveles) --- junto con análisis multiescala por \emph{wavelets}, como marco matemático para problemas actuales de genómica computacional y oncología de sistemas, con foco en cáncer de mama. La idea central es modelar la frontera entre \emph{señal biológica estructurada} y \emph{ruido de alta dimensión} en matrices derivadas de datos multi-ómicos, redes de coexpresión a gran escala, matrices de contacto cromatínico tipo Hi-C y datos de célula única, y validar esa frontera con protocolos numéricos explícitos y reproducibles sobre datos públicos reales. La propuesta está alineada con la trayectoria reciente del Dr. Enrique Hernández-Lemus en integración multi-ómica en cáncer, redes regulatorias multicapa, genómica 3D y redes específicas por paciente.
+
+\section{Justificación científica}
+El Dr. Enrique Hernández-Lemus dirige el Laboratorio de Biología Computacional de Sistemas y Genómica Integrativa del Departamento de Genómica Computacional del INMEGEN, con trabajo reciente en integración de datos multi-ómicos en cáncer \cite{multiomic2022}, redes regulatorias multicapa \cite{multilayer2021}, estructura de \emph{k-cores} en redes de cáncer de mama \cite{kcore2021}, conformación cromosómica en cáncer de mama triple negativo \cite{tnbc2025} y redes de coexpresión específicas por paciente \cite{luad2025}. Estas líneas sugieren un contexto ideal para introducir herramientas espectrales rigurosas --- estáticas y dinámicas --- de RMT sobre matrices de covarianza, correlación, afinidad y contacto cromatínico \cite{inmegen, multiomic2024, tnbc2025, luad2025}.
+
+Desde el punto de vista metodológico, RMT ofrece una ventaja estratégica: permite construir \emph{ensambles nulos} y umbrales espectrales no ad hoc para distinguir estructura biológica real frente a artefactos debidos a alta dimensionalidad, escasez muestral, heterocedasticidad y sparsidad. El método fundacional de Luo et al.\ \cite{luo2007}, ya validado a gran escala \cite{gao2012} y extendido a redes de interacción génica en cáncer \cite{cancer2018}, usa precisamente la transición de la distribución de espaciamientos entre vecinos más cercanos (NNSD), de Poisson a la estadística de Wigner-Dyson del ensamble ortogonal gaussiano (GOE), para fijar un umbral de correlación no arbitrario en redes de coexpresión --- exactamente el tipo de red a gran escala (\emph{big scale networks}) que el grupo del Dr.\ Hernández-Lemus ya construye. Esta lógica ya ha mostrado utilidad en análisis de célula única, donde existen trabajos de denoising guiado por RMT y métodos espectrales para extraer señal de matrices extremadamente ruidosas \cite{aparicio2020, pnas2021}. Asimismo, en Hi-C reciente se ha señalado que ciertos esquemas de suavizado por random walks deben tratarse con cautela, lo cual abre espacio para null models espectrales mejor fundamentados \cite{hic2025}.
+
+\section{Hipótesis rectora}
+La hipótesis del programa es la siguiente:
+\begin{quote}
+\emph{La estructura biológica relevante puede detectarse y cuantificarse como desviación espectral robusta --- estática y dinámica --- respecto de un ensamble nulo de alta dimensión, y esa desviación es numéricamente validable sobre cohortes independientes.}
+\end{quote}
+
+Dicho de otro modo, autovalores salientes, autovectores localizados, estadísticos lineales de eigenvalores, rupturas universales del \emph{bulk}, y patrones de repulsión/casi-colisión entre autovalores bajo perturbación o evolución temporal, pueden funcionar como marcadores matemáticamente controlados de modularidad funcional, heterogeneidad tumoral, reorganización cromatínica y señal paciente-específica --- siempre que la desviación sobreviva a un protocolo explícito de validación estadística.
+
+\section{Objetivo general}
+Desarrollar una agenda conjunta de investigación que integre Random Matrix Theory (estática y dinámica), análisis multiescala por wavelets, teoría espectral de redes, y aprendizaje automático, con datos reales de genómica computacional, con énfasis en cáncer de mama, multi-ómica, genómica 3D, célula única y redes a gran escala, y con un protocolo de validación numérica explícito en cada línea.
+
+\section{Objetivos específicos}
+\begin{enumerate}[label=\arabic*.]
+    \item Construir modelos nulos espectrales para matrices de expresión, coexpresión y covarianza multi-ómica, a la escala de redes completas del transcriptoma (\(p\sim 10^4\)--\(10^5\)).
+    \item Diseñar criterios RMT --- estáticos (NNSD, IPR) y dinámicos (Dyson, repulsión de niveles) --- para detección de módulos biológicos, subtipos tumorales y biomarcadores robustos.
+    \item Extender el marco a matrices de contacto cromatínico (Hi-C/scHi-C) y redes multicapa expresión--conformación, incorporando descomposición \emph{wavelet} multiescala como paso de pre-procesamiento y de extracción de características.
+    \item Desarrollar variantes para redes específicas por paciente y para datos de célula única de alta sparsidad, y acoplarlas a clasificadores de aprendizaje automático cuyo propio proceso de entrenamiento se analice con las mismas herramientas espectrales (reconocimiento de subtipo/patrón).
+    \item Fijar, para cada línea, un protocolo de validación (remuestreo, cohortes independientes, control de falsos positivos) y traducir estos desarrollos a \emph{pipelines} computacionales reproducibles y a artículos de metodología aplicada.
+\end{enumerate}
+
+\section{Líneas de trabajo propuestas}
+
+\subsection{Línea 1. Denoising espectral y detección de señal en datos multi-ómicos}
+Sea $X \in \mathbb{R}^{p\times n}$ una matriz de datos ómicos centrada y escalada, con $p$ variables y $n$ muestras. La matriz
+\[
+S=\frac{1}{n}XX^{\top}
+\]
+puede interpretarse como matriz de covarianza o correlación empírica. El primer objetivo es estudiar el espectro de $S$ frente a ensambles nulos apropiados (Wishart, spiked models, variantes heterocedásticas o con ruido correlacionado), para separar:
+\begin{itemize}
+    \item \textbf{bulk espectral:} parte compatible con ruido de alta dimensión, delimitada por la ley de Marchenko--Pastur;
+    \item \textbf{outliers:} componentes compatibles con señal biológica organizada;
+    \item \textbf{localización de autovectores:} firmas de módulos génicos o ejes tumorales, cuantificadas por el \emph{inverse participation ratio} (IPR).
+\end{itemize}
+
+\textbf{Meta concreta.} Desarrollar un método de filtrado espectral para matrices multi-ómicas y comparar su desempeño con PCA estándar, sparse PCA y enfoques de redes usados en la literatura reciente de integración multi-ómica \cite{multiomic2024, multiomic2022}.
+
+\subsection{Línea 2. RMT para redes de coexpresión a gran escala y biomarcadores específicos por paciente}
+Los trabajos recientes sobre redes específicas por paciente muestran que la estructura regulatoria individualizada puede revelar subtipos y biomarcadores no visibles en redes promedio \cite{luad2025}, y que la estructura de \emph{k-cores} organiza jerárquicamente las redes de cáncer de mama \cite{kcore2021}. El método de umbral espectral de Luo et al.\ \cite{luo2007}, ya usado a la escala de redes completas del transcriptoma \cite{gao2012}, es el punto de partida natural para redes de este tamaño. Aquí la contribución conjunta puede ser fuerte: pasar de una red inferida empíricamente a una teoría de \emph{significancia espectral} de esa red, y de ahí a una noción cuantitativa de qué tan robusto es un \emph{k-core} o un módulo bajo la incertidumbre estadística que el propio umbral espectral hace explícita.
+
+\textbf{Problemas propuestos:}
+\begin{enumerate}[label=(\alph*)]
+    \item estudiar espectros de matrices de adyacencia o Laplacianos de redes de coexpresión a gran escala bajo null models dependientes del grado y de la distribución empírica;
+    \item definir estadísticos basados en la separación de autovalores y en la localización de autovectores para clasificar pacientes;
+    \item construir indicadores de estabilidad espectral de biomarcadores y de \emph{k-cores} bajo remuestreo y perturbaciones.
+\end{enumerate}
+
+\textbf{Meta concreta.} Producir un artículo metodológico sobre \emph{RMT for patient-specific regulatory networks}, con aplicación a cáncer de mama.
+
+\subsection{Línea 3. Modelos espectrales para Hi-C y genómica 3D}
+La integración entre conformación cromosómica y expresión génica ya es una línea activa en el grupo del Dr.\ Hernández-Lemus, particularmente en cáncer de mama triple negativo \cite{tnbc2025}. Aquí RMT puede aportar una base matemática novedosa para matrices de contacto, kernels de proximidad y operadores derivados de Hi-C.
+
+\textbf{Preguntas clave:}
+\begin{itemize}
+    \item ¿Qué parte del espectro de una matriz de contacto cromatínico corresponde a arquitectura robusta y cuál a ruido experimental o a profundidad de secuenciación?
+    \item ¿Cómo definir ensambles nulos que respeten sesgos marginales, dependencia con la distancia genómica y sparsidad?
+    \item ¿Qué estadísticos espectrales detectan reordenamientos estructurales en tumores frente a tejido normal?
+\end{itemize}
+
+\textbf{Meta concreta.} Desarrollar una teoría preliminar de \emph{spectral null models for chromatin contact matrices} y aplicarla a datos TNBC. Esto conectaría de manera directa con el trabajo reciente del grupo y le daría una capa matemática diferenciadora.
+
+\subsection{Línea 4. RMT en célula única y multimodalidad}
+El análisis de célula única y topología de datos ya aparece como área de expansión natural del grupo \cite{csbig, pnas2021}. Los datos scRNA-seq y multiome presentan precisamente el régimen donde RMT es más valiosa: gran dimensión, matrices esparsas, ruido técnico elevado y señal de baja jerarquía.
+
+\textbf{Metas concretas:}
+\begin{enumerate}[label=(\alph*)]
+    \item adaptar técnicas de denoising RMT a scRNA-seq y scATAC/scRNA integrados;
+    \item usar umbrales Tracy--Widom o pruebas tipo Marchenko--Pastur para selección de componentes informativos;
+    \item estudiar el acoplamiento entre RMT y métodos topológicos, usando los objetos espectralmente depurados como entrada para TDA o clustering jerárquico.
+\end{enumerate}
+
+\subsection{Línea 5. Análisis multiescala por wavelets}
+Las redes de coexpresión y las matrices de contacto Hi-C tienen estructura a múltiples escalas simultáneas: módulos génicos locales, dominios topológicamente asociados (TADs) de tamaño intermedio, y compartimentos A/B de gran escala. Un umbral espectral único, aplicado a la matriz completa, puede ser demasiado grueso para separar señal a todas estas escalas a la vez. König et al.\ \cite{konig2006} ya mostraron, sobre la red metabólica de \emph{E.\ coli}, que una transformada wavelet aplicada a los perfiles de expresión --- y a las matrices de adyacencia de los clusters resultantes --- extrae patrones funcionales que un análisis de escala única no separa limpiamente.
+
+\textbf{Propuesta concreta.} Antes de aplicar el umbral RMT de la Línea 2, descomponer la matriz de correlación (o la señal de contacto Hi-C a lo largo de la distancia genómica) en una jerarquía de escalas mediante una transformada wavelet 2D discreta, y aplicar el criterio NNSD/Marchenko--Pastur \emph{por escala}: la hipótesis de trabajo es que el nivel de escala en el que primero aparece una transición Poisson\,$\to$\,Wigner-Dyson identifica la escala característica de la organización modular real (génica, TAD, o compartimento), en vez de imponerla a priori.
+
+\textbf{Meta concreta.} Un método reproducible de \emph{umbral espectral multiescala}, comparado contra el umbral de escala única de Luo et al.\ \cite{luo2007} sobre las mismas cohortes.
+
+\subsection{Línea 6. Dinámica de Dyson, repulsión de niveles, y reconocimiento}
+Todo lo anterior es \emph{estático}: se calcula el espectro de una matriz fija. Dyson \cite{dyson1962} mostró que, si las entradas de una matriz aleatoria evolucionan por difusión browniana, sus autovalores evolucionan como un gas de Coulomb unidimensional: cada par de autovalores se repele con fuerza $1/(\lambda_i-\lambda_j)$, de modo que dos autovalores casi nunca colisionan (\emph{level repulsion}, la misma repulsión que produce la estadística de Wigner-Dyson en el caso estático). Esto sugiere dos extensiones concretas, ninguna de las dos presente en las Líneas 1--4:
+
+\begin{enumerate}[label=(\alph*)]
+    \item \textbf{Dinámica sobre cohortes/tiempo.} Cuando la matriz de coexpresión o de contacto cromatínico se recalcula a lo largo de una progresión (estadios tumorales, pseudotiempo en célula única, o remuestreo secuencial de una cohorte), la trayectoria de cada autovalor puede tratarse como una realización de un proceso tipo Dyson. Una \emph{casi-colisión} entre dos autovalores --- un mínimo local pronunciado de $|\lambda_i-\lambda_j|$ --- es candidata natural a marcar una transición estructural (p.\,ej.\ una reorganización modular o un cambio de subtipo), de forma análoga a como el mismo fenómeno se usa para detectar transiciones espectrales en otros sistemas físicos.
+    \item \textbf{Dinámica del propio reconocedor.} Aarts, Hajizadeh, Lucini y Park \cite{aarts2024} muestran, para redes neuronales entrenadas por descenso de gradiente estocástico, que el espectro de las matrices de pesos evoluciona --- desde una distribución inicial tipo Marchenko--Pastur hacia un gas de Coulomb con potencial dependiente del modelo --- exactamente como movimiento browniano de Dyson, con el nivel de estocasticidad fijado por la razón entre tasa de aprendizaje y tamaño de minibatch. Esto da un lenguaje espectral \emph{común} para los datos (Líneas 1--3) y para el clasificador de reconocimiento de subtipo/patrón que se entrena sobre ellos (Línea 4): en ambos casos, la pregunta de si la estructura aprendida es señal genuina o artefacto de optimización se plantea, literalmente, en los mismos términos de repulsión de autovalores.
+\end{enumerate}
+
+\textbf{Meta concreta.} Una nota metodológica --- \emph{Dyson dynamics for spectral transitions in cancer genomics} --- que formalice (a) sobre redes de coexpresión a través de estadios TNBC, y (b) sobre la dinámica de entrenamiento de un clasificador de subtipo entrenado sobre las mismas redes, verificando si ambas trayectorias muestran el mismo régimen de repulsión.
+
+\section{Validación y numérica}
+\label{sec:validacion}
+Cada línea anterior produce un umbral, un estadístico, o una trayectoria espectral; ninguno se reporta sin un protocolo de validación explícito:
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Ensamble nulo correcto.} Comparación contra Wishart puro \emph{y} contra nulos que preservan momentos empíricos (grado, varianza marginal, sparsidad) --- un umbral que sólo supera al Wishart puro no basta.
+    \item \textbf{Remuestreo.} Bootstrap y submuestreo de pacientes para reportar un intervalo, no un único valor, para cada autovalor saliente y cada estadístico de localización (IPR).
+    \item \textbf{Cohortes independientes.} Todo umbral o módulo detectado en una cohorte (p.\,ej.\ TCGA-BRCA) se reevalúa, sin reajustar parámetros, en al menos una cohorte independiente (p.\,ej.\ METABRIC o un GSE específico de TNBC); ver \S\ref{sec:datos}.
+    \item \textbf{Control de falsos positivos.} Corrección explícita por comparaciones múltiples al reportar módulos, biomarcadores o transiciones de Dyson candidatas.
+    \item \textbf{Numérica de referencia.} Un script de referencia (Python/NumPy/SciPy) que calcule, sobre datos sintéticos con espectro conocido, el umbral NNSD, la ley de Marchenko--Pastur teórica y el IPR, como prueba de correctitud antes de aplicar el método a datos reales; ver \texttt{scripts/} en el repositorio de este programa.
+\end{enumerate}
+
+\section{Núcleo matemático del programa}
+El programa puede organizarse alrededor de seis bloques teóricos:
+\begin{enumerate}[label=\arabic*.]
+    \item ensambles de Wishart y leyes tipo Marchenko--Pastur;
+    \item modelos \emph{spiked} y transición BBP para señal de bajo rango;
+    \item estadísticos lineales de eigenvalores y fluctuaciones tipo Tracy--Widom;
+    \item localización/delocalización de autovectores y robustez frente a ruido estructurado;
+    \item matrices aleatorias sobre grafos y operadores espectrales en redes multicapa a gran escala;
+    \item movimiento browniano de Dyson, repulsión de niveles, y análisis multiescala por wavelets como pre-procesamiento espectral.
+\end{enumerate}
+
+Esto permite una división natural del trabajo: una parte más teórica (RMT, límites, umbrales, null models, dinámica de Dyson) y otra parte aplicada (pipelines, validación sobre cohortes, interpretación biológica, contraste con estado del arte).
+
+\section{Datos}
+\label{sec:datos}
+Conjuntos de datos públicos, ya identificados, suficientes para arrancar las Líneas 1--2 y 5--6 sin esperar datos propios del grupo; ver \texttt{data/README.md} en el repositorio de este programa para instrucciones de descarga y notas de preprocesamiento.
+\begin{itemize}
+    \item \textbf{GSE171958} (GEO) --- metilación de DNA y RNA-seq para TNBC, con proteómica pareada en ProteomeXchange PXD025238; líneas celulares MCF10A, MDA-MB-231, HCC1937 \cite{tnbcmultiomics2021}. Punto de entrada natural para la Línea 1 (denoising multi-ómico) y la Línea 5 (wavelets).
+    \item \textbf{GSE176078} (GEO) --- scRNA-seq de tumores de 10 pacientes con TNBC \cite{tnbcsc2021}. Punto de entrada para la Línea 4 (célula única) y la parte (a) de la Línea 6 (dinámica a través de pacientes/pseudotiempo).
+    \item \textbf{TCGA-BRCA} --- cohorte pública de referencia (expresión, metilación, mutación, clínico) para cáncer de mama; usada aquí como cohorte primaria de validación cruzada (\S\ref{sec:validacion}, punto 3).
+    \item \textbf{METABRIC} --- cohorte pública independiente de TCGA-BRCA, con subtipificación clínica; cohorte de validación cruzada secundaria.
+\end{itemize}
+Ningún dato clínico o multi-ómico propio del grupo del Dr.\ Hernández-Lemus se asume ni se solicita aquí; estos cuatro conjuntos son de acceso público y bastan para un primer ciclo completo de desarrollo y validación metodológica.
+
+\section{Productos esperados}
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Paper 1:} RMT para filtrado espectral en datos multi-ómicos de cáncer.
+    \item \textbf{Paper 2:} significancia espectral en redes específicas por paciente, a gran escala.
+    \item \textbf{Paper 3:} null models espectrales para matrices Hi-C y redes multicapa expresión--cromatina, con umbral multiescala por wavelets.
+    \item \textbf{Paper 4:} dinámica de Dyson y repulsión de niveles como marcador de transición estructural, con el paralelo dato/clasificador de la Línea 6.
+    \item \textbf{Software:} paquete reproducible en \texttt{Python}/\texttt{R} para análisis espectral estático y dinámico de datos genómicos, con protocolo de validación integrado.
+    \item \textbf{Seminario conjunto:} puente entre matemáticas, física estadística y genómica computacional.
+\end{enumerate}
+
+\section{Ruta tentativa de 12--18 meses}
+\subsection*{Fase I (0--4 meses)}
+Curación de los datasets de \S\ref{sec:datos}, revisión técnica conjunta, y desarrollo del primer pipeline RMT (Línea 1--2) con el protocolo de validación de \S\ref{sec:validacion} desde el inicio.
+
+\subsection*{Fase II (4--9 meses)}
+Aplicación a redes específicas por paciente a gran escala (Línea 2) y elaboración del primer manuscrito metodológico. Paralelamente, diseño de null models multiescala para Hi-C (Líneas 3 y 5).
+
+\subsection*{Fase III (9--14 meses)}
+Aplicación a TNBC con datos de conformación cromosómica y expresión (GSE171958, GSE176078); formulación del segundo y tercer artículos. Primera prueba de la dinámica de Dyson (Línea 6a).
+
+\subsection*{Fase IV (14--18 meses)}
+Extensión a célula única, prueba de la dinámica de Dyson sobre el propio clasificador (Línea 6b), y consolidación de software, seminarios y siguiente agenda de financiamiento.
+
+\section{Ventaja estratégica de la colaboración}
+La colaboración tendría una identidad muy clara: no sería una aplicación superficial de técnicas matemáticas a datos biológicos, sino la construcción de un marco riguroso --- estático y dinámico, de escala única y multiescala --- para \emph{inferencia espectral en genómica de alta dimensión}, con un protocolo de validación explícito en cada paso. El valor agregado para ambas partes es nítido:
+\begin{itemize}
+    \item para el grupo del Dr.\ Hernández-Lemus, aporta una capa matemática fuerte, original y publicable, directamente sobre sus propias líneas de redes a gran escala, TNBC y multi-ómica;
+    \item para la parte matemática, ofrece problemas reales, datasets complejos ya identificados (\S\ref{sec:datos}), y una ruta natural hacia publicaciones interdisciplinarias de alto nivel.
+\end{itemize}
+
+\section{Primeros pasos sugeridos}
+\begin{enumerate}[label=\arabic*.]
+    \item Definir el caso de estudio inicial: TNBC, usando GSE171958 y GSE176078 (\S\ref{sec:datos}) como punto de partida inmediato, sin esperar datos propios.
+    \item Correr el script de referencia de \S\ref{sec:validacion} (\texttt{scripts/}) sobre datos sintéticos, y luego sobre una submuestra real, como prueba de concepto conjunta.
+    \item Escribir una nota conceptual de 2--3 páginas con una pregunta piloto y la metodología RMT mínima.
+    \item Preparar un seminario interno de arranque con lenguaje puente entre genómica y teoría espectral.
+\end{enumerate}
+
+\section*{Conclusión}
+La colaboración propuesta tiene potencial real para convertirse en una línea estable de investigación. Su fuerza está en que conecta de manera orgánica el trabajo actual del Dr.\ Enrique Hernández-Lemus con una agenda matemática distintiva: RMT --- estática y dinámica --- como teoría de señal, ruido, estructura y robustez en sistemas genómicos complejos, complementada por análisis multiescala y por un protocolo de validación explícito desde el primer día. Bien planteada, esta agenda puede producir resultados conceptuales, metodológicos y computacionales con salida natural hacia bioinformática matemática, biología de sistemas y oncología computacional.
+
+\begin{thebibliography}{99}
+
+\bibitem{inmegen}
+INMEGEN, \emph{Dr. Enrique Hernández Lemus}, perfil institucional, Instituto Nacional de Medicina Genómica.
+\newblock \url{https://www.inmegen.gob.mx/investigacion/investigadores/curriculum-vitae/?perfil=59}
+
+\bibitem{csbig}
+CSB-IG Group, \emph{About Enrique Hernández-Lemus}.
+\newblock \url{https://csbig.inmegen.gob.mx/about/}
+
+\bibitem{multiomic2024}
+E.~Hernández-Lemus y S.~Ochoa,
+\newblock ``Methods for multi-omic data integration in cancer research,''
+\newblock \emph{Frontiers in Genetics}, 2024.
+\newblock \url{https://www.frontiersin.org/journals/genetics/articles/10.3389/fgene.2024.1425456/full}
+
+\bibitem{multiomic2022}
+Grupo Hernández-Lemus,
+\newblock ``Functional impact of multi-omic interactions in breast cancer subtypes,''
+\newblock \emph{Frontiers in Genetics}, 2022.
+
+\bibitem{multilayer2021}
+Grupo Hernández-Lemus,
+\newblock ``An Information Theoretical Multilayer Network Approach to Breast Cancer Transcriptional Regulation,''
+\newblock \emph{Frontiers in Genetics}, 2021.
+
+\bibitem{kcore2021}
+Grupo Hernández-Lemus,
+\newblock ``k-core genes underpin structural features of breast cancer,''
+\newblock \emph{Scientific Reports}, 2021.
+
+\bibitem{tnbc2025}
+H.~Reyes-Gopar, K.~A.~Pérez-Fuentes, M.~L.~Bendall y E.~Hernández-Lemus,
+\newblock ``Integration of chromosome conformation and gene expression networks reveals regulatory mechanisms in triple negative breast cancer,''
+\newblock \emph{Frontiers in Cell and Developmental Biology}, 2025.
+\newblock \url{https://www.frontiersin.org/journals/cell-and-developmental-biology/articles/10.3389/fcell.2025.1597245/full}
+
+\bibitem{luad2025}
+P.~López-Sánchez, F.~Ávila-Moreno, E.~Hernández-Lemus, M.~L.~Kuijjer y J.~Espinal-Enríquez,
+\newblock ``Patient-specific gene co-expression networks reveal novel subtypes and predictive biomarkers in lung adenocarcinoma,''
+\newblock \emph{npj Systems Biology and Applications}, 2025.
+\newblock \url{https://www.nature.com/articles/s41540-025-00522-0}
+
+\bibitem{aparicio2020}
+L.~Aparicio, K.~Bordyuh, A.~Blumberg y S.~Levit,
+\newblock ``A Random Matrix Theory Approach to Denoise Single-Cell Data,''
+\newblock \emph{Patterns}, 2020.
+\newblock \url{https://pmc.ncbi.nlm.nih.gov/articles/PMC7660363/}
+
+\bibitem{pnas2021}
+S.~Levyang et al.,
+\newblock ``Revealing lineage-related signals in single-cell gene expression using random matrix theory,''
+\newblock \emph{PNAS}, 2021.
+\newblock \url{https://www.pnas.org/doi/10.1073/pnas.1913931118}
+
+\bibitem{hic2025}
+Y.~Liu et al.,
+\newblock ``Can random walking on a Hi-C contact matrix lead to data quality improvement?,''
+\newblock 2025.
+\newblock \url{https://pmc.ncbi.nlm.nih.gov/articles/PMC12456815/}
+
+\bibitem{luo2007}
+F.~Luo, Y.~Yang, J.~Zhong, H.~Gao, L.~Khan, D.~K.~Thompson y J.~Zhou,
+\newblock ``Constructing gene co-expression networks and predicting functions of unknown genes by random matrix theory,''
+\newblock \emph{BMC Bioinformatics} \textbf{8}, 299 (2007).
+\newblock \url{https://doi.org/10.1186/1471-2105-8-299}
+
+\bibitem{gao2012}
+Massive-scale gene co-expression network construction and robustness testing using random matrix theory,
+\newblock \emph{PLOS ONE}, 2012.
+\newblock \url{https://doi.org/10.1371/journal.pone.0055871}
+
+\bibitem{cancer2018}
+Random matrix analysis for gene interaction networks in cancer cells,
+\newblock \emph{Scientific Reports} \textbf{8} (2018).
+\newblock \url{https://doi.org/10.1038/s41598-018-28954-1}
+
+\bibitem{konig2006}
+R.~König, G.~Schramm, M.~Oswald et al.,
+\newblock ``Discovering functional gene expression patterns in the metabolic network of Escherichia coli with wavelets transforms,''
+\newblock \emph{BMC Bioinformatics} \textbf{7}, 119 (2006).
+\newblock \url{https://doi.org/10.1186/1471-2105-7-119}
+
+\bibitem{dyson1962}
+F.~J.~Dyson,
+\newblock ``A Brownian-Motion Model for the Eigenvalues of a Random Matrix,''
+\newblock \emph{Journal of Mathematical Physics} \textbf{3}, 1191--1198 (1962).
+
+\bibitem{aarts2024}
+G.~Aarts, O.~Hajizadeh, B.~Lucini y C.~Park,
+\newblock ``Dyson Brownian motion and random matrix dynamics of weight matrices during learning,''
+\newblock preprint, arXiv:2411.13512, 2024. NeurIPS 2024 Workshop on Machine Learning and the Physical Sciences.
+\newblock \url{https://arxiv.org/abs/2411.13512}
+
+\bibitem{tnbcmultiomics2021}
+Multi-omics data integration reveals correlated regulatory features of triple negative breast cancer,
+\newblock \emph{Molecular Omics}, 2021. Data: GEO GSE171958, ProteomeXchange PXD025238.
+\newblock \url{https://doi.org/10.1039/D1MO00117E}
+
+\bibitem{tnbcsc2021}
+Single-cell RNA-seq of triple negative breast cancer tumors (10 patients),
+\newblock GEO accession GSE176078.
+\newblock \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE176078}
+
+\end{thebibliography}
+
+\end{document}
