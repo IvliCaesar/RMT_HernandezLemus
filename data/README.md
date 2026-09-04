@@ -35,6 +35,19 @@ cómo se usa cada uno.
 - Cohorte pública independiente de TCGA-BRCA, con subtipificación clínica
 - Uso en el programa: cohorte de validación cruzada secundaria
 
+## Estado: TCGA-BRCA ya descargado y analizado (2026-09-04)
+
+`article.tex` (raíz del repo) usa datos reales de TCGA-BRCA, no
+sintéticos. Ver `data/TCGA-BRCA/README.md` para las URLs exactas y
+cómo reproducir la descarga — los archivos crudos (69MB) están en
+`.gitignore` y no viven en el repositorio, solo el código que los
+reconstruye (`scripts/01_build_cohorts.py`).
+
+GSE171958, GSE176078 y METABRIC siguen sin descargar — ver la sección
+"Roadmap" de `article.tex` para el plan concreto de cada una (Líneas 3,
+4, 6b), y no como un pendiente vago: GSE176078 es el siguiente paso
+directo para Línea 4.
+
 ## Nota sobre descarga
 Ninguno de estos archivos está incluido en este repositorio (son
 demasiado grandes y algunos requieren aceptar términos de uso en el

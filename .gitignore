@@ -4,3 +4,10 @@
 *.toc
 __pycache__/
 *.pyc
+
+# Real TCGA-BRCA downloads and derived expression matrices (69MB,
+# public, reproducible from data/TCGA-BRCA/README.md + 01_build_cohorts.py)
+data/TCGA-BRCA/*.gz
+data/TCGA-BRCA/BRCA_clinicalMatrix
+data/TCGA-BRCA/tnbc_expr.csv
+data/TCGA-BRCA/luma_expr.csv

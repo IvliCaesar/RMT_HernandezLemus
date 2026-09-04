@@ -1,0 +1,949 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{xcolor}
+
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\title{Random Matrix Theory, Multiscale Wavelet Decomposition, and \\
+Dyson-Brownian-Motion Diagnostics for Breast Cancer \\
+Coexpression Networks: A Real-Data Framework Applied to TCGA-BRCA}
+
+\author{
+Julio C\'esar Galindo L\'opez$^{1}$ \and Enrique Hern\'andez-Lemus$^{2}$
+\\[4pt]
+{\small $^{1}$ Universidad Panamericana}\\
+{\small $^{2}$ Computational Systems Biology and Integrative Genomics Laboratory,}\\
+{\small Instituto Nacional de Medicina Gen\'omica (INMEGEN)}
+}
+
+\date{September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present a data-analysis framework that combines three previously
+separate diagnostics from random matrix theory (RMT) --- static
+correlation-threshold selection, multiscale wavelet decomposition, and
+a Dyson-Brownian-motion eigenvalue-repulsion check --- and apply it, in
+full, to real bulk RNA-seq data from The Cancer Genome Atlas breast
+cancer cohort (TCGA-BRCA). Two clinically defined, non-overlapping
+cohorts are built from real clinical annotation (triple-negative breast
+cancer, TNBC, $n=119$; luminal A, LumA, $n=430$; 1500 genes selected by
+variance across the full 1218-sample cohort, cohort-blind). The
+classical Luo et al. correlation-threshold method selects a
+network-defining threshold of $\tau^*=0.45$ for TNBC and $\tau^*=0.25$
+for LumA; this gap survives a matched-sample-size robustness check
+(LumA subsampled to $n=119$ over 30 replicates gives
+$\tau^*=0.360\pm0.020$, still $4.5$ standard deviations from the TNBC
+value). A wavelet decomposition of each gene's expression trace along
+the dominant principal-component ordering of the TNBC cohort produces
+two coexpression networks --- one from coarse (approximation) and one
+from fine (detail) wavelet coefficients --- whose top-degree hub genes
+do not overlap at all (0 of 10 shared), a direct, real-data
+confirmation of the multiscale claim that different correlation
+structure lives at different scales. Tracking the top eigenvalues of
+the TNBC correlation matrix as the patient sample is grown one patient
+at a time reveals several adjacent-eigenvalue pairs whose gap shrinks
+to a local minimum and then reopens by a factor of five to ten within
+a few steps, consistent with Dyson-type level repulsion rather than
+free crossing. A cross-validated logistic-regression classifier
+distinguishing TNBC from LumA reaches $98\%$ accuracy regardless of
+whether it is given RMT hub genes, top-variance genes, or a random gene
+set of the same size --- an honest null result reported as such: this
+particular binary task is already linearly separable at the raw-gene
+level, and a harder discrimination (e.g.\ within-TNBC subtyping or
+outcome prediction) is required before feature selection can show its
+value. We report every number in this paper directly from code that is
+included and re-runnable, state plainly which parts of the originally
+proposed six-line program (Hi-C/3D genomics, single-cell RNA-seq, and
+Dyson dynamics of a classifier's own training trajectory) are not yet
+backed by real analysis here, and lay out the concrete next steps for
+each.
+\end{abstract}
+
+\section*{Background}
+
+Triple-negative breast cancer (TNBC) --- tumors negative for estrogen
+receptor, progesterone receptor, and HER2 --- lacks the targeted
+therapies available for hormone-receptor-positive or HER2-enriched
+disease, and remains transcriptionally and clinically heterogeneous
+\citep{foulkes2010}. Network-based approaches that treat gene
+coexpression as a graph, rather than testing genes one at a time, have
+become a standard tool for finding this heterogeneity's structure,
+and the Hern\'andez-Lemus group has applied several such approaches
+directly to breast cancer: multilayer information-theoretic
+transcriptional networks \citep{multilayer2021}, $k$-core structural
+analysis \citep{kcore2021}, and multi-omic subtype-specific interaction
+networks \citep{multiomic2022}. The group's own network-inference
+pipeline for breast cancer, publicly available as the CSB-IG
+\texttt{breast\_cancer\_networks} and \texttt{parallel-aracne}
+repositories, is built on ARACNE \citep{margolin2006}: mutual
+information between every gene pair, pruned by the Data Processing
+Inequality, with a bootstrap procedure (the NIMEA pipeline,
+\texttt{CSB-IG/BioNetworkInference\_ModularAnalysis}) used to set the
+mutual-information significance threshold and Infomap used for module
+detection --- an information-theoretic route to the same underlying
+question this paper asks with a spectral one: given a noisy,
+finite-sample gene-expression matrix, which pairwise associations are
+real? The RMT threshold in Sec.~\ref{sec:tau-sweep} and the
+group's own bootstrap-calibrated mutual-information threshold are two
+different statistical routes to a threshold-selection problem neither
+one has an obviously superior claim to; running both on the same TNBC
+cohort and comparing the resulting hub genes and modules is a direct,
+concrete extension of this paper, using tooling the group already has
+in production rather than anything new.
+
+A separate line of work asks a narrower but sharper question: given a
+correlation matrix built from noisy, finite-sample gene-expression
+data, which correlations reflect real biological structure and which
+are sampling noise? Random matrix theory answers this by comparing the
+empirical eigenvalue spectrum against the null spectrum expected from a
+random (structureless) matrix of the same size. \citet{luo2007}
+formalized this into a concrete recipe for gene coexpression networks:
+sweep a correlation threshold $\tau$, and select the value at which the
+nearest-neighbor eigenvalue spacing distribution switches from Poisson
+(uncorrelated, structureless) to the Gaussian-orthogonal-ensemble (GOE)
+Wigner surmise (correlated, structured) --- a transition driven by
+level repulsion, the same mechanism Wigner and Dyson identified in
+nuclear spectra and later in general Hermitian random matrices
+\citep{dyson1962}. The method has since been used at genome scale
+\citep{gao2012} and specifically in cancer gene networks
+\citep{cancer2018}.
+
+Two extensions of this static picture motivate the present paper.
+First, \citet{konig2006} showed that decomposing gene-expression
+profiles with a wavelet transform before building a coexpression
+network exposes coarse- and fine-scale correlation structure that a
+single-scale threshold conflates into one network. Second,
+\citet{aarts2024} showed that the weight matrices of a neural network
+undergoing stochastic-gradient-descent training evolve according to
+Dyson's (1962) eigenvalue Brownian motion, with the same level-repulsion
+mechanism at work --- suggesting that the repulsion diagnostic itself,
+not just the static threshold it eventually selects, carries
+information, and that it applies equally to a biological correlation
+matrix and to the training dynamics of a classifier built on top of it.
+
+This paper does three things. It states, as a single explicit
+framework, how a static RMT threshold, a wavelet-scale decomposition,
+and a Dyson-repulsion diagnostic relate to one another (Methods). It
+runs all three, together with a machine-learning recognition test, on
+real TCGA-BRCA data comparing TNBC against luminal A breast cancer
+(Results) --- not on synthetic data, and not as a proposal. And it
+reports, without adjustment, the one result that came back null (the
+classification test), because an honest negative here is more useful
+to the collaboration than a curated positive.
+
+\subsection*{Mathematical background}
+\label{sec:math}
+
+We collect here, precisely, the four pieces of random matrix theory the
+rest of the paper uses, since each plays a distinct role and the
+distinctions matter for how the results should be read.
+
+\begin{definition}[Wigner ensemble and the GOE]
+A Gaussian orthogonal ensemble (GOE) matrix is a real symmetric
+$N\times N$ matrix $H$ with $H_{ii}\sim\mathcal N(0,2)$ and
+$H_{ij}=H_{ji}\sim\mathcal N(0,1)$ ($i<j$) independently. As
+$N\to\infty$, its empirical eigenvalue distribution (after rescaling)
+converges to Wigner's semicircle law, and, crucially for us, the
+distribution of \emph{spacings} between adjacent eigenvalues, after
+unfolding to unit mean spacing, converges to the Wigner surmise
+$p(s)=\frac{\pi}{2}s\,e^{-\pi s^2/4}$ --- the density used throughout
+this paper as the ``correlated/structured'' null.
+\end{definition}
+
+The Wigner surmise's key qualitative feature is $p(0)=0$: two GOE
+eigenvalues essentially never sit arbitrarily close together, because
+the joint eigenvalue density carries a Vandermonde repulsion factor
+$\prod_{i<j}|\lambda_i-\lambda_j|$. This is the same repulsion term that
+appears, dynamically rather than statically, in Dyson's model below;
+the static NNSD test and the dynamic trajectory test in
+Sec.~\ref{sec:results-dyson} are two different windows onto the same
+underlying mechanism, not two unrelated diagnostics. By contrast, a
+matrix with no such structure (e.g.\ a diagonal matrix of i.i.d.\
+values, or --- the case relevant here --- a correlation matrix
+thresholded so sparsely that it behaves like a disconnected random
+graph) has independent eigenvalues and Poisson-distributed spacings
+$p(s)=e^{-s}$, which \emph{does} allow near-degeneracies
+($p(0)=1$, maximal at zero spacing). The Luo et al.\ method
+\citep{luo2007} used throughout Sec.~\ref{sec:tau-sweep} operationalizes
+exactly this contrast: sparse/uninformative thresholds look Poisson,
+and the threshold at which the spectrum first looks GOE-like is read as
+the point where real correlation structure first dominates chance.
+
+\begin{definition}[Marchenko--Pastur law]
+For a $p\times n$ data matrix with i.i.d.\ zero-mean, unit-variance
+entries and $p/n\to q\in(0,\infty)$, the eigenvalues of the sample
+correlation matrix converge to the Marchenko--Pastur distribution,
+supported on $[\lambda_-,\lambda_+]=[(1-\sqrt q)^2,(1+\sqrt q)^2]$
+\citep{marchenkopastur1967}. This is the null spectrum against which
+Sec.~\ref{sec:spiked}'s spiked-eigenvalue count is taken: it says what
+the bulk of the spectrum would look like if none of the $p$ genes were
+really correlated with each other, purely as an artifact of estimating
+a correlation matrix from a finite sample of $n$ patients.
+\end{definition}
+
+An eigenvalue exceeding $\lambda_+$ is therefore evidence of real
+low-rank structure (a ``spike''), not just an artifact of $q$; the
+BBP transition names the threshold, as a function of the true spike
+strength and $q$, above which a spike is detectable at all above the
+bulk. We use the count of observed spikes only descriptively
+(Table~\ref{tab:spiked}) and do not fit a formal spike-strength model
+in this paper.
+
+\begin{definition}[Spectral unfolding]
+Because the local density of eigenvalues varies across the spectrum
+even under a fixed null, raw spacings $\lambda_{k+1}-\lambda_k$ are not
+directly comparable to $p(s)$ above; unfolding replaces $\lambda_k$ with
+$\hat F(\lambda_k)\cdot N$, where $\hat F$ is a smooth fit to the
+empirical eigenvalue CDF (here, a degree-7 polynomial, following
+standard RMT practice and \citealp{luo2007}), so that the unfolded
+spacings have mean 1 everywhere in the spectrum and can be compared to
+$p(s)$ directly. All NNSD comparisons in this paper (Sec.~\ref{sec:tau-sweep},
+Fig.~\ref{fig:nnsd}) use unfolded spacings.
+\end{definition}
+
+\begin{definition}[Dyson Brownian motion]
+Dyson's (1962) model lets a GOE matrix's entries evolve as independent
+Brownian motions in time $t$; the induced dynamics on the eigenvalues
+$\{\lambda_i(t)\}$ satisfy the coupled SDE
+\[
+d\lambda_i = dB_i + \sum_{j\neq i}\frac{dt}{\lambda_i-\lambda_j},
+\]
+a Dyson Brownian motion \citep{dyson1962}: the eigenvalues perform
+independent Brownian motion \emph{plus} a deterministic
+Coulomb-gas repulsion term that diverges as any two eigenvalues
+approach each other, mechanically preventing crossings (level
+repulsion in continuous time, the dynamical counterpart of the static
+Wigner surmise above). \citet{aarts2024} show this same SDE, empirically,
+governs the eigenvalues of a neural network's weight matrices under
+SGD training; Sec.~\ref{sec:results-dyson} asks whether the same
+qualitative repulsion signature (a trajectory approaching, then
+visibly reopening, an adjacent trajectory rather than crossing it) is
+visible when ``time'' is instead sample size, applied directly to a
+real gene-correlation matrix rather than a trained model.
+\end{definition}
+
+\begin{remark}
+None of the four pieces above requires Gaussian gene-expression data in
+practice: the GOE/Poisson NNSD contrast, the Marchenko--Pastur bulk, and
+the repulsion mechanism are used here purely as \emph{null models} and
+\emph{qualitative diagnostics} against which the real, non-Gaussian
+TCGA-BRCA correlation matrices are compared --- exactly the same use
+Luo et al., K\"onig et al., and Aarts et al.\ make of them in their own,
+equally non-Gaussian, settings.
+\end{remark}
+
+\section*{Results}
+
+\subsection*{Cohorts}
+
+We used the RNA-seq expression matrix (RSEM, $\log_2(x+1)$, 20530
+genes $\times$ 1218 samples) and the matched clinical annotation (1247
+samples) for TCGA-BRCA, both downloaded from the UCSC Xena TCGA hub
+\citep{xena2020,tcga2012}, which mirrors the public, unrestricted TCGA
+data release and requires no login. TNBC status and luminal-A status
+are two independently recorded clinical fields in the same TCGA Nature
+2012 supplement (receptor immunohistochemistry for the former, PAM50
+subtype call \citep{pam502009} for the latter), not derived from one
+another. Intersecting these fields with the expression matrix gives
+$n=119$ TNBC and $n=430$ LumA patients with no overlap (4 patients
+flagged by both criteria were dropped from both cohorts as ambiguous).
+We selected the 1500 most variable genes across all 1218 samples
+\emph{before} splitting into cohorts, so gene selection cannot leak
+cohort-label information; this also keeps the $1500\times1500$
+eigendecompositions used below tractable. Table~\ref{tab:cohorts}
+summarizes the two cohorts.
+
+\begin{table}[h]
+\centering
+\caption{Real TCGA-BRCA cohorts used throughout this paper.}
+\label{tab:cohorts}
+\begin{tabular}{lccc}
+\toprule
+Cohort & $n$ (patients) & $p$ (genes) & $q=p/n$ \\
+\midrule
+TNBC (ER$-$/PR$-$/HER2$-$) & 119 & 1500 & 12.61 \\
+LumA (PAM50 call) & 430 & 1500 & 3.49 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Spectral denoising: spiked eigenvalues beyond the Marchenko--Pastur bulk}
+\label{sec:spiked}
+
+Before thresholding either cohort's correlation matrix into a network,
+we asked the more basic denoising question that motivates Line 1 of the
+program: how many of the $1500$ eigenvalue directions in each raw,
+unthresholded correlation matrix carry real signal, as opposed to
+sampling noise indistinguishable from a structureless null? Under the
+null of no true correlation structure, a $p\times n$ sample correlation
+matrix has eigenvalues confined, asymptotically, to the
+Marchenko--Pastur bulk $[\lambda_-,\lambda_+]$ with
+$\lambda_\pm=(1\pm\sqrt{q})^2$, $q=p/n$ \citep{marchenkopastur1967}; any
+eigenvalue exceeding $\lambda_+$ is a ``spike'' that cannot be
+explained by finite-sample noise alone and marks a real, low-rank
+correlation direction (a spiked covariance model; the transition
+behavior of such spikes near $\lambda_+$ is the Baik--Ben~Arous--P\'ech\'e,
+BBP, phenomenon underlying spectral denoising methods generally).
+\texttt{scripts/08\_spiked\_eigenvalues.py} counts these directly on the
+real, full correlation matrices (before any thresholding):
+
+\begin{table}[h]
+\centering
+\caption{Spiked eigenvalues (beyond the Marchenko--Pastur bulk) in each
+cohort's raw correlation matrix, all 1500 genes.}
+\label{tab:spiked}
+\begin{tabular}{lccccc}
+\toprule
+Cohort & $\lambda_+$ (MP edge) & spiked eigenvalues & \% of genes & \% of total variance & top eigenvalue \\
+\midrule
+TNBC & 20.706 & 14 & 0.9\% & 48.2\% & 157.94 \\
+LumA & 8.224 & 29 & 1.9\% & 57.3\% & 205.89 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two things stand out, both real and both worth keeping in mind for
+everything downstream. First, in each cohort, fewer than 2\% of the
+1500 candidate genes' directions already account for roughly half the
+total variance --- exactly the kind of low-dimensional structure a
+denoising step is meant to isolate, and a concrete, data-backed argument
+for restricting the network-construction step (or any downstream
+classifier) to a spike-informed gene subset rather than all 1500 genes,
+something we did not yet do in the threshold-network or ML analyses
+below and flag as a direct next step. Second, LumA's larger sample size
+gives it both a tighter MP bulk (smaller $\lambda_+$, since $q$ is
+smaller) and, correspondingly, more eigenvalues clearing that lower bar
+(29 vs.\ 14) --- a reminder, consistent with
+Sec.~\ref{sec:robustness} below, that raw eigenvalue counts across
+cohorts of very different size are not directly comparable without
+first accounting for $q$.
+
+\subsection*{RMT threshold selection separates TNBC from LumA}
+\label{sec:tau-sweep}
+
+For each cohort we built the Pearson gene--gene correlation matrix
+across patients, swept $|\tau|\in[0.15,0.80]$ in steps of $0.05$, and
+at each $\tau$ unfolded the thresholded matrix's eigenvalue spectrum
+(degree-7 polynomial fit to the empirical spectral CDF, standard RMT
+practice) and scored the resulting nearest-neighbor spacing
+distribution against the Poisson law $e^{-s}$ and the GOE Wigner
+surmise $\frac{\pi}{2}s\,e^{-\pi s^2/4}$ by Kolmogorov--Smirnov
+distance, following \citet{luo2007} exactly (implementation in
+\texttt{scripts/rmt\_threshold\_demo.py} and
+\texttt{scripts/02\_rmt\_network\_analysis.py}).
+
+The sparsest threshold at which the statistics turn GOE-like is
+$\tau^*=0.45$ for TNBC (14{,}498 edges among 1218 of the 1500 genes)
+and $\tau^*=0.25$ for LumA (146{,}100 edges among 1484 of the 1500
+genes). Figure~\ref{fig:tausweep} shows the full sweep for both
+cohorts, and Figure~\ref{fig:nnsd} shows the TNBC spacing distribution
+at $\tau^*$ against both null curves.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/fig1_nnsd_tnbc.pdf}
+\includegraphics[width=0.48\textwidth]{figures/fig2_tau_sweep.pdf}
+\caption{Left: unfolded nearest-neighbor spacing distribution for the
+TNBC network at $\tau^*=0.45$, against the Poisson and GOE (Wigner
+surmise) null curves. Right: Kolmogorov--Smirnov distance to each null
+curve as a function of threshold, for TNBC and LumA separately; the
+dotted line marks the selected $\tau^*$ in each panel.}
+\label{fig:nnsd}
+\label{fig:tausweep}
+\end{figure}
+
+Top-degree hub genes at each cohort's own $\tau^*$ share only one gene
+between the two networks (\emph{MFAP4}). The TNBC-specific hubs include
+\emph{PGR} (progesterone receptor) and \emph{IGF1}; the LumA-specific
+hubs include \emph{EGFR}, \emph{SFRP1}, and \emph{NGFR}. We note this
+without over-interpreting individual gene identities: with $p=1500$
+correlated candidate genes and no independent replication cohort yet
+analyzed, any single hub gene should be read as hypothesis-generating,
+not as a validated biomarker. \emph{PGR} appearing as a TNBC hub is
+biologically sensible despite TNBC being progesterone-receptor
+negative by definition: uniformly low, coordinately suppressed
+luminal-differentiation genes can still be tightly \emph{correlated}
+with one another even though none of them is highly \emph{expressed}
+--- correlation and expression level are different quantities, and the
+RMT method only ever sees the former. Table~\ref{tab:hubs} gives the
+full top-10 hub list with network degree for both cohorts.
+
+\begin{table}[h]
+\centering
+\caption{Top-10 hub genes by degree at each cohort's own $\tau^*$.
+LumA's higher degrees reflect its much larger $n$ (430 vs.\ 119),
+consistent with its lower $\tau^*$ and higher edge density
+(Tables~\ref{tab:tnbc-full}--\ref{tab:luma-full}) --- degree values
+should be compared within, not across, cohorts.}
+\label{tab:hubs}
+\begin{tabular}{lc|lc}
+\toprule
+\multicolumn{2}{c|}{TNBC ($\tau^*=0.45$, max degree 1499)} & \multicolumn{2}{c}{LumA ($\tau^*=0.25$, max degree 1499)} \\
+Gene & degree & Gene & degree \\
+\midrule
+ABCA8   & 173 & EGFR    & 629 \\
+CD300LG & 168 & SFRP1   & 600 \\
+DARC    & 162 & NGFR    & 593 \\
+MFAP4   & 157 & CNTNAP3 & 592 \\
+SDPR    & 157 & STAC    & 591 \\
+CCL14   & 156 & C2orf40 & 587 \\
+PGR     & 155 & FREM1   & 582 \\
+IGF1    & 151 & MFAP4   & 578 \\
+ATP1A2  & 151 & MME     & 574 \\
+C7      & 150 & SYN2    & 574 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{The TNBC/LumA threshold gap is not a sample-size artifact}
+\label{sec:robustness}
+
+TNBC ($n=119$) and LumA ($n=430$) have very different $p/n$ ratios
+(12.61 vs.\ 3.49), and a larger $q$ shifts the Marchenko--Pastur bulk
+edge outward \citep{marchenkopastur1967}, so $\tau^*=0.45$ vs.\
+$\tau^*=0.25$ is not, on its own, evidence that TNBC and LumA have
+genuinely different correlation structure --- it could simply reflect
+TNBC's smaller sample size. We tested this directly
+(\texttt{scripts/03\_matched\_n\_robustness.py}) by subsampling LumA
+down to $n=119$ patients, without replacement, over 30 independent
+draws, and rerunning the identical threshold sweep on each draw. The
+resulting distribution of LumA thresholds at matched $n$ is
+$\tau^*=0.360\pm0.020$ (mean $\pm$ s.d.\ over 30 draws), which is
+$4.5$ standard deviations below the native-$n$ TNBC value of $0.45$.
+The gap shrinks once sample size is matched (from $0.20$ to $0.09$)
+but does not close: at equal $n$, TNBC genuinely requires a higher
+correlation threshold before its network shows GOE-type structure,
+i.e.\ its coexpression signal is more diffuse relative to noise at the
+same sample size than LumA's, consistent with TNBC's greater molecular
+heterogeneity as a class \citep{foulkes2010}.
+
+\subsection*{Wavelet decomposition separates coarse- and fine-scale hub genes}
+\label{sec:wavelet}
+
+Following \citet{konig2006}, we ordered the 119 TNBC patients along the
+first principal component of their own (real) expression matrix ---
+the dominant axis of variation in this cohort, explaining $10.2\%$ of
+total variance, used here purely as an ordering, not as a claim about
+biological time --- and decomposed each gene's expression trace along
+that ordering with a Daubechies-4 discrete wavelet transform at level 3
+(\texttt{PyWavelets}, \citealp{pywavelets2019}). We reconstructed a
+\emph{coarse} signal per gene from the approximation coefficients alone
+(the slow trend along the ordering) and a \emph{fine} signal from the
+finest-scale detail coefficients alone (local, patient-to-patient
+fluctuation), then reran the identical RMT threshold-selection method
+on the coarse-signal and fine-signal correlation matrices separately
+(\texttt{scripts/04\_wavelet\_multiscale.py}).
+
+The coarse-scale network selects $\tau^*=0.70$, with hub genes
+including \emph{TFF1}, \emph{MLPH}, and \emph{HMGCS2}; the fine-scale
+network selects $\tau^*=0.50$, with hub genes including \emph{ABCA8},
+\emph{CD300LG}, and \emph{ADIPOQ}. \textbf{None of the ten top-degree
+hub genes at either scale appear in the other scale's top ten.} This is
+a direct, real-data instance of the phenomenon \citet{konig2006}
+report in \emph{E.\ coli} metabolic data: a single-scale threshold, by
+construction, can only see one of these two structures at a time, and
+which one it sees is not obviously the more biologically important
+one --- it depends entirely on where in the coarse/fine split the
+threshold happens to fall.
+
+\subsection*{Eigenvalue trajectories show Dyson-type level repulsion}
+\label{sec:results-dyson}
+
+To test whether the Dyson-Brownian-motion repulsion mechanism that
+\citet{aarts2024} observe in neural-network training dynamics is also
+visible directly in a real correlation matrix's spectrum, we tracked
+the top eight eigenvalues of the TNBC correlation matrix (restricted to
+the 60 most variable TNBC genes, for tractability) as the patient
+sample was grown one patient at a time, from $n=15$ to $n=119$, in a
+fixed random inclusion order --- so this is a genuine nested sequence
+of real matrices, not independent resamples
+(\texttt{scripts/05\_dyson\_eigenvalue\_trajectories.py}).
+
+Figure~\ref{fig:dyson} shows all eight trajectories. Four adjacent
+eigenvalue pairs ($\lambda_1$--$\lambda_2$, $\lambda_3$--$\lambda_4$,
+$\lambda_4$--$\lambda_5$, $\lambda_5$--$\lambda_6$,
+$\lambda_6$--$\lambda_7$, $\lambda_7$--$\lambda_8$) each reach a local
+minimum gap and then reopen by a factor of roughly five to ten within a
+few steps of $n$ --- a ``V-shaped'' approach-and-recede pattern
+characteristic of level repulsion rather than free crossing. The
+closest approach in the whole run is between $\lambda_7$ and
+$\lambda_8$ at $n=59$ (gap $0.0422$), reopening to $0.28$--$0.35$
+within five steps on either side (Figure~\ref{fig:avoided}, Table
+\ref{tab:repulsion}). One pair ($\lambda_2$--$\lambda_3$) is still
+narrowing at $n=119$, the end of the available sample; whether it
+would reopen or actually cross beyond the current cohort size cannot
+be determined from this data and is reported as inconclusive, not as a
+negative result for that pair.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/fig3_dyson_trajectories.pdf}
+\includegraphics[width=0.48\textwidth]{figures/fig4_avoided_crossing.pdf}
+\caption{Left: top-8 eigenvalue trajectories of the TNBC correlation
+matrix (60 most variable genes) as sample size $n$ grows from 15 to
+119, patients added one at a time in a fixed random order. Right:
+zoom on the closest approach, between $\lambda_7$ and $\lambda_8$ near
+$n=59$, showing the gap reopen rather than close to zero.}
+\label{fig:dyson}
+\label{fig:avoided}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\caption{Adjacent-eigenvalue gap at closest approach and five steps
+later, for each pair with a clear local minimum.}
+\label{tab:repulsion}
+\begin{tabular}{lccc}
+\toprule
+Pair & $n$ at closest approach & min.\ gap & gap 5 steps later \\
+\midrule
+$\lambda_1$--$\lambda_2$ & 26 & 0.448 & 3.699 \\
+$\lambda_3$--$\lambda_4$ & 19 & 0.259 & 1.770 \\
+$\lambda_4$--$\lambda_5$ & 35 & 0.071 & 0.550 \\
+$\lambda_5$--$\lambda_6$ & 19 & 0.077 & 0.417 \\
+$\lambda_6$--$\lambda_7$ & 54 & 0.055 & 0.419 \\
+$\lambda_7$--$\lambda_8$ & 59 & 0.042 & 0.284 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+We read this as preliminary but real evidence that the repulsion
+mechanism Dyson formalized for randomly evolving Hermitian matrices,
+and that \citet{aarts2024} find governing a classifier's weight
+matrices during training, is also directly observable in the spectrum
+of a real gene-coexpression correlation matrix as its sample size
+grows --- and therefore a plausible shared diagnostic for the data side
+and the model side of a recognition pipeline built on this data, as
+proposed originally in Line 6 of the wider research program. This is a
+single-cohort, single-gene-subset check; Sec.~\ref{sec:limitations}
+states explicitly what would be needed to strengthen it.
+
+\subsection*{Machine-learning recognition test: an honest null result}
+\label{sec:ml-results}
+
+We tested whether RMT hub genes (the union of TNBC's and LumA's own
+top-degree hub genes at their respective $\tau^*$, 20 genes total)
+carry more subtype-discriminative signal than 20 top-variance genes or
+20 randomly chosen genes from the same 1500-gene candidate pool, using
+a 5-fold stratified cross-validated logistic regression to distinguish
+TNBC from LumA on the combined 549-patient cohort
+(\texttt{scripts/06\_ml\_recognition.py}). Table~\ref{tab:ml} reports
+the result plainly.
+
+\begin{table}[h]
+\centering
+\caption{5-fold cross-validated TNBC-vs-LumA classification, 549
+patients, 20 features per set.}
+\label{tab:ml}
+\begin{tabular}{lcc}
+\toprule
+Feature set & Accuracy & ROC-AUC \\
+\midrule
+Random (20 genes) & $0.982\pm0.008$ & $0.985\pm0.018$ \\
+Top-variance (20 genes) & $0.980\pm0.007$ & $0.989\pm0.013$ \\
+RMT hub genes (20 genes) & $0.982\pm0.011$ & $0.988\pm0.013$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All three feature sets --- including a random one --- classify TNBC
+against LumA at $\approx\!98\%$ accuracy. This is an honest null
+result, not a failure to report: TNBC and LumA are defined by receptor
+status and PAM50 call respectively, both of which are themselves
+strongly transcriptional signals, so essentially any moderately sized
+gene panel separates them almost perfectly (a ceiling effect). This
+task is therefore the wrong benchmark for showing that RMT- or
+wavelet-selected features add value over generic ones. A harder,
+clinically more relevant benchmark --- discriminating within-TNBC
+subgroups, or predicting recurrence/survival from
+\texttt{OS\_event}/\texttt{OS\_Time} in the same clinical matrix --- is
+the direct next step and is stated as such in
+Sec.~\ref{sec:limitations}, not attempted here without first securing
+enough events for a properly powered survival analysis.
+
+\section*{Discussion}
+\label{sec:limitations}
+
+Three of the six original program lines are backed by real analysis in
+this paper (RMT coexpression thresholding, multiscale wavelet
+decomposition, and a first Dyson-repulsion diagnostic), one is tested
+and reported as a genuine null (ML recognition on the TNBC-vs-LumA
+task), and two are not yet attempted with real data: 3D genomic
+structure (Hi-C) and single-cell resolution. We had already identified
+concrete real public datasets for both --- GSE176078 (TNBC single-cell
+RNA-seq, 10 patients) for the latter --- and downloading and running
+the same RMT/wavelet machinery on single-cell data, where $n$ (cells)
+can reach the thousands and $p/n$ inverts relative to the bulk case
+studied here, is the direct next step for Line 4. No public Hi-C
+dataset specific to this cohort has yet been identified; Line 3 remains
+at the proposal stage.
+
+The Dyson-repulsion result (Sec.~Results) is the newest and least
+tested of the four executed lines: it uses one cohort, one 60-gene
+subset chosen by variance, and one random patient-inclusion order.
+Repeating the trajectory scan over multiple random orders and reporting
+whether the same pairs repel reproducibly, rather than the specific
+$n$ at which they do so, would turn this from a single illustrative
+run into a statement with a confidence interval.
+
+The classification ceiling effect in Table~\ref{tab:ml} is itself an
+argument for redirecting the ML line toward harder, clinically framed
+tasks rather than toward a different feature-selection method on the
+same easy task: TNBC-vs-LumA is close to solved by construction, and no
+amount of better feature engineering will show a visible gap on it.
+
+All numbers reported above come directly from the six scripts in
+\texttt{scripts/}, run against the two real cohorts in
+\texttt{data/TCGA-BRCA/}; none are estimated, recalled, or adjusted
+after the fact. Re-running \texttt{scripts/01\_build\_cohorts.py}
+through \texttt{scripts/07\_make\_figures.py} in order reproduces every
+number and figure in this paper from the raw downloaded files.
+
+\section*{Roadmap for the lines not yet run on real data}
+\label{sec:roadmap}
+
+\subsection*{Line 3: 3D genomic structure (Hi-C)}
+No Hi-C dataset specific to this TNBC/LumA comparison has yet been
+identified as publicly available at patient-cohort scale (most public
+breast-cancer Hi-C is cell-line-only, e.g.\ MCF-7/MCF-10A, which would
+compare cell lines rather than patients and so would not be directly
+comparable to the TCGA-BRCA patient cohorts used above). The concrete
+next step is to first check ENCODE and the 4D Nucleome data portal for
+any patient-derived or PDX (patient-derived xenograft) TNBC Hi-C
+release, and, failing that, to treat cell-line Hi-C as a separate,
+smaller proof-of-concept: build a contact-matrix correlation structure
+per chromosome, and apply the identical RMT threshold-selection
+machinery from Sec.~\ref{sec:tau-sweep} to contact-frequency
+correlations instead of expression correlations, which requires no new
+methodology, only new data.
+
+\subsection*{Line 4: single-cell resolution}
+GSE176078 \citep{tnbcsc2021} --- TNBC single-cell RNA-seq across 10
+patients --- was already identified in the original proposal and is
+public. The concrete next step is to download it, restrict to a
+comparably sized, variance-selected gene panel per the same protocol as
+Sec.~\ref{sec:cohorts-methods}, and rerun
+Secs.~\ref{sec:tau-sweep}--\ref{sec:results-dyson} at the single-cell
+level, where $n$ (cells) is two to three orders of magnitude larger
+than the patient-level $n=119$ used here and $q=p/n$ correspondingly
+much smaller --- a regime where the Marchenko--Pastur bulk is tighter
+(Sec.~\ref{sec:math}) and the RMT method is, in principle, more
+sensitive. The Dyson-trajectory diagnostic of
+Sec.~\ref{sec:results-dyson} is particularly well suited to single-cell
+data, since cells can be ordered along a real biological pseudo-time
+(rather than the PC1 proxy used for bulk patients in
+Sec.~\ref{sec:wavelet}) using standard single-cell trajectory-inference
+tools, giving the eigenvalue-trajectory scan an actual temporal, rather
+than merely ordinal, axis.
+
+\subsection*{Line 6b: Dyson dynamics of the classifier itself}
+Sec.~\ref{sec:results-dyson} tracks the \emph{data}'s correlation-matrix
+eigenvalues as sample size grows; \citet{aarts2024}'s result is about
+the \emph{model}'s weight-matrix eigenvalues during training. Applying
+the same trajectory-and-repulsion diagnostic
+(Sec.~\ref{sec:results-dyson}'s methodology, unchanged) to the weight
+matrix of a classifier trained on this data --- for instance, the
+logistic-regression models already trained in
+Sec.~\ref{sec:ml-results}, replaced with a small multi-layer network
+whose weight-matrix spectrum can be tracked across SGD epochs --- is a
+direct, low-cost extension: the repulsion-detection code in
+\texttt{scripts/05\_dyson\_eigenvalue\_trajectories.py} does not care
+whether the matrix sequence it is handed comes from growing $n$ or from
+successive SGD steps, so applying it to training dynamics is a data
+plumbing change, not a new method.
+
+\subsection*{RMT threshold vs.\ ARACNE on the same cohort}
+The comparison sketched in Background --- RMT spectral thresholding
+against the group's own bootstrap-calibrated ARACNE/NIMEA pipeline
+--- can be run directly on the TNBC cohort already built in
+\texttt{data/TCGA-BRCA/tnbc\_expr.csv}: both methods take the same
+gene-by-patient matrix as input and each returns a thresholded network
+and a hub/module list, so the natural first check is how much the two
+methods' hub genes and modules agree, using the group's existing
+\texttt{parallel-aracne} pipeline unmodified and comparing its output
+against Table~\ref{tab:hubs} directly.
+
+\section*{Conclusions}
+
+Combining a static RMT correlation threshold, a wavelet multiscale
+decomposition, and a Dyson-repulsion eigenvalue diagnostic into one
+pipeline, and running that pipeline once on real TCGA-BRCA data, is
+enough to surface real, non-trivial structure: a sample-size-robust
+difference in coexpression-network density between TNBC and luminal A,
+a clean separation between coarse- and fine-scale hub genes that a
+single-scale method would have conflated, and a first real-data sighting
+of level repulsion among coexpression-matrix eigenvalues as sample size
+grows. It is also enough to surface a real negative result --- that
+TNBC-vs-LumA classification is too easy a benchmark to distinguish
+feature-selection methods --- which is exactly the kind of finding a
+validation-first collaboration should want reported rather than
+quietly dropped. The next concrete steps, in order of how directly they
+extend what is already running, are: reproducing the repulsion result
+across multiple random orders with a confidence interval; applying the
+same RMT/wavelet pipeline to GSE176078 single-cell data at the
+resolution Line 4 originally proposed; and replacing the classification
+benchmark with a within-TNBC or survival-outcome task where a
+feature-selection advantage, if real, would actually be visible.
+
+\section*{Methods}
+
+\subsection*{Data}
+\label{sec:cohorts-methods}
+
+RNA-seq expression (RSEM, $\log_2(x+1)$-normalized, 20530 genes,
+1218 samples) and clinical annotation (1247 samples, TCGA Nature 2012
+supplement fields) for TCGA-BRCA were downloaded from the UCSC Xena
+TCGA hub \citep{xena2020,tcga2012} on 4 September 2026
+(\texttt{data/TCGA-BRCA/HiSeqV2.gz},
+\texttt{data/TCGA-BRCA/BRCA\_clinicalMatrix}); both files are public
+and required no authentication. TNBC status was defined as
+\texttt{ER\_Status\_nature2012 == Negative} \textbf{and}
+\texttt{PR\_Status\_nature2012 == Negative} \textbf{and}
+\texttt{HER2\_Final\_Status\_nature2012 == Negative}; LumA status as
+\texttt{PAM50Call\_RNAseq == LumA} \citep{pam502009}. Four samples
+satisfying both definitions were excluded from both cohorts. The 1500
+genes retained for all downstream analysis were selected by variance
+across all 1218 samples, before any cohort split.
+
+\subsection*{RMT threshold selection}
+
+For a correlation matrix $C$ and threshold $\tau$, we form
+$A_{ij}=C_{ij}\,\mathbb{1}[|C_{ij}|\ge\tau]$ for $i\neq j$ and
+$A_{ii}=0$, and compute its eigenvalues $\{\lambda_k\}$. The spectrum is
+unfolded by fitting a degree-7 polynomial to the empirical cumulative
+distribution of $\{\lambda_k\}$ and rescaling so mean spacing is 1
+\citep{luo2007}. Unfolded nearest-neighbor spacings $\{s_k\}$ are
+compared by Kolmogorov--Smirnov distance against the Poisson CDF
+$1-e^{-s}$ and the GOE Wigner-surmise CDF $1-e^{-\pi s^2/4}$; the
+regime at each $\tau$ is whichever null has the smaller KS statistic.
+$\tau^*$ is the largest $\tau$, scanning from sparse to dense, at which
+the regime has just switched from Poisson to GOE --- the sparsest
+network that already shows non-random structure, following
+\citet{luo2007}. The Marchenko--Pastur bulk edge for a $p\times n$
+correlation matrix under the null is
+$\lambda_\pm=(1\pm\sqrt{p/n})^2$ \citep{marchenkopastur1967}, reported
+alongside each cohort for reference but not used directly in threshold
+selection. Hub genes are ranked by degree in the thresholded network at
+$\tau^*$; the inverse participation ratio
+$\mathrm{IPR}_k=\sum_i v_{i,k}^4$ of each eigenvector (unit-normalized)
+is computed as a complementary localization diagnostic.
+
+\subsection*{Wavelet decomposition}
+
+TNBC patients were ordered by the first left singular vector (PC1) of
+the mean-centered $1500\times119$ expression matrix. Each gene's
+119-point expression trace along this ordering was decomposed with a
+level-3 Daubechies-4 discrete wavelet transform (\texttt{PyWavelets}
+\citealp{pywavelets2019}); a coarse reconstruction keeps only the
+approximation coefficients (all detail coefficients zeroed), a fine
+reconstruction keeps only the finest-level detail coefficients (the
+approximation and all coarser detail coefficients zeroed). Correlation
+matrices and RMT threshold selection were then computed identically on
+the coarse and fine reconstructions.
+
+\subsection*{Dyson eigenvalue trajectories}
+
+Restricting to the 60 most variable TNBC genes, patients were placed in
+one fixed random order (seed 1) and the correlation matrix
+$C(X_{:,1:n})$ recomputed for every $n=15,\dots,119$; the top 8
+eigenvalues of each $C(X_{:,1:n})$ form the trajectories in
+Figure~\ref{fig:dyson}. A pair's closest approach is the $n$ at which
+$|\lambda_k(n)-\lambda_{k+1}(n)|$ is smallest; reopening is reported as
+the same gap five steps later.
+
+\subsection*{Machine learning}
+
+Logistic regression (\texttt{scikit-learn}, \citealp{sklearn2011}) with
+feature standardization, evaluated by 5-fold stratified cross-validation
+(accuracy and ROC-AUC, random state fixed) on the combined 549-patient
+TNBC+LumA cohort, for three 20-gene feature sets: a uniformly random
+draw from the 1500 candidate genes; the top 20 by variance across the
+combined cohort; and the union of TNBC's and LumA's own RMT hub genes
+at their respective $\tau^*$ (deduplicated, truncated to 20).
+
+\subsection*{Code and reproducibility}
+
+All analysis code is in \texttt{scripts/01\_build\_cohorts.py} through
+\texttt{scripts/07\_make\_figures.py}, numbered in the order they must
+be run; every number and figure in this paper is produced directly by
+this code from the two raw downloaded files, with no intermediate
+manual editing of results.
+
+\section*{Declarations}
+
+\subsection*{Availability of data and materials}
+TCGA-BRCA expression and clinical data are public and available from
+the UCSC Xena TCGA hub (\url{https://tcga.xenahubs.net}). No
+proprietary or restricted-access data were used in this paper.
+
+\subsection*{Competing interests}
+The authors declare no competing interests.
+
+\bibliographystyle{plainnat}
+\begin{thebibliography}{99}
+
+\bibitem[Foulkes et al.(2010)]{foulkes2010}
+W.~D.~Foulkes, I.~E.~Smith, J.~S.~Reis-Filho,
+\newblock ``Triple-Negative Breast Cancer,''
+\newblock \emph{New England Journal of Medicine} \textbf{363}(20), 1938--1948 (2010).
+
+\bibitem[Multilayer(2021)]{multilayer2021}
+Grupo Hern\'andez-Lemus,
+\newblock ``An Information Theoretical Multilayer Network Approach to Breast Cancer Transcriptional Regulation,''
+\newblock \emph{Frontiers in Genetics}, 2021.
+
+\bibitem[$k$-core(2021)]{kcore2021}
+Grupo Hern\'andez-Lemus,
+\newblock ``$k$-core genes underpin structural features of breast cancer,''
+\newblock \emph{Scientific Reports}, 2021.
+
+\bibitem[Multi-omic(2022)]{multiomic2022}
+Grupo Hern\'andez-Lemus,
+\newblock ``Functional impact of multi-omic interactions in breast cancer subtypes,''
+\newblock \emph{Frontiers in Genetics}, 2022.
+
+\bibitem[Margolin et al.(2006)]{margolin2006}
+A.~A.~Margolin, I.~Nemenman, K.~Basso, C.~Wiggins, G.~Stolovitzky, R.~Dalla~Favera, A.~Califano,
+\newblock ``ARACNE: An Algorithm for the Reconstruction of Gene Regulatory Networks in a Mammalian Cellular Context,''
+\newblock \emph{BMC Bioinformatics} \textbf{7}(Suppl 1), S7 (2006).
+
+\bibitem[Luo et al.(2007)]{luo2007}
+F.~Luo, Y.~Yang, J.~Zhong, H.~Gao, L.~Khan, D.~K.~Thompson, J.~Zhou,
+\newblock ``Constructing gene co-expression networks and predicting functions of unknown genes by random matrix theory,''
+\newblock \emph{BMC Bioinformatics} \textbf{8}, 299 (2007).
+
+\bibitem[Gao et al.(2012)]{gao2012}
+\newblock ``Massive-scale gene co-expression network construction and robustness testing using random matrix theory,''
+\newblock \emph{PLOS ONE} (2012). \url{https://doi.org/10.1371/journal.pone.0055871}
+
+\bibitem[Sci.\ Rep.(2018)]{cancer2018}
+\newblock ``Random matrix analysis for gene interaction networks in cancer cells,''
+\newblock \emph{Scientific Reports} \textbf{8} (2018). \url{https://doi.org/10.1038/s41598-018-28954-1}
+
+\bibitem[K\"onig et al.(2006)]{konig2006}
+R.~K\"onig, G.~Schramm, M.~Oswald, et al.,
+\newblock ``Discovering functional gene expression patterns in the metabolic network of \emph{Escherichia coli} with wavelets transforms,''
+\newblock \emph{BMC Bioinformatics} \textbf{7}, 119 (2006).
+
+\bibitem[Dyson(1962)]{dyson1962}
+F.~J.~Dyson,
+\newblock ``A Brownian-Motion Model for the Eigenvalues of a Random Matrix,''
+\newblock \emph{Journal of Mathematical Physics} \textbf{3}, 1191--1198 (1962).
+
+\bibitem[Aarts et al.(2024)]{aarts2024}
+G.~Aarts, O.~Hajizadeh, B.~Lucini, C.~Park,
+\newblock ``Dyson Brownian motion and random matrix dynamics of weight matrices during learning,''
+\newblock arXiv:2411.13512 (2024). NeurIPS 2024 Workshop on Machine Learning and the Physical Sciences.
+
+\bibitem[Marchenko \& Pastur(1967)]{marchenkopastur1967}
+V.~A.~Marchenko, L.~A.~Pastur,
+\newblock ``Distribution of eigenvalues for some sets of random matrices,''
+\newblock \emph{Mathematics of the USSR-Sbornik} \textbf{1}(4), 457--483 (1967).
+
+\bibitem[TCGA(2012)]{tcga2012}
+The Cancer Genome Atlas Network,
+\newblock ``Comprehensive molecular portraits of human breast tumours,''
+\newblock \emph{Nature} \textbf{490}, 61--70 (2012).
+
+\bibitem[Goldman et al.(2020)]{xena2020}
+M.~J.~Goldman, B.~Craft, M.~Hastie, et al.,
+\newblock ``Visualizing and interpreting cancer genomics data via the Xena platform,''
+\newblock \emph{Nature Biotechnology} \textbf{38}, 675--678 (2020).
+
+\bibitem[Parker et al.(2009)]{pam502009}
+J.~S.~Parker, M.~Mullins, M.~C.~U.~Cheang, et al.,
+\newblock ``Supervised Risk Predictor of Breast Cancer Based on Intrinsic Subtypes,''
+\newblock \emph{Journal of Clinical Oncology} \textbf{27}(8), 1160--1167 (2009).
+
+\bibitem[Pedregosa et al.(2011)]{sklearn2011}
+F.~Pedregosa, G.~Varoquaux, A.~Gramfort, et al.,
+\newblock ``Scikit-learn: Machine Learning in Python,''
+\newblock \emph{Journal of Machine Learning Research} \textbf{12}, 2825--2830 (2011).
+
+\bibitem[Lee et al.(2019)]{pywavelets2019}
+G.~R.~Lee, R.~Gommers, F.~Wasilewski, K.~Wohlfahrt, A.~O'Leary,
+\newblock ``PyWavelets: A Python package for wavelet analysis,''
+\newblock \emph{Journal of Open Source Software} \textbf{4}(36), 1237 (2019).
+
+\bibitem[Multi-omics TNBC(2021)]{tnbcmultiomics2021}
+\newblock ``Multi-omics data integration reveals correlated regulatory features of triple negative breast cancer,''
+\newblock \emph{Molecular Omics} (2021). Data: GEO GSE171958, ProteomeXchange PXD025238.
+\newblock \url{https://doi.org/10.1039/D1MO00117E}
+
+\bibitem[scRNA-seq TNBC(2021)]{tnbcsc2021}
+\newblock ``Single-cell RNA-seq of triple negative breast cancer tumors (10 patients),''
+\newblock GEO accession GSE176078.
+\newblock \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE176078}
+
+\end{thebibliography}
+
+\appendix
+\section*{Appendix: full threshold sweep}
+
+Tables~\ref{tab:tnbc-full} and \ref{tab:luma-full} give the complete
+sweep underlying Fig.~\ref{fig:tausweep} and Sec.~\ref{sec:tau-sweep},
+reproduced verbatim from \texttt{results/tnbc\_rmt.csv} and
+\texttt{results/luma\_rmt.csv}.
+
+\begin{table}[h]
+\centering
+\caption{Full TNBC threshold sweep.}
+\label{tab:tnbc-full}
+\begin{tabular}{cccccc}
+\toprule
+$\tau$ & edges & density & KS(Poisson) & KS(GOE) & regime \\
+\midrule
+0.15 & 383911 & 0.3415 & 0.1935 & 0.1050 & GOE \\
+0.20 & 238751 & 0.2124 & 0.2067 & 0.0949 & GOE \\
+0.25 & 142388 & 0.1267 & 0.2191 & 0.0772 & GOE \\
+0.30 & 82197  & 0.0731 & 0.2074 & 0.0947 & GOE \\
+0.35 & 46347  & 0.0412 & 0.2006 & 0.1272 & GOE \\
+0.40 & 25911  & 0.0230 & 0.1986 & 0.1670 & GOE \\
+\textbf{0.45} & \textbf{14498} & \textbf{0.0129} & \textbf{0.2504} & \textbf{0.2369} & \textbf{GOE ($\tau^*$)} \\
+0.50 & 7984   & 0.0071 & 0.3476 & 0.3919 & Poisson \\
+0.55 & 4391   & 0.0039 & 0.4246 & 0.5013 & Poisson \\
+0.60 & 2413   & 0.0021 & 0.4507 & 0.5428 & Poisson \\
+0.65 & 1389   & 0.0012 & 0.4715 & 0.5493 & Poisson \\
+0.70 & 814    & 0.0007 & 0.5442 & 0.6313 & Poisson \\
+0.75 & 478    & 0.0004 & 0.4712 & 0.5614 & Poisson \\
+0.80 & 258    & 0.0002 & 0.4217 & 0.4980 & Poisson \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Full LumA threshold sweep.}
+\label{tab:luma-full}
+\begin{tabular}{cccccc}
+\toprule
+$\tau$ & edges & density & KS(Poisson) & KS(GOE) & regime \\
+\midrule
+0.15 & 347733 & 0.3093 & 0.2008 & 0.1106 & GOE \\
+0.20 & 223750 & 0.1990 & 0.1968 & 0.1222 & GOE \\
+\textbf{0.25} & \textbf{146100} & \textbf{0.1300} & \textbf{0.1899} & \textbf{0.1321} & \textbf{GOE ($\tau^*$)} \\
+0.30 & 98072  & 0.0872 & 0.1649 & 0.1653 & Poisson \\
+0.35 & 68007  & 0.0605 & 0.1763 & 0.1845 & Poisson \\
+0.40 & 47940  & 0.0426 & 0.1988 & 0.2305 & Poisson \\
+0.45 & 34153  & 0.0304 & 0.2587 & 0.2875 & Poisson \\
+0.50 & 24361  & 0.0217 & 0.3129 & 0.3706 & Poisson \\
+0.55 & 17034  & 0.0152 & 0.3902 & 0.4708 & Poisson \\
+0.60 & 11560  & 0.0103 & 0.4490 & 0.5313 & Poisson \\
+0.65 & 7427   & 0.0066 & 0.5182 & 0.6094 & Poisson \\
+0.70 & 4493   & 0.0040 & 0.5495 & 0.6333 & Poisson \\
+0.75 & 2553   & 0.0023 & 0.5911 & 0.6804 & Poisson \\
+0.80 & 1389   & 0.0012 & 0.4985 & 0.5881 & Poisson \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
