@@ -1093,14 +1093,16 @@ problem; and TNBC-vs-LumA classification is close to a ceiling that a
 genetic-algorithm search can nudge but not meaningfully break, so it
 does not discriminate feature-selection methods either way. Two
 lines are not yet attempted with real data at all: 3D genomic
-structure (Hi-C) and single-cell resolution. We had already identified
-concrete real public datasets for both --- GSE176078 (TNBC single-cell
-RNA-seq, 10 patients) for the latter --- and downloading and running
-the same RMT machinery on single-cell data, where $n$ (cells)
+structure (Hi-C) and single-cell resolution. Concrete real public
+datasets are identified for both --- GSE176078 (TNBC single-cell
+RNA-seq, 10 patients) for the latter, and GSE167150 (TNBC Hi-C with
+matched contralateral healthy tissue, \citealp{reyesgopar2025}) for
+the former, found only after an earlier round of this paper reported
+no such Hi-C dataset as identified --- and downloading and running the
+same RMT machinery on either, single-cell data (where $n$, now cells,
 can reach the thousands and $p/n$ inverts relative to the bulk case
-studied here, is the direct next step for Line 4. No public Hi-C
-dataset specific to this cohort has yet been identified; Line 3 remains
-at the proposal stage.
+studied here) or Hi-C contact matrices (chromosome by chromosome), is
+the direct next step for both Line 3 and Line 4.
 
 The Dyson-repulsion result (Sec.~\ref{sec:results-dyson}) was, in an
 earlier round, the newest and least tested of the four executed lines,
@@ -1132,19 +1134,24 @@ downloaded files.
 \label{sec:roadmap}
 
 \subsection{Line 3: 3D genomic structure (Hi-C)}
-No Hi-C dataset specific to this TNBC/LumA comparison has yet been
-identified as publicly available at patient-cohort scale (most public
-breast-cancer Hi-C is cell-line-only, e.g.\ MCF-7/MCF-10A, which would
-compare cell lines rather than patients and so would not be directly
-comparable to the TCGA-BRCA patient cohorts used above). The concrete
-next step is to first check ENCODE and the 4D Nucleome data portal for
-any patient-derived or PDX (patient-derived xenograft) TNBC Hi-C
-release, and, failing that, to treat cell-line Hi-C as a separate,
-smaller proof-of-concept: build a contact-matrix correlation structure
-per chromosome, and apply the identical RMT threshold-selection
-machinery from Sec.~\ref{sec:tau-sweep} to contact-frequency
-correlations instead of expression correlations, which requires no new
-methodology, only new data.
+This line was reported as blocked, in an earlier round, for lack of a
+public patient-cohort-scale TNBC Hi-C dataset; that claim no longer
+holds. \citet{reyesgopar2025} --- Hern\'andez-Lemus's own group ---
+published patient-derived TNBC Hi-C data with matched contralateral
+healthy tissue (GEO accession GSE167150, processed with HiC-Pro at
+40\,kb resolution, chromosome-specific intrachromosomal networks built
+via a non-central-hypergeometric significance model) exactly one
+paper we had not yet found when this Roadmap item was first written.
+The concrete next step is now data acquisition, not a search for
+whether the data exists: download GSE167150, build the same
+contact-matrix correlation structure per chromosome, and apply the
+identical RMT threshold-selection machinery from
+Sec.~\ref{sec:tau-sweep} to contact-frequency correlations instead of
+expression correlations --- no new methodology, only the data this
+paper did not yet have. \citet{reyesgopar2025}'s own network measures
+(Jaccard similarity between normal and TNBC networks, degree and
+Z-weighted degree, hub identification) are, themselves, a natural
+point of comparison for whatever the RMT threshold selects.
 
 \subsection{Line 5 revisited: applying the validated wavelet method to real signal}
 The synthetic positive control (Results) already confirms the
@@ -1168,7 +1175,14 @@ whether any spike loads across layers rather than within a single one
 --- a real, checkable version of the ``multi-omic denoising'' claim in
 Line 1 of the original proposal, not attempted here since GSE171958
 covers only three cell lines, too few for the patient-cohort framing
-used throughout this paper.
+used throughout this paper. \citet{hernandezlemusochoa2024} survey the
+statistical, machine-learning, and network-based methods actually used
+for this kind of integration in cancer more broadly, including the
+variable-selection and normalization concerns (LASSO-type penalization,
+platform-specific scaling) directly relevant to the block-correlation
+extension proposed above; this review, by one of this paper's own
+co-authors, is the natural methodological reference for that next
+step rather than a general literature search.
 
 \subsection{Line 4: single-cell resolution}
 GSE176078 \citep{tnbcsc2021} --- TNBC single-cell RNA-seq across 10
@@ -1482,6 +1496,11 @@ A.~A.~Hagberg, D.~A.~Schult, P.~J.~Swart,
 \newblock ``Exploring Network Structure, Dynamics, and Function using NetworkX,''
 \newblock in \emph{Proceedings of the 7th Python in Science Conference (SciPy2008)}, 11--15 (2008).
 
+\bibitem[Hern\'andez-Lemus \& Ochoa(2024)]{hernandezlemusochoa2024}
+E.~Hern\'andez-Lemus, S.~Ochoa,
+\newblock ``Methods for multi-omic data integration in cancer research,''
+\newblock \emph{Frontiers in Genetics} \textbf{15}, 1425456 (2024).
+
 \bibitem[$k$-core(2021)]{kcore2021}
 R.~Dorantes-Gilardi, D.~Garc\'ia-Cort\'es, E.~Hern\'andez-Lemus, J.~Espinal-Enr\'iquez,
 \newblock ``$k$-core genes underpin structural features of breast cancer,''
@@ -1546,6 +1565,11 @@ J.~S.~Parker, M.~Mullins, M.~C.~U.~Cheang, et al.,
 F.~Passerini, S.~Severini,
 \newblock ``Quantifying Complexity in Networks: The Von Neumann Entropy,''
 \newblock \emph{International Journal of Agent Technologies and Systems} \textbf{1}(4), 58--67 (2009).
+
+\bibitem[Reyes-Gopar et al.(2025)]{reyesgopar2025}
+H.~Reyes-Gopar, K.~A.~P\'erez-Fuentes, M.~L.~Bendall, E.~Hern\'andez-Lemus,
+\newblock ``Integration of chromosome conformation and gene expression networks reveals regulatory mechanisms in triple negative breast cancer,''
+\newblock \emph{Frontiers in Cell and Developmental Biology} \textbf{13}, 1597245 (2025). Data: GEO GSE167150.
 
 \bibitem[Pedregosa et al.(2011)]{sklearn2011}
 F.~Pedregosa, G.~Varoquaux, A.~Gramfort, et al.,
