@@ -99,17 +99,21 @@ if __name__ == "__main__":
           f"CV accuracy = {best.fitness.values[0]:.4f}")
     print(f"Genes: {best_genes}")
 
-    # ROC-AUC of the final best panel, for direct comparison with Table tab:ml
+    # Full accuracy/ROC-AUC (mean +/- std over folds) of the final best
+    # panel, for direct, consistently-formatted comparison with the other
+    # three feature sets in Table tab:ml.
     Xf = X_all[best_idx].T
     clf = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
-    auc = cross_val_score(clf, Xf, y, cv=cv, scoring="roc_auc").mean()
-    print(f"ROC-AUC of final GA panel: {auc:.4f}")
+    acc_scores = cross_val_score(clf, Xf, y, cv=cv, scoring="accuracy")
+    auc_scores = cross_val_score(clf, Xf, y, cv=cv, scoring="roc_auc")
+    print(f"Final panel accuracy: {acc_scores.mean():.4f}+/-{acc_scores.std():.4f}")
+    print(f"Final panel ROC-AUC: {auc_scores.mean():.4f}+/-{auc_scores.std():.4f}")
 
     pd.DataFrame({"generation": list(range(N_GEN)),
                   "best_cv_accuracy": best_per_gen}).to_csv(
         "../results/ga_feature_selection_history.csv", index=False)
     with open("../results/ga_feature_selection_summary.txt", "w") as f:
         f.write(f"Final panel ({len(best_idx)} genes): {best_genes}\n")
-        f.write(f"CV accuracy: {best.fitness.values[0]:.4f}\n")
-        f.write(f"ROC-AUC: {auc:.4f}\n")
+        f.write(f"CV accuracy: {acc_scores.mean():.4f}+/-{acc_scores.std():.4f}\n")
+        f.write(f"ROC-AUC: {auc_scores.mean():.4f}+/-{auc_scores.std():.4f}\n")
     print("Saved results/ga_feature_selection_history.csv and _summary.txt")

@@ -1,3 +1,3 @@
 Final panel (20 genes): ['COL2A1', 'LTF', 'KLK6', 'RIMS4', 'FGF10', 'NTNG1', 'SEZ6L', 'ABCC12', 'FCRL5', 'GPR12', 'KIF12', 'LOC96610', 'RP1', 'GREB1', 'CT62', 'ADAM33', 'BAIAP3', 'PAX9', 'FSTL4', 'PRR11']
-CV accuracy: 0.9945
-ROC-AUC: 0.9962
+CV accuracy: 0.9945+/-0.0109
+ROC-AUC: 0.9962+/-0.0076
