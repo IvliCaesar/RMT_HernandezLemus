@@ -59,3 +59,11 @@ ax.set_aspect("equal")
 fig.tight_layout()
 fig.savefig("../figures/fig5_dyson_vector_field.pdf")
 print("Saved figures/fig5_dyson_vector_field.pdf")
+
+# NOTE: a streamplot version was tried and discarded -- this field only
+# ever moves parallel to the (1,-1) direction (its value is
+# +-(1,-1)/|lambda_i-lambda_j|, never rotational), so matplotlib's
+# streamplot integrator produces a spurious closed-loop artifact near
+# the diagonal that does not reflect the true field. The quiver plot
+# above is the honest representation; do not "fix" this by re-adding
+# a streamplot without first checking the artifact is gone.
