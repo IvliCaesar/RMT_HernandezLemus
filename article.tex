@@ -9,6 +9,7 @@
 
 \newtheorem{definition}{Definition}
 \newtheorem{remark}{Remark}
+\newtheorem{proposition}{Proposition}
 
 \title{Random Matrix Theory and Dyson-Brownian-Motion Diagnostics for \\
 Breast Cancer Coexpression Networks: A Monte-Carlo-Validated \\
@@ -163,6 +164,7 @@ rest of the paper uses, since each plays a distinct role and the
 distinctions matter for how the results should be read.
 
 \begin{definition}[Wigner ensemble and the GOE]
+\label{def:goe}
 A Gaussian orthogonal ensemble (GOE) matrix is a real symmetric
 $N\times N$ matrix $H$ with $H_{ii}\sim\mathcal N(0,2)$ and
 $H_{ij}=H_{ji}\sim\mathcal N(0,1)$ ($i<j$) independently. As
@@ -216,6 +218,30 @@ reason the semicircle/GOE machinery generalizes so far beyond Gaussian
 random matrices in the first place: free probability, not Gaussianity,
 is the real source of the universality being leaned on throughout
 Sec.~\ref{sec:tau-sweep} and Sec.~\ref{sec:montecarlo}.
+\end{remark}
+
+\begin{remark}[Four-moment universality: why finite, non-Gaussian data is not a problem]
+The free-probability remark above addresses the $N\to\infty$ limit;
+a sharper, finite-$N$ statement addresses the objection that TCGA-BRCA
+expression data is not Gaussian at all. \citet{taovu2011} proved a
+Four Moment Theorem: local eigenvalue statistics of a Wigner
+matrix (spacing distributions, correlation functions, and in
+particular the GOE/Wigner-surmise statistics used throughout
+Sec.~\ref{sec:tau-sweep}) are determined, to leading order, only by
+the first four moments of the entry distribution, for both Hermitian
+and real symmetric ensembles --- two matrices with matching mean,
+variance, skewness, and kurtosis have asymptotically indistinguishable
+local spectral statistics, regardless of whether either is Gaussian.
+\citet{taovu2012} extend this specifically to sample covariance/
+correlation matrices, the exact object built in
+Sec.~\ref{sec:cohorts-methods}, establishing universality of local
+eigenvalue statistics under the same mild moment-matching condition.
+This is the precise, rather than merely qualitative, justification for
+comparing a real, non-Gaussian gene-expression correlation matrix's
+spacing statistics against the GOE Wigner surmise (Sec.~\ref{sec:tau-sweep})
+and the Marchenko--Pastur bulk (below): universality here is a theorem
+about matching moments, not an appeal to an idealization the data does
+not satisfy.
 \end{remark}
 
 \begin{definition}[Marchenko--Pastur law]
@@ -273,7 +299,7 @@ available), and instead checks a strictly weaker, fully elementary
 consequence of the same underlying scaling law: whether the standard
 deviation of a synthetic null's top eigenvalue shrinks like $n^{-2/3}$
 as $n$ grows at fixed aspect ratio $q$ (Results, ``Edge-fluctuation
-scaling''), a genuinely checkable claim that does not require solving
+scaling''), a claim checkable without solving
 Painlev\'e II.
 \end{remark}
 
@@ -309,6 +335,37 @@ visibly reopening, an adjacent trajectory rather than crossing it) is
 visible when ``time'' is instead sample size, applied directly to a
 real gene-correlation matrix rather than a trained model.
 \end{definition}
+
+\begin{proposition}[The static and dynamic tests are the same object]
+\label{prop:stationary}
+The GOE joint eigenvalue density is the unique stationary distribution
+of the Dyson Brownian motion SDE above. Explicitly, for $\beta=1$,
+\[
+p(\lambda_1,\dots,\lambda_N) \;\propto\; \prod_{i<j}|\lambda_i-\lambda_j|
+\;\exp\!\Big(-\tfrac14\sum_i \lambda_i^2\Big),
+\]
+and this $p$ satisfies the stationary Fokker--Planck (detailed-balance)
+equation for the SDE's generator; conversely, starting the SDE from any
+initial configuration and letting $t\to\infty$, the law of
+$(\lambda_1(t),\dots,\lambda_N(t))$ converges to $p$.
+\end{proposition}
+\begin{proof}[Justification]
+This is Dyson's own 1962 result \citep{dyson1962}; we do not
+reproduce the Fokker--Planck computation here, only record the
+statement, since it is the reason the two diagnostics used in this
+paper are not merely analogous. The Vandermonde factor
+$\prod_{i<j}|\lambda_i-\lambda_j|$ in $p$ is exactly the term whose
+vanishing at $\lambda_i=\lambda_j$ forces $p(0)=0$ in the Wigner
+surmise (Definition~\ref{def:goe} above, obtained by marginalizing $p$
+to a single spacing); the same term's gradient is exactly the drift
+$1/(\lambda_i-\lambda_j)$ in the SDE (Figure~\ref{fig:vectorfield}).
+The static nearest-neighbor-spacing test (Sec.~\ref{sec:tau-sweep}) and
+the dynamic trajectory test (Sec.~\ref{sec:results-dyson}) are
+therefore two different observables --- one a marginal of the
+stationary law $p$, the other a property of the SDE that has $p$ as
+its stationary law --- of the same mathematical object, not two
+separately-motivated diagnostics that happen to agree.
+\end{proof}
 
 Figure~\ref{fig:vectorfield} plots the deterministic part of this SDE
 directly, restricted to a single pair $(\lambda_i,\lambda_j)$: the
@@ -359,14 +416,14 @@ for which the nearest-neighbor spacing distribution is
 \emph{exactly}, not just asymptotically, uniform along the spectrum
 --- no unfolding step is needed, unlike the polynomial-CDF unfolding
 this paper performs throughout precisely because our real-line GOE
-spectrum has a genuinely varying local density. Sixty-five years
+spectrum has a varying local density. Sixty-five years
 later, Dyson's threefold classification was extended to a full
 tenfold classification by adding particle-hole and chiral symmetries
 \citep{altlandzirnbauer1997}, motivated by disordered
 superconductors; that tenfold classification is now understood, via
 K-theory, to enumerate the possible topological phases of
 free-fermion matter (the ``periodic table'' of topological insulators
-and superconductors) --- a genuine, deep link from Dyson's original
+and superconductors) --- a deep link from Dyson's original
 symmetry classification to topology. None of this tenfold structure is
 exercised here: a Pearson correlation matrix carries no particle-hole
 or chiral symmetry to speak of, so this remark is included as
@@ -543,7 +600,7 @@ $-0.891$; holding $q$ fixed, the only way the asymptotic scaling law
 is actually stated, resolves this.) This is, to our knowledge, the
 first time this specific scaling check has been reported in this
 program; it supports treating the spiked-eigenvalue threshold
-$\lambda_+$ (Sec.~\ref{sec:spiked}) as a genuine edge with the
+$\lambda_+$ (Sec.~\ref{sec:spiked}) as a real edge with the
 expected finite-size behavior, rather than an arbitrary cutoff.
 Figure~\ref{fig:tw} shows the fit directly against both reference
 slopes.
@@ -667,7 +724,7 @@ permutation floors are well below the corresponding real thresholds
 sparser): the real coexpression networks remain statistically
 non-random at thresholds substantially sparser than pure shuffled
 noise can sustain a GOE-like appearance at all, confirming $\tau^*$
-reflects genuine correlation structure and not the generic
+reflects real correlation structure and not the generic
 Wigner-Dyson behavior of any sufficiently dense random matrix.
 
 \subsection{The TNBC/LumA threshold gap is not a sample-size artifact}
@@ -677,7 +734,7 @@ TNBC ($n=119$) and LumA ($n=430$) have very different $p/n$ ratios
 (12.61 vs.\ 3.49), and a larger $q$ shifts the Marchenko--Pastur bulk
 edge outward \citep{marchenkopastur1967}, so $\tau^*=0.45$ vs.\
 $\tau^*=0.25$ is not, on its own, evidence that TNBC and LumA have
-genuinely different correlation structure --- it could simply reflect
+different correlation structure --- it could simply reflect
 TNBC's smaller sample size. We tested this directly
 (\texttt{scripts/03\_matched\_n\_robustness.py}) by subsampling LumA
 down to $n=119$ patients, without replacement, over 30 independent
@@ -686,7 +743,7 @@ resulting distribution of LumA thresholds at matched $n$ is
 $\tau^*=0.360\pm0.020$ (mean $\pm$ s.d.\ over 30 draws), which is
 $4.5$ standard deviations below the native-$n$ TNBC value of $0.45$.
 The gap shrinks once sample size is matched (from $0.20$ to $0.09$)
-but does not close: at equal $n$, TNBC genuinely requires a higher
+but does not close: at equal $n$, TNBC requires a higher
 correlation threshold before its network shows GOE-type structure,
 i.e.\ its coexpression signal is more diffuse relative to noise at the
 same sample size than LumA's, consistent with TNBC's greater molecular
@@ -804,7 +861,7 @@ visible directly in a real correlation matrix's spectrum, we tracked
 the top eight eigenvalues of the TNBC correlation matrix (restricted to
 the 60 most variable TNBC genes, for tractability) as the patient
 sample was grown one patient at a time, from $n=15$ to $n=119$, in a
-fixed random inclusion order --- so this is a genuine nested sequence
+fixed random inclusion order --- so this is a nested sequence
 of real matrices, not independent resamples
 (\texttt{scripts/05\_dyson\_eigenvalue\_trajectories.py}).
 
@@ -856,16 +913,58 @@ $\lambda_7$--$\lambda_8$ & 59 & 0.042 & 0.284 \\
 \end{tabular}
 \end{table}
 
-We read this as preliminary but real evidence that the repulsion
+The single-order run above raises an obvious question: is this pattern
+real, or an artifact of the one arbitrary patient order chosen? We
+tested this directly (\texttt{scripts/17\_dyson\_repulsion\_multi\_order.py}),
+rerunning the identical trajectory scan under 20 independent random
+patient orders and classifying each pair's behavior in each order as
+clear repulsion (gap reopens $\ge\!1.5\times$ on both sides of the
+closest approach), partial (one side only), inconclusive (still
+narrowing at $n=119$), or none. Figure~\ref{fig:repro} shows the full
+breakdown. The pattern is real and, for most pairs, strongly
+reproducible: $\lambda_5$--$\lambda_6$, $\lambda_6$--$\lambda_7$, and
+$\lambda_7$--$\lambda_8$ show clear repulsion in 18--19 of 20 orders;
+$\lambda_3$--$\lambda_4$ and $\lambda_4$--$\lambda_5$ in 12--14 of 20,
+essentially never inconclusive. The pair originally reported as
+inconclusive, $\lambda_2$--$\lambda_3$, turns out to show clear
+repulsion in 16 of 20 orders (80\%) --- the original single-seed run
+happened to land on one of the 3 orders where it was still narrowing
+at $n=119$, and the ``open question'' from that run is resolved by
+this one: the pair does repel, reliably, and the earlier
+inconclusiveness was a property of that one seed, not of the
+underlying data. The one pair that is \emph{not} reliably repulsive is
+$\lambda_1$--$\lambda_2$ (clear repulsion in only 7 of 20, no clear
+repulsion at all in 4), the pair involving the single most dominant
+eigenvalue --- consistent with that eigenvalue being a strong,
+well-separated spike (Sec.~\ref{sec:spiked}) rather than a generic bulk
+eigenvalue, for which the fine-grained approach-and-reopen dynamics
+characteristic of bulk-level repulsion is not the expected signature in
+the first place.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig8_repulsion_reproducibility.pdf}
+\caption{Reproducibility of the Dyson-repulsion pattern across 20
+independent random patient-inclusion orders, TNBC, top 60 genes, for
+each adjacent eigenvalue pair. $\lambda_2$--$\lambda_3$, reported as
+inconclusive under the single order in Fig.~\ref{fig:dyson}, in fact
+shows clear repulsion in 16/20 orders; only $\lambda_1$--$\lambda_2$,
+involving the most dominant (spike) eigenvalue, is not reliably
+repulsive.}
+\label{fig:repro}
+\end{figure}
+
+We read this as real evidence, now with an explicit reproducibility
+check rather than a single illustrative run, that the repulsion
 mechanism Dyson formalized for randomly evolving Hermitian matrices,
 and that \citet{aarts2024} find governing a classifier's weight
 matrices during training, is also directly observable in the spectrum
 of a real gene-coexpression correlation matrix as its sample size
 grows --- and therefore a plausible shared diagnostic for the data side
 and the model side of a recognition pipeline built on this data, as
-proposed originally in Line 6 of the wider research program. This is a
-single-cohort, single-gene-subset check; Sec.~\ref{sec:limitations}
-states explicitly what would be needed to strengthen it.
+proposed originally in Line 6 of the wider research program. This
+remains a single-cohort, single-gene-subset check; extending it to
+LumA and to other gene subsets is the natural next step.
 
 \subsection{Machine-learning recognition test: an honest null result}
 \label{sec:ml-results}
@@ -933,10 +1032,19 @@ task is therefore the wrong benchmark for showing that RMT-selected
 features add value over generic ones. A harder,
 clinically more relevant benchmark --- discriminating within-TNBC
 subgroups, or predicting recurrence/survival from
-\texttt{OS\_event}/\texttt{OS\_Time} in the same clinical matrix --- is
-the direct next step and is stated as such in
-Sec.~\ref{sec:limitations}, not attempted here without first securing
-enough events for a properly powered survival analysis.
+\texttt{OS\_event\_nature2012}/\texttt{OS\_Time\_nature2012} in the
+same clinical matrix --- is the direct next step and is stated as such
+in Sec.~\ref{sec:limitations}. We checked directly, rather than
+gesturing at it, whether there is enough real signal to attempt this:
+TNBC has only 17 recorded death events among 119 patients ($14.3\%$);
+LumA has 38 among 401 patients with the field recorded ($9.5\%$, 29
+missing). Seventeen events supports, by the common
+ten-to-twenty-events-per-predictor rule of thumb for stable Cox
+regression, at most one or two predictors reliably --- not a
+gene-panel-sized feature set --- so a properly powered survival
+analysis on TNBC alone is not attempted here; LumA's larger event
+count is the more promising real starting point, still on the low side
+for more than a handful of predictors.
 
 \section{Discussion}
 \label{sec:limitations}
@@ -970,13 +1078,16 @@ studied here, is the direct next step for Line 4. No public Hi-C
 dataset specific to this cohort has yet been identified; Line 3 remains
 at the proposal stage.
 
-The Dyson-repulsion result (Sec.~\ref{sec:results-dyson}) is the newest and least
-tested of the four executed lines: it uses one cohort, one 60-gene
-subset chosen by variance, and one random patient-inclusion order.
-Repeating the trajectory scan over multiple random orders and reporting
-whether the same pairs repel reproducibly, rather than the specific
-$n$ at which they do so, would turn this from a single illustrative
-run into a statement with a confidence interval.
+The Dyson-repulsion result (Sec.~\ref{sec:results-dyson}) was, in an
+earlier round, the newest and least tested of the four executed lines,
+resting on one cohort, one 60-gene subset, and one random
+patient-inclusion order; the multi-order reproducibility check
+(Fig.~\ref{fig:repro}) has since closed that specific gap and, in doing
+so, resolved the one open question it had left (whether
+$\lambda_2$--$\lambda_3$ repels at all) in the affirmative. What
+remains open is broader, not narrower: one cohort (TNBC only) and one
+gene subset (top-60-by-variance); extending the same multi-order check
+to LumA and to other gene-selection criteria is the natural next step.
 
 The classification ceiling effect in Table~\ref{tab:ml} is itself an
 argument for redirecting the ML line toward harder, clinically framed
@@ -988,7 +1099,7 @@ All numbers reported above come directly from the scripts in
 \texttt{scripts/}, run against the two real cohorts in
 \texttt{data/TCGA-BRCA/}; none are estimated, recalled, or adjusted
 after the fact. Re-running \texttt{scripts/01\_build\_cohorts.py}
-through \texttt{scripts/16\_tracy\_widom\_figure.py} in order (see
+through \texttt{scripts/18\_repulsion\_reproducibility\_figure.py} in order (see
 ``Code and reproducibility'' in Methods for the two named exceptions)
 reproduces every number and figure in this paper from the raw
 downloaded files.
@@ -1091,9 +1202,10 @@ in coexpression-network density between TNBC and luminal A that a
 permutation null confirms is not a threshold artifact, biologically
 coherent (collagen/ECM, interferon, keratin) spiked correlation
 components identified by a Marchenko--Pastur threshold rather than by
-eigenvector localization alone, and a first real-data sighting of
-level repulsion among coexpression-matrix eigenvalues as sample size
-grows. It is also enough to surface two honest negative results,
+eigenvector localization alone, and level repulsion among
+coexpression-matrix eigenvalues as sample size grows, now checked for
+reproducibility across 20 random patient orders rather than asserted
+from one. It is also enough to surface two honest negative results,
 reported as such rather than dropped: TNBC-vs-LumA classification is
 too easy a benchmark to distinguish feature-selection methods, and a
 wavelet multiscale decomposition, tried as part of the original
@@ -1103,14 +1215,14 @@ ordering, so it is reported and excluded from the main results rather
 than kept as an unearned positive finding. A validation-first
 collaboration should want all three reported exactly this way. The
 next concrete steps, in order of how directly they extend what is
-already running, are: reproducing the repulsion result across multiple
-random orders with a confidence interval; applying the same RMT
-pipeline to GSE176078 single-cell data at the resolution Line 4
-originally proposed, which would also give a revisited wavelet test a
-real pseudo-time ordering axis instead of the weak bulk-PC1 proxy used
-here; and replacing the classification benchmark with a within-TNBC or
-survival-outcome task where a feature-selection advantage, if real,
-would actually be visible.
+already running, are: extending the (now reproducibility-checked)
+Dyson-repulsion scan from TNBC to LumA and to other gene subsets;
+applying the same RMT pipeline to GSE176078 single-cell data at the
+resolution Line 4 originally proposed, which would also give a
+revisited wavelet test a real pseudo-time ordering axis instead of the
+weak bulk-PC1 proxy used here; and replacing the classification
+benchmark with a within-TNBC or survival-outcome task where a
+feature-selection advantage, if real, would actually be visible.
 
 \section{Methods}
 
@@ -1198,7 +1310,15 @@ $C(X_{:,1:n})$ recomputed for every $n=15,\dots,119$; the top 8
 eigenvalues of each $C(X_{:,1:n})$ form the trajectories in
 Figure~\ref{fig:dyson}. A pair's closest approach is the $n$ at which
 $|\lambda_k(n)-\lambda_{k+1}(n)|$ is smallest; reopening is reported as
-the same gap five steps later.
+the same gap five steps later. The reproducibility check
+(Fig.~\ref{fig:repro}) repeats this identical procedure under 20
+independent random patient orders (seeds $0$--$19$) and classifies each
+pair, per order, as clear repulsion if the gap reopens to
+$\ge\!1.5\times$ its minimum on both the 5-steps-before and
+5-steps-after sides of the closest approach (clipped at the sample
+boundary), partial if only one side qualifies, inconclusive if the
+closest approach is at the boundary $n=119$ itself (still narrowing,
+no reopening observable within the data), and none otherwise.
 
 \subsection{Machine learning}
 
@@ -1233,7 +1353,7 @@ testing for structure beyond degree heterogeneity alone).
 \subsection{Code and reproducibility}
 
 All analysis code is in \texttt{scripts/01\_build\_cohorts.py} through
-\texttt{scripts/16\_tracy\_widom\_figure.py}, numbered in the order
+\texttt{scripts/18\_repulsion\_reproducibility\_figure.py}, numbered in the order
 they must be run (\texttt{04b}, an ordering-control check, and
 \texttt{rmt\_threshold\_demo.py}, the synthetic-data reference
 implementation, are named descriptively rather than fitting the main
@@ -1402,6 +1522,16 @@ F.~Pedregosa, G.~Varoquaux, A.~Gramfort, et al.,
 The Cancer Genome Atlas Network,
 \newblock ``Comprehensive molecular portraits of human breast tumours,''
 \newblock \emph{Nature} \textbf{490}, 61--70 (2012).
+
+\bibitem[Tao \& Vu(2011)]{taovu2011}
+T.~Tao, V.~Vu,
+\newblock ``Random matrices: Universality of local eigenvalue statistics,''
+\newblock \emph{Acta Mathematica} \textbf{206}, 127--204 (2011).
+
+\bibitem[Tao \& Vu(2012)]{taovu2012}
+T.~Tao, V.~Vu,
+\newblock ``Random covariance matrices: universality of local statistics of eigenvalues,''
+\newblock \emph{Annals of Probability} \textbf{40}(3), 1285--1315 (2012).
 
 \bibitem[Tracy \& Widom(1994)]{tracywidom1994}
 C.~A.~Tracy, H.~Widom,
