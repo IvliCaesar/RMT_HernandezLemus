@@ -10,9 +10,9 @@
 \newtheorem{definition}{Definition}
 \newtheorem{remark}{Remark}
 
-\title{Random Matrix Theory, Multiscale Wavelet Decomposition, and \\
-Dyson-Brownian-Motion Diagnostics for Breast Cancer \\
-Coexpression Networks: A Real-Data Framework Applied to TCGA-BRCA}
+\title{Random Matrix Theory and Dyson-Brownian-Motion Diagnostics for \\
+Breast Cancer Coexpression Networks: A Monte-Carlo-Validated \\
+Framework Applied to TCGA-BRCA}
 
 \author{
 Julio C\'esar Galindo L\'opez$^{1}$ \and Enrique Hern\'andez-Lemus$^{2}$
@@ -28,10 +28,10 @@ Julio C\'esar Galindo L\'opez$^{1}$ \and Enrique Hern\'andez-Lemus$^{2}$
 \maketitle
 
 \begin{abstract}
-We present a data-analysis framework that combines three previously
-separate diagnostics from random matrix theory (RMT) --- static
-correlation-threshold selection, multiscale wavelet decomposition, and
-a Dyson-Brownian-motion eigenvalue-repulsion check --- and apply it, in
+We present a data-analysis framework that combines random matrix
+theory (RMT) correlation-threshold selection with a Monte Carlo
+permutation-null test and a Dyson-Brownian-motion
+eigenvalue-repulsion check, and apply it, in
 full, to real bulk RNA-seq data from The Cancer Genome Atlas breast
 cancer cohort (TCGA-BRCA). Two clinically defined, non-overlapping
 cohorts are built from real clinical annotation (triple-negative breast
@@ -47,15 +47,13 @@ network-defining threshold of $\tau^*=0.45$ for TNBC and $\tau^*=0.25$
 for LumA; this gap survives a matched-sample-size robustness check
 (LumA subsampled to $n=119$ over 30 replicates gives
 $\tau^*=0.360\pm0.020$, still $4.5$ standard deviations from the TNBC
-value). A wavelet decomposition of each gene's expression trace along
-the dominant principal-component ordering of the TNBC cohort produces
-two coexpression networks --- one from coarse (approximation) and one
-from fine (detail) wavelet coefficients --- whose top-degree hub genes
-do not overlap at all (0 of 10 shared); a random-ordering control,
-however, shows the same zero overlap in 19 of 20 replicates, so this
-result does not, on its own, confirm that the ordering axis carries
-real biological signal, and we report it as an inconclusive negative
-control rather than a positive finding. Tracking the top eigenvalues of
+value). A Monte Carlo permutation null --- shuffling each gene's values
+across patients independently, 20 times per cohort --- shows both
+thresholds are well beyond what dense-matrix universality alone could
+produce: permuted TNBC data never sustains a GOE-like signature past
+$\tau=0.25$ (20/20 replicates, exactly), four sweep steps below the
+real $\tau^*=0.45$; permuted LumA data tops out at $\tau=0.15$ (19/20
+replicates), two steps below the real $\tau^*=0.25$. Tracking the top eigenvalues of
 the TNBC correlation matrix as the patient sample is grown one patient
 at a time reveals several adjacent-eigenvalue pairs whose gap shrinks
 to a local minimum and then reopens by a factor of five to ten within
@@ -124,21 +122,25 @@ nuclear spectra and later in general Hermitian random matrices
 \citep{gao2012} and specifically in cancer gene networks
 \citep{cancer2018}.
 
-Two extensions of this static picture motivate the present paper.
-First, \citet{konig2006} showed that decomposing gene-expression
-profiles with a wavelet transform before building a coexpression
-network exposes coarse- and fine-scale correlation structure that a
-single-scale threshold conflates into one network. Second,
-\citet{aarts2024} showed that the weight matrices of a neural network
-undergoing stochastic-gradient-descent training evolve according to
-Dyson's (1962) eigenvalue Brownian motion, with the same level-repulsion
+Two further questions motivate the present paper. First, is the
+selected threshold real, or an artifact of the asymptotic
+Marchenko--Pastur/Wigner-surmise null used to select it? A Monte Carlo
+permutation null --- shuffling each gene's values across patients
+independently, destroying every real correlation while keeping each
+gene's own marginal distribution fixed, the same kind of null the
+group's own NIMEA pipeline uses to calibrate its mutual-information
+threshold (Sec.~\ref{sec:montecarlo}, below) --- answers this directly
+rather than relying on asymptotics alone. Second, \citet{aarts2024}
+showed that the weight matrices of a neural network undergoing
+stochastic-gradient-descent training evolve according to Dyson's
+(1962) eigenvalue Brownian motion, with the same level-repulsion
 mechanism at work --- suggesting that the repulsion diagnostic itself,
 not just the static threshold it eventually selects, carries
 information, and that it applies equally to a biological correlation
 matrix and to the training dynamics of a classifier built on top of it.
 
 This paper does three things. It states, as a single explicit
-framework, how a static RMT threshold, a wavelet-scale decomposition,
+framework, how a static RMT threshold, a Monte Carlo permutation null,
 and a Dyson-repulsion diagnostic relate to one another (Methods). It
 runs all three, together with a machine-learning recognition test, on
 real TCGA-BRCA data comparing TNBC against luminal A breast cancer
@@ -480,6 +482,39 @@ C7      & 150 & SYN2    & 574 \\
 \end{tabular}
 \end{table}
 
+\subsection*{Monte Carlo permutation null: the threshold is not a dense-matrix artifact}
+\label{sec:montecarlo}
+
+The asymptotic Marchenko--Pastur/Wigner-surmise comparison used above
+has a known blind spot: \emph{any} sufficiently dense symmetric random
+matrix looks GOE-like by Wigner-Dyson universality, whether or not it
+was built from real correlation structure --- a point already noted in
+\texttt{rmt\_threshold\_demo.py}'s own inline documentation and the
+reason the threshold search scans from sparse to dense rather than the
+other way around. This raises a direct question the asymptotic null
+cannot answer on its own: is $\tau^*$ sparser than the threshold at
+which trivial denseness alone would produce a GOE-like signature, or
+does it just mark where a generic dense random matrix stops looking
+random?
+
+We answered this with an explicit Monte Carlo permutation null
+(\texttt{scripts/10\_monte\_carlo\_null.py}): each gene's expression
+values were independently shuffled across patients, 20 times per
+cohort, destroying every real gene--gene correlation while keeping each
+gene's own marginal distribution exactly fixed, and the identical
+threshold sweep was rerun on each permuted correlation matrix. The
+result is unanimous and, across repeats, exact: for TNBC, all 20/20
+permutations select a GOE$\to$Poisson transition at $\tau=0.25$
+(std.\ $0$); for LumA, 19/20 permutations select $\tau=0.15$ (the
+remaining permutation showed no clean transition at all). Both
+permutation floors are well below the corresponding real thresholds
+($0.45$ for TNBC, $4$ sweep steps sparser; $0.25$ for LumA, $2$ steps
+sparser): the real coexpression networks remain statistically
+non-random at thresholds substantially sparser than pure shuffled
+noise can sustain a GOE-like appearance at all, confirming $\tau^*$
+reflects genuine correlation structure and not the generic
+Wigner-Dyson behavior of any sufficiently dense random matrix.
+
 \subsection*{The TNBC/LumA threshold gap is not a sample-size artifact}
 \label{sec:robustness}
 
@@ -502,57 +537,42 @@ i.e.\ its coexpression signal is more diffuse relative to noise at the
 same sample size than LumA's, consistent with TNBC's greater molecular
 heterogeneity as a class \citep{foulkes2010}.
 
-\subsection*{Wavelet decomposition separates coarse- and fine-scale hub genes}
-\label{sec:wavelet}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/fig6_correlation_heatmaps.pdf}
+\caption{Raw and thresholded gene--gene correlation matrices for both
+cohorts, genes reordered by average-linkage hierarchical clustering on
+$1-|C|$ so block structure is visible. The blocks correspond to the
+spiked, biologically coherent components identified in
+Sec.~\ref{sec:spiked}; LumA's visibly larger, denser red blocks match
+its lower $\tau^*$ and larger spiked-eigenvalue count.}
+\label{fig:heatmaps}
+\end{figure}
 
-Following \citet{konig2006}, we ordered the 119 TNBC patients along the
-first principal component of their own (real) expression matrix ---
-the dominant axis of variation in this cohort, explaining $10.2\%$ of
-total variance, used here purely as an ordering, not as a claim about
-biological time --- and decomposed each gene's expression trace along
-that ordering with a Daubechies-4 discrete wavelet transform at level 3
-(\texttt{PyWavelets}, \citealp{pywavelets2019}). We reconstructed a
-\emph{coarse} signal per gene from the approximation coefficients alone
-(the slow trend along the ordering) and a \emph{fine} signal from the
-finest-scale detail coefficients alone (local, patient-to-patient
-fluctuation), then reran the identical RMT threshold-selection method
-on the coarse-signal and fine-signal correlation matrices separately
-(\texttt{scripts/04\_wavelet\_multiscale.py}).
+Figure~\ref{fig:heatmaps} shows both cohorts' correlation matrices
+directly, before and after thresholding, genes reordered by
+hierarchical clustering rather than left in arbitrary variance-rank
+order: the block structure visible here is the same structure the
+spiked eigenvalues (Sec.~\ref{sec:spiked}) and the thresholded network
+(this section) are both detecting from two different angles.
 
-The coarse-scale network selects $\tau^*=0.70$, with hub genes
-including \emph{TFF1}, \emph{MLPH}, and \emph{HMGCS2}; the fine-scale
-network selects $\tau^*=0.50$, with hub genes including \emph{ABCA8},
-\emph{CD300LG}, and \emph{ADIPOQ}. None of the ten top-degree hub genes
-at either scale appear in the other scale's top ten.
-
-This zero overlap is real but, on its own, weaker evidence than it
-first looks like. We checked directly
-(\texttt{scripts/04b\_wavelet\_random\_order\_control.py}) whether the
-same zero-overlap result would appear under an ordering with no
-biological meaning at all: rerunning the identical coarse/fine split
-and RMT threshold selection 20 times, each time with an independent
-uniformly random patient permutation instead of the PC1 ordering, gives
-zero overlap in 19 of 20 replicates (mean $0.05/10$, range
-$[0,1]$) --- statistically indistinguishable from the PC1-ordering
-result. \textbf{This means the zero-overlap finding does not, by
-itself, demonstrate that PC1 captures a real biological axis worth
-decomposing along}; it is more likely a generic consequence of
-splitting any sequence into a low-frequency approximation and a
-high-frequency detail component, which are close to uncorrelated by
-construction of the wavelet transform regardless of whether the
-sequence order carries information. We report this as a real negative
-control result, not as a failure to find something: it means the
-version of \citet{konig2006}'s multiscale claim tested here (patients
-ordered by a weak, $10.2\%$-of-variance proxy axis) is not verified,
-and a fair test needs either (a) an ordering axis independently known
-to carry real biological signal --- single-cell pseudo-time, per the
-Line 4 roadmap below, rather than bulk-patient PC1 --- or (b) a
-synthetic positive control with a planted true multiscale signal, to
-first confirm the pipeline can detect one when it is actually there,
-before trusting a positive result on real data where the ground truth
-is unknown. Neither check was available within this paper's scope; the
-coarse/fine hub tables above are kept as a description of what the
-pipeline outputs, not as evidence for the multiscale hypothesis.
+\emph{A wavelet multiscale decomposition (patients ordered along the
+TNBC cohort's own first principal component, coarse/fine coexpression
+networks built as in \citet{konig2006} via a Daubechies-4 discrete
+wavelet transform, \texttt{PyWavelets} \citealp{pywavelets2019}) was
+also tried. A
+random-ordering control found its headline result --- zero hub-gene
+overlap between coarse and fine networks --- statistically
+indistinguishable from a biologically meaningless random patient
+ordering (0/10 overlap in 19 of 20 random-order replicates), so it did
+not survive scrutiny and is not included in this paper's results; the
+full analysis and control remain in
+\texttt{scripts/04\_wavelet\_multiscale.py} and
+\texttt{scripts/04b\_wavelet\_random\_order\_control.py} for the record.
+A fair test would need either a real pseudo-time ordering (single-cell
+data, Sec.~\ref{sec:roadmap}) or a synthetic positive control with a
+planted multiscale signal, neither available within this paper's
+scope.}
 
 \subsection*{Eigenvalue trajectories show Dyson-type level repulsion}
 \label{sec:results-dyson}
@@ -665,8 +685,8 @@ result, not a failure to report: TNBC and LumA are defined by receptor
 status and PAM50 call respectively, both of which are themselves
 strongly transcriptional signals, so essentially any moderately sized
 gene panel separates them almost perfectly (a ceiling effect). This
-task is therefore the wrong benchmark for showing that RMT- or
-wavelet-selected features add value over generic ones. A harder,
+task is therefore the wrong benchmark for showing that RMT-selected
+features add value over generic ones. A harder,
 clinically more relevant benchmark --- discriminating within-TNBC
 subgroups, or predicting recurrence/survival from
 \texttt{OS\_event}/\texttt{OS\_Time} in the same clinical matrix --- is
@@ -677,18 +697,21 @@ enough events for a properly powered survival analysis.
 \section*{Discussion}
 \label{sec:limitations}
 
-Four of the six original program lines were run on real data in this
-paper (RMT coexpression thresholding, spectral denoising/spiked
-eigenvalues, wavelet multiscale decomposition, and a first
-Dyson-repulsion diagnostic), two of those four came back as honest
-nulls rather than positive findings (the wavelet multiscale separation
-is indistinguishable from a random-ordering control, and TNBC-vs-LumA
-classification does not discriminate feature-selection methods), and
-two lines are not yet attempted with real data at all: 3D genomic
+Three of the six original program lines were run on real data in this
+paper and stand as positive results (RMT coexpression thresholding,
+validated by a Monte Carlo permutation null rather than the asymptotic
+Marchenko--Pastur/Wigner-surmise comparison alone; spectral
+denoising/spiked eigenvalues; and a first Dyson-repulsion diagnostic).
+Two further lines were tested and came back as honest nulls, reported
+as such rather than dropped: a wavelet multiscale decomposition (Line
+5) whose headline result proved indistinguishable from a
+random-ordering control, and TNBC-vs-LumA classification (part of the
+ML line), which does not discriminate feature-selection methods. Two
+lines are not yet attempted with real data at all: 3D genomic
 structure (Hi-C) and single-cell resolution. We had already identified
 concrete real public datasets for both --- GSE176078 (TNBC single-cell
 RNA-seq, 10 patients) for the latter --- and downloading and running
-the same RMT/wavelet machinery on single-cell data, where $n$ (cells)
+the same RMT machinery on single-cell data, where $n$ (cells)
 can reach the thousands and $p/n$ inverts relative to the bulk case
 studied here, is the direct next step for Line 4. No public Hi-C
 dataset specific to this cohort has yet been identified; Line 3 remains
@@ -773,10 +796,10 @@ much smaller --- a regime where the Marchenko--Pastur bulk is tighter
 sensitive. The Dyson-trajectory diagnostic of
 Sec.~\ref{sec:results-dyson} is particularly well suited to single-cell
 data, since cells can be ordered along a real biological pseudo-time
-(rather than the PC1 proxy used for bulk patients in
-Sec.~\ref{sec:wavelet}) using standard single-cell trajectory-inference
-tools, giving the eigenvalue-trajectory scan an actual temporal, rather
-than merely ordinal, axis.
+(rather than the weak bulk-PC1 proxy used in the discarded wavelet
+attempt above) using standard single-cell trajectory-inference tools,
+giving the eigenvalue-trajectory scan an actual temporal, rather than
+merely ordinal, axis.
 
 \subsection*{Line 6b: Dyson dynamics of the classifier itself}
 Sec.~\ref{sec:results-dyson} tracks the \emph{data}'s correlation-matrix
@@ -807,32 +830,34 @@ against Table~\ref{tab:hubs} directly.
 
 \section*{Conclusions}
 
-Combining a static RMT correlation threshold, a wavelet multiscale
-decomposition, and a Dyson-repulsion eigenvalue diagnostic into one
-pipeline, and running that pipeline once on real TCGA-BRCA data, is
-enough to surface real, non-trivial structure: a sample-size-robust
-difference in coexpression-network density between TNBC and luminal A,
-biologically coherent (collagen/ECM, interferon, keratin) spiked
-correlation components identified by a Marchenko--Pastur threshold
-rather than by eigenvector localization alone, and a first real-data
-sighting of level repulsion among coexpression-matrix eigenvalues as
-sample size grows. It is also enough to surface two honest negative
-results, reported as such rather than dropped: TNBC-vs-LumA
-classification is too easy a benchmark to distinguish feature-selection
-methods, and the wavelet coarse/fine hub-gene separation is
-statistically indistinguishable from what a biologically meaningless
-random patient ordering produces, so it does not yet confirm the
-multiscale hypothesis it was meant to test. A validation-first
-collaboration should want both reported exactly this way. The next
-concrete steps, in order of how directly they extend what is already
-running, are: reproducing the repulsion result across multiple random
-orders with a confidence interval; applying the same RMT/wavelet
+Combining a static RMT correlation threshold, a Monte Carlo permutation
+null, and a Dyson-repulsion eigenvalue diagnostic into one pipeline,
+and running that pipeline once on real TCGA-BRCA data, is enough to
+surface real, non-trivial structure: a sample-size-robust difference
+in coexpression-network density between TNBC and luminal A that a
+permutation null confirms is not a threshold artifact, biologically
+coherent (collagen/ECM, interferon, keratin) spiked correlation
+components identified by a Marchenko--Pastur threshold rather than by
+eigenvector localization alone, and a first real-data sighting of
+level repulsion among coexpression-matrix eigenvalues as sample size
+grows. It is also enough to surface two honest negative results,
+reported as such rather than dropped: TNBC-vs-LumA classification is
+too easy a benchmark to distinguish feature-selection methods, and a
+wavelet multiscale decomposition, tried as part of the original
+six-line program, produced a headline result statistically
+indistinguishable from a biologically meaningless random patient
+ordering, so it is reported and excluded from the main results rather
+than kept as an unearned positive finding. A validation-first
+collaboration should want all three reported exactly this way. The
+next concrete steps, in order of how directly they extend what is
+already running, are: reproducing the repulsion result across multiple
+random orders with a confidence interval; applying the same RMT
 pipeline to GSE176078 single-cell data at the resolution Line 4
-originally proposed, which also gives the wavelet test a real
-pseudo-time ordering axis instead of the weak bulk-PC1 proxy used here
-(Line 5, revisited); and replacing the classification benchmark with a
-within-TNBC or survival-outcome task where a feature-selection
-advantage, if real, would actually be visible.
+originally proposed, which would also give a revisited wavelet test a
+real pseudo-time ordering axis instead of the weak bulk-PC1 proxy used
+here; and replacing the classification benchmark with a within-TNBC or
+survival-outcome task where a feature-selection advantage, if real,
+would actually be visible.
 
 \section*{Methods}
 
@@ -877,18 +902,24 @@ $\tau^*$; the inverse participation ratio
 $\mathrm{IPR}_k=\sum_i v_{i,k}^4$ of each eigenvector (unit-normalized)
 is computed as a complementary localization diagnostic.
 
-\subsection*{Wavelet decomposition}
+\subsection*{Monte Carlo permutation null}
 
-TNBC patients were ordered by the first left singular vector (PC1) of
-the mean-centered $1500\times119$ expression matrix. Each gene's
-119-point expression trace along this ordering was decomposed with a
-level-3 Daubechies-4 discrete wavelet transform (\texttt{PyWavelets}
-\citealp{pywavelets2019}); a coarse reconstruction keeps only the
-approximation coefficients (all detail coefficients zeroed), a fine
-reconstruction keeps only the finest-level detail coefficients (the
-approximation and all coarser detail coefficients zeroed). Correlation
-matrices and RMT threshold selection were then computed identically on
-the coarse and fine reconstructions.
+For each cohort, each gene's expression values were independently
+permuted across patients (shuffling within each row), 20 times,
+destroying every real gene--gene correlation while keeping each gene's
+own marginal distribution exactly fixed. The identical RMT threshold
+sweep (previous subsection) was rerun on each permuted correlation
+matrix, recording whether a Poisson$\to$GOE transition appeared at all
+and, if so, at what $\tau$.
+
+\subsection*{Correlation heatmaps}
+
+Gene order for Figure~\ref{fig:heatmaps} was fixed by average-linkage
+hierarchical clustering on the distance $d_{ij}=1-|C_{ij}|$ (i.e.\ two
+genes are ``close'' if strongly correlated \emph{or}
+anti-correlated), applied to the raw correlation matrix and reused
+unchanged for the thresholded panel, so both panels are directly
+comparable gene-for-gene.
 
 \subsection*{Dyson eigenvalue trajectories}
 
