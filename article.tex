@@ -694,6 +694,56 @@ order: the block structure visible here is the same structure the
 spiked eigenvalues (Sec.~\ref{sec:spiked}) and the thresholded network
 (this section) are both detecting from two different angles.
 
+\subsection{The thresholded networks are small-world and modular, beyond degree alone}
+
+Line 2 of the original program asks specifically about large-scale
+network structure, so we characterized each thresholded network
+graph-theoretically and compared it against two random-graph nulls of
+matched size (Erd\H{o}s--R\'enyi, same node/edge count; configuration
+model, same node count \emph{and} the real network's own degree
+sequence) rather than relying on the spectral diagnostics alone.
+Table~\ref{tab:networktopo} reports clustering coefficient, giant
+component size, and Louvain-community count/modularity for both
+cohorts.
+
+\begin{table}[h]
+\centering
+\caption{Graph-theoretic network comparison against random-graph nulls
+(mean over 3 replicates for ER and configuration-model).}
+\label{tab:networktopo}
+\begin{tabular}{llcccc}
+\toprule
+Cohort & Model & Clustering & Giant comp.\ & Communities & Modularity \\
+\midrule
+TNBC & Real & 0.388 & 95.2\% & 36 & 0.540 \\
+TNBC & Erd\H{o}s--R\'enyi & 0.020 & 100\% & 10.7 & 0.182 \\
+TNBC & Config.\ model & 0.114 & 100\% & 10.3 & 0.150 \\
+\midrule
+LumA & Real & 0.522 & 100\% & 5 & 0.285 \\
+LumA & Erd\H{o}s--R\'enyi & 0.133 & 100\% & 8.3 & 0.056 \\
+LumA & Config.\ model & 0.290 & 100\% & 8.3 & 0.051 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both cohorts show a real, unambiguous small-world/modular signature:
+clustering far above the Erd\H{o}s--R\'enyi null (TNBC $19\times$,
+LumA $4\times$) \emph{and} above the configuration-model null (TNBC
+$3.4\times$, LumA $1.8\times$) --- so the excess clustering is not
+merely a consequence of the real hub-degree distribution, since the
+configuration model already has that distribution built in and still
+falls well short. Modularity tells a related but distinct story: TNBC's
+real network is both far more modular than either null (about
+$3$--$3.6\times$) \emph{and} organizes into many communities ($36$,
+vs.\ about $10$ for either null), while LumA's real network is also
+more modular than its nulls (about $5$--$6\times$) but organizes into
+markedly \emph{fewer}, evidently larger communities ($5$, vs.\ about
+$8$ for either null) --- the same TNBC-more-fragmented,
+LumA-more-monolithic contrast already visible in the raw hub-degree
+counts (Table~\ref{tab:hubs}) and the heatmap block structure
+(Fig.~\ref{fig:heatmaps}), now confirmed at the whole-network topology
+level rather than the single-gene level.
+
 \emph{A wavelet multiscale decomposition (patients ordered along the
 TNBC cohort's own first principal component, coarse/fine coexpression
 networks built as in \citet{konig2006} via a Daubechies-4 discrete
@@ -874,11 +924,15 @@ enough events for a properly powered survival analysis.
 \section{Discussion}
 \label{sec:limitations}
 
-Three of the six original program lines were run on real data in this
-paper and stand as positive results (RMT coexpression thresholding,
+Four of the six original program lines were run on real data in this
+paper and stand as positive results: RMT coexpression thresholding,
 validated by a Monte Carlo permutation null rather than the asymptotic
 Marchenko--Pastur/Wigner-surmise comparison alone; spectral
-denoising/spiked eigenvalues; and a first Dyson-repulsion diagnostic).
+denoising/spiked eigenvalues, further validated by spectral entropy and
+a Tracy--Widom edge-scaling check; a first Dyson-repulsion diagnostic;
+and Line 2's large-scale network characterization, confirming a
+small-world/modular signature beyond what either random-graph null
+produces.
 Line 5 (wavelet multiscale decomposition) and the ML recognition
 benchmark both came back with real, nuanced negative or mixed results,
 reported as such rather than dropped: the wavelet method's real-data
@@ -1147,20 +1201,25 @@ per-index mutation ($p=0.1$ per slot).
 
 For each cohort's thresholded network at $\tau^*$ (isolated nodes
 removed), we computed the average clustering coefficient, giant
-connected component size, and greedy-modularity community count and
-modularity score (\texttt{networkx}, \citealp{networkx2008}), and
-compared each against the mean over 20 replicates of two random-graph
-nulls of matched size: an Erd\H{o}s--R\'enyi $G(n,p)$ graph (same node
-and edge count, no other constraint) and a configuration-model graph
+connected component size, and Louvain-community count and modularity
+score (\texttt{networkx}, \citealp{networkx2008}; Louvain rather than
+greedy-modularity maximization, for tractability on LumA's
+$\sim$146K-edge network), and compared each against the mean over
+3 replicates of two random-graph nulls of matched size: an
+Erd\H{o}s--R\'enyi $G(n,p)$ graph (same node and edge count, no other
+constraint) and a configuration-model graph built by fast stub-matching
 (same node count \emph{and} the real network's own degree sequence,
 testing for structure beyond degree heterogeneity alone).
 
 \subsection{Code and reproducibility}
 
 All analysis code is in \texttt{scripts/01\_build\_cohorts.py} through
-\texttt{scripts/07\_make\_figures.py}, numbered in the order they must
-be run; every number and figure in this paper is produced directly by
-this code from the two raw downloaded files, with no intermediate
+\texttt{scripts/16\_tracy\_widom\_figure.py}, numbered in the order
+they must be run (\texttt{04b}, an ordering-control check, and
+\texttt{rmt\_threshold\_demo.py}, the synthetic-data reference
+implementation, are named descriptively rather than fitting the main
+sequence); every number and figure in this paper is produced directly
+by this code from the two raw downloaded files, with no intermediate
 manual editing of results.
 
 \section{Declarations}
@@ -1338,7 +1397,7 @@ D.~Voiculescu,
 \end{thebibliography}
 
 \appendix
-\section{Appendix: full threshold sweep}
+\section{Full threshold sweep}
 
 Tables~\ref{tab:tnbc-full} and \ref{tab:luma-full} give the complete
 sweep underlying Fig.~\ref{fig:tausweep} and Sec.~\ref{sec:tau-sweep},
