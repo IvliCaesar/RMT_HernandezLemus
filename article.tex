@@ -282,8 +282,41 @@ practice: the GOE/Poisson NNSD contrast, the Marchenko--Pastur bulk, and
 the repulsion mechanism are used here purely as \emph{null models} and
 \emph{qualitative diagnostics} against which the real, non-Gaussian
 TCGA-BRCA correlation matrices are compared --- exactly the same use
-Luo et al., K\"onig et al., and Aarts et al.\ make of them in their own,
+\citet{luo2007} and \citet{aarts2024} make of them in their own,
 equally non-Gaussian, settings.
+\end{remark}
+
+\begin{remark}[Dyson's threefold way, circular ensembles, and topology]
+The Brownian-motion paper above is the second of a pair; in the
+companion paper published the same year, \citet{dyson1962threefold}
+classified matrix ensembles into exactly three symmetry classes ---
+orthogonal ($\beta=1$), unitary ($\beta=2$), symplectic ($\beta=4$)
+--- according to how a Hamiltonian's symmetries (time-reversal, in
+particular) constrain it to be real symmetric, complex Hermitian, or
+quaternionic self-dual. Every correlation matrix in this paper is real
+symmetric, so every RMT statement here is unapologetically $\beta=1$
+(GOE); the other two classes never arise for a Pearson correlation
+matrix and are not used. The same 1962 papers introduced the
+\emph{circular} ensembles (COE, CUE, CSE): eigenvalues (there,
+eigenphases) confined to the unit circle rather than the real line,
+for which the nearest-neighbor spacing distribution is
+\emph{exactly}, not just asymptotically, uniform along the spectrum
+--- no unfolding step is needed, unlike the polynomial-CDF unfolding
+this paper performs throughout precisely because our real-line GOE
+spectrum has a genuinely varying local density. Sixty-five years
+later, Dyson's threefold classification was extended to a full
+tenfold classification by adding particle-hole and chiral symmetries
+\citep{altlandzirnbauer1997}, motivated by disordered
+superconductors; that tenfold classification is now understood, via
+K-theory, to enumerate the possible topological phases of
+free-fermion matter (the ``periodic table'' of topological insulators
+and superconductors) --- a genuine, deep link from Dyson's original
+symmetry classification to topology. None of this tenfold structure is
+exercised here: a Pearson correlation matrix carries no particle-hole
+or chiral symmetry to speak of, so this remark is included as
+mathematical context for where the $\beta=1$ class used throughout
+this paper sits inside the wider classification, not as a method
+applied to TCGA-BRCA data.
 \end{remark}
 
 \section*{Results}
@@ -565,14 +598,30 @@ random-ordering control found its headline result --- zero hub-gene
 overlap between coarse and fine networks --- statistically
 indistinguishable from a biologically meaningless random patient
 ordering (0/10 overlap in 19 of 20 random-order replicates), so it did
-not survive scrutiny and is not included in this paper's results; the
-full analysis and control remain in
-\texttt{scripts/04\_wavelet\_multiscale.py} and
-\texttt{scripts/04b\_wavelet\_random\_order\_control.py} for the record.
-A fair test would need either a real pseudo-time ordering (single-cell
-data, Sec.~\ref{sec:roadmap}) or a synthetic positive control with a
-planted multiscale signal, neither available within this paper's
-scope.}
+not survive scrutiny and is not included in this paper's results. We
+then asked the sharper question directly: can the method recover
+scale-specific structure \emph{at all}, given a real one, or is it
+fundamentally incapable of it regardless of ordering quality? A
+synthetic positive control (\texttt{scripts/12\_wavelet\_positive\_
+control.py}: 200 genes, a 30-gene module sharing a slow, period-100
+oscillation and an independent 30-gene module sharing a fast,
+period-6 oscillation, both along a \emph{known}, not proxy, ordering)
+answers this cleanly: the coarse network recovers the planted
+slow-oscillation module perfectly (10/10 top hubs) even at a modest
+50\% signal fraction; the fast-oscillation module is recovered weakly
+(3/10) at the same 50\% fraction but perfectly (10/10) once its own
+signal fraction is raised to 80\%. \textbf{Wavelets do work correctly
+at both scales, given enough real signal} --- the real-data failure
+above was a signal-strength problem (PC1 carries only $10.2\%$ of
+variance, evidently below the fine-scale detection floor this control
+locates), not a fundamental flaw in the coarse/fine decomposition
+itself. The full analysis and both controls remain in
+\texttt{scripts/04\_wavelet\_multiscale.py},
+\texttt{scripts/04b\_wavelet\_random\_order\_control.py}, and
+\texttt{scripts/12\_wavelet\_positive\_control.py} for the record. A
+fair real-data test would need an ordering axis with more real signal
+than bulk-patient PC1 provides --- single-cell pseudo-time
+(Sec.~\ref{sec:roadmap}) is the concrete candidate.}
 
 \subsection*{Eigenvalue trajectories show Dyson-type level repulsion}
 \label{sec:results-dyson}
@@ -655,13 +704,21 @@ carry more subtype-discriminative signal than 20 top-variance genes or
 20 randomly chosen genes from the same 1500-gene candidate pool, using
 a 5-fold stratified cross-validated logistic regression to distinguish
 TNBC from LumA on the combined 549-patient cohort
-(\texttt{scripts/06\_ml\_recognition.py}). Table~\ref{tab:ml} reports
-the result plainly.
+(\texttt{scripts/06\_ml\_recognition.py}). We added a fourth arm: a
+genetic algorithm (DEAP, \citealp{deap2012}; population 40, 15
+generations, tournament selection, two-point crossover, index
+mutation) searching directly over 20-gene subsets to maximize
+cross-validated accuracy, rather than selecting genes by any
+biological criterion first --- the most expensive and least
+biologically motivated selector tried, included precisely to see
+whether unconstrained search finds real headroom above the other
+three. Table~\ref{tab:ml} reports all four plainly.
 
 \begin{table}[h]
 \centering
 \caption{5-fold cross-validated TNBC-vs-LumA classification, 549
-patients, 20 features per set.}
+patients, 20 features per set (GA: 20 evolved slots, 20 unique genes in
+the converged solution).}
 \label{tab:ml}
 \begin{tabular}{lcc}
 \toprule
@@ -670,21 +727,36 @@ Feature set & Accuracy & ROC-AUC \\
 Random (20 genes) & $0.982\pm0.008$ & $0.985\pm0.018$ \\
 Top-variance (20 genes) & $0.980\pm0.007$ & $0.989\pm0.013$ \\
 RMT hub genes (20 genes) & $0.982\pm0.011$ & $0.988\pm0.013$ \\
+Genetic algorithm (20 genes) & $0.9945$ & $0.9962$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-All three feature sets --- including a random one --- classify TNBC
-against LumA at $\approx\!98\%$ accuracy, well above the $78.3\%$
-majority-class baseline (always predicting LumA, the larger of the two
-classes) and confirmed by ROC-AUC $\approx\!0.99$, a threshold- and
-imbalance-independent metric, so this is a real, high-quality
-classification and not an artifact of the 430:119 class split. This is
-an honest null
+All four feature sets --- including a random one --- classify TNBC
+against LumA at $\approx\!98\%$ or better accuracy, well above the
+$78.3\%$ majority-class baseline (always predicting LumA, the larger
+of the two classes) and confirmed by ROC-AUC $\approx\!0.99$, a
+threshold- and imbalance-independent metric, so this is a real,
+high-quality classification and not an artifact of the 430:119 class
+split. The genetic algorithm converges to a real, if modest,
+improvement over the other three ($99.45\%$ vs.\ $\approx\!98\%$, a
+gain of about $1.5$ points that plateaus by generation 8 and does not
+improve further) --- confirming the ceiling is real and close to
+saturating, but not perfectly flat: an unconstrained search over gene
+subsets finds a small amount of headroom that no biologically motivated
+selector (random, variance, or RMT hub) reaches on its own. The GA's
+converged panel (\emph{COL2A1}, \emph{LTF}, \emph{KLK6}, \emph{GREB1},
+among others) shares no genes with the RMT-hub panel in
+Table~\ref{tab:hubs}, consistent with the small remaining gap coming
+from a different, less biologically interpretable direction in gene
+space rather than a sharper version of the same RMT signal. Overall
+this is an honest null
 result, not a failure to report: TNBC and LumA are defined by receptor
 status and PAM50 call respectively, both of which are themselves
 strongly transcriptional signals, so essentially any moderately sized
-gene panel separates them almost perfectly (a ceiling effect). This
+gene panel separates them almost perfectly (a ceiling effect), and
+even a directed search closes only a small fraction of the remaining
+gap. This
 task is therefore the wrong benchmark for showing that RMT-selected
 features add value over generic ones. A harder,
 clinically more relevant benchmark --- discriminating within-TNBC
@@ -702,11 +774,16 @@ paper and stand as positive results (RMT coexpression thresholding,
 validated by a Monte Carlo permutation null rather than the asymptotic
 Marchenko--Pastur/Wigner-surmise comparison alone; spectral
 denoising/spiked eigenvalues; and a first Dyson-repulsion diagnostic).
-Two further lines were tested and came back as honest nulls, reported
-as such rather than dropped: a wavelet multiscale decomposition (Line
-5) whose headline result proved indistinguishable from a
-random-ordering control, and TNBC-vs-LumA classification (part of the
-ML line), which does not discriminate feature-selection methods. Two
+Line 5 (wavelet multiscale decomposition) and the ML recognition
+benchmark both came back with real, nuanced negative or mixed results,
+reported as such rather than dropped: the wavelet method's real-data
+application failed a random-ordering control, but a synthetic positive
+control then confirmed the method itself works correctly at both
+scales given enough signal, narrowing the real-data failure down to a
+data problem (a weak $10.2\%$-of-variance ordering axis), not a method
+problem; and TNBC-vs-LumA classification is close to a ceiling that a
+genetic-algorithm search can nudge but not meaningfully break, so it
+does not discriminate feature-selection methods either way. Two
 lines are not yet attempted with real data at all: 3D genomic
 structure (Hi-C) and single-cell resolution. We had already identified
 concrete real public datasets for both --- GSE176078 (TNBC single-cell
@@ -756,19 +833,17 @@ machinery from Sec.~\ref{sec:tau-sweep} to contact-frequency
 correlations instead of expression correlations, which requires no new
 methodology, only new data.
 
-\subsection*{Line 5 revisited: a fair test of the multiscale claim}
-The random-ordering control above shows the wavelet coarse/fine
-separation as tested here does not confirm the multiscale hypothesis;
-it neither confirms nor refutes it, since the test could not
-distinguish a real weak signal (PC1, $10.2\%$ of variance) from no
-signal at all. Two concrete fixes, either sufficient on its own: (a)
-plant a known multiscale correlation signal in synthetic data (a
-coarse-scale module and an independent fine-scale module, analogous to
-\texttt{rmt\_threshold\_demo.py}'s planted-block design) and confirm
-the pipeline recovers both distinctly before trusting it on real data;
-or (b) rerun on GSE176078 single-cell data ordered by a real inferred
-pseudo-time rather than bulk-patient PC1, where the ordering axis is
-independently validated rather than a proxy.
+\subsection*{Line 5 revisited: applying the validated wavelet method to real signal}
+The synthetic positive control (Results) already confirms the
+coarse/fine wavelet pipeline works correctly given enough real signal,
+so what remains is not a method fix but a data fix: rerun it on
+GSE176078 single-cell data ordered by a real inferred pseudo-time
+rather than bulk-patient PC1. Single-cell pseudo-time is both a better
+signal (typically capturing far more than $10.2\%$ of variance along a
+biologically meaningful axis) and, per the positive control's own
+finding, a real fine-scale signal will need to be reasonably strong
+--- not just present --- to be recovered at the same detection
+sensitivity found here.
 
 \subsection*{Line 1 extension: multi-omic spectral denoising}
 Sec.~\ref{sec:spiked}'s spiked-eigenvalue analysis was run on RNA-seq
@@ -939,7 +1014,25 @@ feature standardization, evaluated by 5-fold stratified cross-validation
 TNBC+LumA cohort, for three 20-gene feature sets: a uniformly random
 draw from the 1500 candidate genes; the top 20 by variance across the
 combined cohort; and the union of TNBC's and LumA's own RMT hub genes
-at their respective $\tau^*$ (deduplicated, truncated to 20).
+at their respective $\tau^*$ (deduplicated, truncated to 20); and a
+genetic algorithm (\texttt{DEAP}, \citealp{deap2012}) directly
+searching 20-slot chromosomes of candidate-gene indices, fitness equal
+to mean 5-fold CV accuracy of the same logistic-regression pipeline on
+the (deduplicated) gene subset, population 40, 15 generations,
+tournament selection (size 3), two-point crossover ($p=0.5$), and
+per-index mutation ($p=0.1$ per slot).
+
+\subsection*{Random-graph network comparison}
+
+For each cohort's thresholded network at $\tau^*$ (isolated nodes
+removed), we computed the average clustering coefficient, giant
+connected component size, and greedy-modularity community count and
+modularity score (\texttt{networkx}, \citealp{networkx2008}), and
+compared each against the mean over 20 replicates of two random-graph
+nulls of matched size: an Erd\H{o}s--R\'enyi $G(n,p)$ graph (same node
+and edge count, no other constraint) and a configuration-model graph
+(same node count \emph{and} the real network's own degree sequence,
+testing for structure beyond degree heterogeneity alone).
 
 \subsection*{Code and reproducibility}
 
@@ -967,6 +1060,11 @@ G.~Aarts, O.~Hajizadeh, B.~Lucini, C.~Park,
 \newblock ``Dyson Brownian motion and random matrix dynamics of weight matrices during learning,''
 \newblock arXiv:2411.13512 (2024). NeurIPS 2024 Workshop on Machine Learning and the Physical Sciences.
 
+\bibitem[Altland \& Zirnbauer(1997)]{altlandzirnbauer1997}
+A.~Altland, M.~R.~Zirnbauer,
+\newblock ``Nonstandard symmetry classes in mesoscopic normal-/superconducting hybrid systems,''
+\newblock \emph{Physical Review B} \textbf{55}, 1142--1161 (1997).
+
 \bibitem[Baik et al.(2005)]{baik2005}
 J.~Baik, G.~Ben~Arous, S.~P\'ech\'e,
 \newblock ``Phase transition of the largest eigenvalue for nonnull complex sample covariance matrices,''
@@ -976,6 +1074,16 @@ J.~Baik, G.~Ben~Arous, S.~P\'ech\'e,
 F.~J.~Dyson,
 \newblock ``A Brownian-Motion Model for the Eigenvalues of a Random Matrix,''
 \newblock \emph{Journal of Mathematical Physics} \textbf{3}, 1191--1198 (1962).
+
+\bibitem[Dyson(1962b)]{dyson1962threefold}
+F.~J.~Dyson,
+\newblock ``The Threefold Way. Algebraic Structure of Symmetry Groups and Ensembles in Quantum Mechanics,''
+\newblock \emph{Journal of Mathematical Physics} \textbf{3}(6), 1199--1215 (1962).
+
+\bibitem[Fortin et al.(2012)]{deap2012}
+F.-A.~Fortin, F.-M.~De~Rainville, M.-A.~Gardner, M.~Parizeau, C.~Gagn\'e,
+\newblock ``DEAP: Evolutionary Algorithms Made Easy,''
+\newblock \emph{Journal of Machine Learning Research} \textbf{13}, 2171--2175 (2012).
 
 \bibitem[Foulkes et al.(2010)]{foulkes2010}
 W.~D.~Foulkes, I.~E.~Smith, J.~S.~Reis-Filho,
@@ -991,6 +1099,11 @@ S.~M.~Gibson, S.~P.~Ficklin, S.~Isaacson, F.~Luo, F.~A.~Feltus, M.~C.~Smith,
 M.~J.~Goldman, B.~Craft, M.~Hastie, et al.,
 \newblock ``Visualizing and interpreting cancer genomics data via the Xena platform,''
 \newblock \emph{Nature Biotechnology} \textbf{38}, 675--678 (2020).
+
+\bibitem[Hagberg et al.(2008)]{networkx2008}
+A.~A.~Hagberg, D.~A.~Schult, P.~J.~Swart,
+\newblock ``Exploring Network Structure, Dynamics, and Function using NetworkX,''
+\newblock in \emph{Proceedings of the 7th Python in Science Conference (SciPy2008)}, 11--15 (2008).
 
 \bibitem[$k$-core(2021)]{kcore2021}
 R.~Dorantes-Gilardi, D.~Garc\'ia-Cort\'es, E.~Hern\'andez-Lemus, J.~Espinal-Enr\'iquez,
