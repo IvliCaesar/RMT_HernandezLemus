@@ -35,7 +35,7 @@ Random matrix theory (RMT) offers a principled way to decide which
 correlations in a noisy, finite-sample gene-expression matrix reflect
 real biology rather than sampling noise. We combine the classical
 RMT correlation-threshold method with a Monte Carlo permutation null,
-a Dyson-Brownian-motion repulsion diagnostic, spectral (von Neumann)
+a Dyson-Brownian-motion repulsion diagnostic, spectral
 entropy, and a graph-theoretic comparison against random-graph nulls,
 and apply the full pipeline to real bulk RNA-seq data from The Cancer
 Genome Atlas breast cancer cohort (TCGA-BRCA), comparing two
@@ -217,7 +217,23 @@ appeal to the $N\to\infty$ operator-algebraic limit --- but it is the
 reason the semicircle/GOE machinery generalizes so far beyond Gaussian
 random matrices in the first place: free probability, not Gaussianity,
 is the real source of the universality being leaned on throughout
-Sec.~\ref{sec:tau-sweep} and Sec.~\ref{sec:montecarlo}.
+Sec.~\ref{sec:tau-sweep} and Sec.~\ref{sec:montecarlo}. A standard
+modern reference for this whole circle of ideas, including the
+Dyson Brownian motion and Tracy--Widom material below, is
+\citet{aguz2010}. Ben~Arous and Guionnet sharpened the convergence
+itself into a large deviations principle \citep{benarousguionnet1997}:
+the empirical spectral measure of a GOE matrix does not merely converge
+to the semicircle law, it does so with an exponentially small
+probability of any other outcome, governed by a rate function built
+from Voiculescu's free (non-commutative) entropy --- the same notion
+of entropy invoked, in the unrelated but same-named finite-matrix
+sense, by the spectral entropy diagnostic of
+Sec.~\ref{sec:entropy}. The two entropies are different
+objects (one a large-deviations rate functional on the space of
+limiting measures, the other a Shannon entropy of one finite matrix's
+own normalized spectrum) and this paper does not conflate them; they
+share a name, and a spectral origin, for a real reason worth
+recording rather than treating as coincidence.
 \end{remark}
 
 \begin{remark}[Four-moment universality: why finite, non-Gaussian data is not a problem]
@@ -557,13 +573,21 @@ IPR, top-5 loading genes) is in
 
 Two further, independent checks on the spiked-eigenvalue picture above
 (\texttt{scripts/15\_entropy\_and\_edge\_scaling.py}). First, spectral
-(von Neumann) entropy: treating the normalized eigenvalue spectrum
+entropy: treating the normalized eigenvalue spectrum
 $p_i=\lambda_i/\sum_j\lambda_j$ of a correlation matrix as a
 probability distribution and computing $S=-\sum_i p_i\log p_i$
 (normalized to $[0,1]$ by $\log p$) gives a single-number summary of
 how concentrated the correlation structure is: low entropy means
 variance concentrated in a few real directions, entropy near 1 means
 variance spread uniformly, the signature of an unstructured matrix.
+This is sometimes also called a von Neumann entropy, by analogy with a
+normalized density matrix's eigenvalues, but it should not be confused
+with \emph{the} von Neumann entropy of a network in the graph-theory
+literature \citep{passeriniseverini2009}, which is defined from the
+normalized graph \emph{Laplacian}'s eigenvalues, not the correlation
+matrix's own eigenvalues directly; the two coincide only in special
+cases, and this paper uses the correlation-matrix version throughout,
+consistent with the spiked-eigenvalue analysis it complements.
 Real TNBC entropy is $0.573$ against a gene-permuted null of
 $0.647\pm0.0001$ (20 replicates); real LumA entropy is $0.645$ against
 a null of $0.809\pm0.0001$. Both real networks sit measurably below
@@ -1408,10 +1432,20 @@ A.~Altland, M.~R.~Zirnbauer,
 \newblock ``Nonstandard symmetry classes in mesoscopic normal-/superconducting hybrid systems,''
 \newblock \emph{Physical Review B} \textbf{55}, 1142--1161 (1997).
 
+\bibitem[Anderson et al.(2010)]{aguz2010}
+G.~W.~Anderson, A.~Guionnet, O.~Zeitouni,
+\newblock \emph{An Introduction to Random Matrices},
+\newblock Cambridge Studies in Advanced Mathematics \textbf{118}, Cambridge University Press (2010).
+
 \bibitem[Baik et al.(2005)]{baik2005}
 J.~Baik, G.~Ben~Arous, S.~P\'ech\'e,
 \newblock ``Phase transition of the largest eigenvalue for nonnull complex sample covariance matrices,''
 \newblock \emph{Annals of Probability} \textbf{33}(5), 1643--1697 (2005).
+
+\bibitem[Ben~Arous \& Guionnet(1997)]{benarousguionnet1997}
+G.~Ben~Arous, A.~Guionnet,
+\newblock ``Large deviations for Wigner's law and Voiculescu's non-commutative entropy,''
+\newblock \emph{Probability Theory and Related Fields} \textbf{108}, 517--542 (1997).
 
 \bibitem[Dyson(1962)]{dyson1962}
 F.~J.~Dyson,
@@ -1507,6 +1541,11 @@ S.~Ochoa, E.~Hern\'andez-Lemus,
 J.~S.~Parker, M.~Mullins, M.~C.~U.~Cheang, et al.,
 \newblock ``Supervised Risk Predictor of Breast Cancer Based on Intrinsic Subtypes,''
 \newblock \emph{Journal of Clinical Oncology} \textbf{27}(8), 1160--1167 (2009).
+
+\bibitem[Passerini \& Severini(2009)]{passeriniseverini2009}
+F.~Passerini, S.~Severini,
+\newblock ``Quantifying Complexity in Networks: The Von Neumann Entropy,''
+\newblock \emph{International Journal of Agent Technologies and Systems} \textbf{1}(4), 58--67 (2009).
 
 \bibitem[Pedregosa et al.(2011)]{sklearn2011}
 F.~Pedregosa, G.~Varoquaux, A.~Gramfort, et al.,
