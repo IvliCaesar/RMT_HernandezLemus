@@ -20,7 +20,7 @@ import pandas as pd
 import networkx as nx
 import os
 
-N_RANDOM_REPS = 5
+N_RANDOM_REPS = 3
 
 
 def network_stats(G):
@@ -69,11 +69,14 @@ if __name__ == "__main__":
               f"modularity={real_stats['modularity']:.4f}")
         rows.append(dict(cohort=name, model="real", **real_stats))
 
+        import time
         p = 2 * m / (n * (n - 1))
         er_stats_list = []
         for rep in range(N_RANDOM_REPS):
+            t0 = time.time()
             G_er = nx.gnp_random_graph(n, p, seed=rep)
             er_stats_list.append(network_stats(G_er))
+            print(f"    ER rep {rep} done in {time.time()-t0:.1f}s", flush=True)
         er_mean = {k: np.mean([s[k] for s in er_stats_list])
                    for k in er_stats_list[0]}
         print(f"  ER({N_RANDOM_REPS} reps mean): clustering={er_mean['clustering']:.4f}, "
@@ -91,10 +94,12 @@ if __name__ == "__main__":
             # dropping self-loops and parallel edges, the standard
             # practical approach, which only weakly perturbs the exact
             # degree sequence.
+            t0 = time.time()
             G_cm = nx.configuration_model(degree_seq, seed=rep)
             G_cm = nx.Graph(G_cm)
             G_cm.remove_edges_from(nx.selfloop_edges(G_cm))
             cm_stats_list.append(network_stats(G_cm))
+            print(f"    CM rep {rep} done in {time.time()-t0:.1f}s", flush=True)
         if cm_stats_list:
             cm_mean = {k: np.mean([s[k] for s in cm_stats_list])
                        for k in cm_stats_list[0]}
