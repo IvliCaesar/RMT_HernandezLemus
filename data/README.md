@@ -35,6 +35,21 @@ cómo se usa cada uno.
 - Cohorte pública independiente de TCGA-BRCA, con subtipificación clínica
 - Uso en el programa: cohorte de validación cruzada secundaria
 
+## GSE167150 — TNBC Hi-C (paciente + tejido contralateral sano)
+- GEO: <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE167150>
+- Procesado con HiC-Pro, resolución 40kb, redes intracromosómicas
+  por cromosoma (modelo hipergeométrico no central para significancia)
+- Fuente: Reyes-Gopar, Pérez-Fuentes, Bendall y Hernández-Lemus,
+  *Integration of chromosome conformation and gene expression networks
+  reveals regulatory mechanisms in triple negative breast cancer*,
+  Frontiers in Cell and Developmental Biology 13:1597245 (2025) — del
+  propio grupo del Dr. Hernández-Lemus, encontrado 2026-09-04
+  (`references/ReyesGopar_etal_2025_HiC_TNBC_networks.pdf`)
+- Uso en el programa: Línea 3 (Hi-C/3D) — ver "Roadmap" en
+  `article.tex`; esto **reemplaza** la afirmación anterior (ya
+  incorrecta) de que no existía un dataset Hi-C público a nivel
+  paciente para esta comparación
+
 ## Estado: TCGA-BRCA ya descargado y analizado (2026-09-04)
 
 `article.tex` (raíz del repo) usa datos reales de TCGA-BRCA, no
@@ -43,10 +58,10 @@ cómo reproducir la descarga — los archivos crudos (69MB) están en
 `.gitignore` y no viven en el repositorio, solo el código que los
 reconstruye (`scripts/01_build_cohorts.py`).
 
-GSE171958, GSE176078 y METABRIC siguen sin descargar — ver la sección
-"Roadmap" de `article.tex` para el plan concreto de cada una (Líneas 3,
-4, 6b), y no como un pendiente vago: GSE176078 es el siguiente paso
-directo para Línea 4.
+GSE171958, GSE176078, GSE167150 y METABRIC siguen sin descargar — ver
+la sección "Roadmap" de `article.tex` para el plan concreto de cada
+una (Líneas 1-extensión, 3, 4), y no como un pendiente vago: GSE176078
+es el siguiente paso directo para Línea 4, GSE167150 para Línea 3.
 
 ## Nota sobre descarga
 Ninguno de estos archivos está incluido en este repositorio (son
