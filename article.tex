@@ -256,10 +256,17 @@ spike, in both cohorts, is in \texttt{results/spiked\_eigenvalues.csv}.
 The $n^{-2/3}$ edge-fluctuation scale just invoked is not merely a rate:
 \citet{tracywidom1994} showed the limiting distribution of the
 (centered, rescaled) largest eigenvalue at that scale is governed by a
-particular solution of the Painlev\'e II differential equation,
-$q''(x)=xq(x)+2q(x)^3$, via $F(s)=\exp\!\big(-\int_s^\infty (x-s)q(x)^2\,dx\big)$
---- the Tracy--Widom distribution is not Gaussian, not exponential, and
-has no elementary closed form; it is defined \emph{through} a nonlinear
+particular (Hastings--McLeod) solution of the Painlev\'e II
+differential equation, $q''(x)=xq(x)+2q(x)^3$, $q(x)\sim\mathrm{Ai}(x)$
+as $x\to\infty$. The precise distribution depends on the ensemble's
+symmetry class (Dyson's $\beta$, Sec.~\ref{sec:math} above): for GUE
+($\beta=2$), $F_2(s)=\exp\!\big(-\int_s^\infty (x-s)q(x)^2\,dx\big)$;
+for GOE ($\beta=1$) --- the class every correlation matrix in this
+paper belongs to, being real symmetric --- the relation is more
+involved, $[F_1(s)]^2=F_2(s)\exp\!\big(-\int_s^\infty q(x)\,dx\big)$
+\citep{tracywidom1996}, not simply $F_2$ itself. Either way, the
+Tracy--Widom distributions are not Gaussian, not exponential, and have
+no elementary closed form; they are defined \emph{through} a nonlinear
 ODE with no elementary solution. This paper does not fit that
 distribution directly (no verified numerical implementation of it was
 available), and instead checks a strictly weaker, fully elementary
@@ -421,12 +428,13 @@ sampling noise indistinguishable from a structureless null? Under the
 null of no true correlation structure, a $p\times n$ sample correlation
 matrix has eigenvalues confined, asymptotically, to the
 Marchenko--Pastur bulk $[\lambda_-,\lambda_+]$ with
-$\lambda_\pm=(1\pm\sqrt{q})^2$, $q=p/n$ \citep{marchenkopastur1967}; any
-eigenvalue exceeding $\lambda_+$ is a ``spike'' that cannot be
-explained by finite-sample noise alone and marks a real, low-rank
-correlation direction (a spiked covariance model; the transition
-behavior of such spikes near $\lambda_+$ is the Baik--Ben~Arous--P\'ech\'e,
-BBP, phenomenon underlying spectral denoising methods generally).
+$\lambda_\pm=(1\pm\sqrt{q})^2$, $q=p/n$ \citep{marchenkopastur1967}; an
+eigenvalue exceeding $\lambda_+$ is a candidate ``spike'' marking a
+real, low-rank correlation direction, though --- see below --- not
+every such eigenvalue is equally trustworthy on its own (a spiked
+covariance model; the transition behavior of such spikes near
+$\lambda_+$ is the Baik--Ben~Arous--P\'ech\'e, BBP, phenomenon
+underlying spectral denoising methods generally).
 \texttt{scripts/08\_spiked\_eigenvalues.py} counts these directly on the
 real, full correlation matrices (before any thresholding):
 
@@ -502,12 +510,21 @@ variance spread uniformly, the signature of an unstructured matrix.
 Real TNBC entropy is $0.573$ against a gene-permuted null of
 $0.647\pm0.0001$ (20 replicates); real LumA entropy is $0.645$ against
 a null of $0.809\pm0.0001$. Both real networks sit measurably below
-their own null, LumA's gap ($0.164$) more than twice TNBC's ($0.074$)
---- consistent, again, with LumA's larger spike count and variance
-share from Sec.~\ref{sec:spiked}: three independent statistics (spike
-count, entropy gap, and the Sec.~\ref{sec:montecarlo} threshold gap)
-agree on which cohort has more concentrated, and which has more
-diffuse, real structure.
+their own null, LumA's gap ($0.164$) more than twice TNBC's ($0.074$).
+This self-normalized gap, not the raw entropy value, is the fair
+cross-cohort comparison, for the same reason raw spiked-eigenvalue
+counts were not (Sec.~\ref{sec:spiked}): TNBC's much larger $q$ gives
+it a lower null entropy to begin with ($0.647$ vs.\ LumA's $0.809$),
+so TNBC's raw real entropy sitting below LumA's raw real entropy
+($0.573$ vs.\ $0.645$) reflects that difference in null baseline as
+much as anything biological, and should not be read, on its own, as
+``TNBC's network is more concentrated.'' By the gap metric, LumA shows
+the larger deviation from its own null, in the same direction as its
+larger spike count and variance share (Sec.~\ref{sec:spiked}) and its
+larger, more robust threshold gap over pure noise
+(Sec.~\ref{sec:robustness}) --- three self-normalized statistics
+pointing the same way, though we stop short of calling this proof of a
+single underlying ``more structured'' scale common to all three.
 
 Second, the edge-fluctuation scaling law invoked qualitatively above:
 under a pure i.i.d.\ Gaussian null at \emph{fixed} aspect ratio
@@ -882,7 +899,7 @@ Feature set & Accuracy & ROC-AUC \\
 Random (20 genes) & $0.982\pm0.008$ & $0.985\pm0.018$ \\
 Top-variance (20 genes) & $0.980\pm0.007$ & $0.989\pm0.013$ \\
 RMT hub genes (20 genes) & $0.982\pm0.011$ & $0.988\pm0.013$ \\
-Genetic algorithm (20 genes) & $0.9945$ & $0.9962$ \\
+Genetic algorithm (20 genes) & $0.9945\pm0.0109$ & $0.9962\pm0.0076$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -967,12 +984,14 @@ tasks rather than toward a different feature-selection method on the
 same easy task: TNBC-vs-LumA is close to solved by construction, and no
 amount of better feature engineering will show a visible gap on it.
 
-All numbers reported above come directly from the six scripts in
+All numbers reported above come directly from the scripts in
 \texttt{scripts/}, run against the two real cohorts in
 \texttt{data/TCGA-BRCA/}; none are estimated, recalled, or adjusted
 after the fact. Re-running \texttt{scripts/01\_build\_cohorts.py}
-through \texttt{scripts/07\_make\_figures.py} in order reproduces every
-number and figure in this paper from the raw downloaded files.
+through \texttt{scripts/16\_tracy\_widom\_figure.py} in order (see
+``Code and reproducibility'' in Methods for the two named exceptions)
+reproduces every number and figure in this paper from the raw
+downloaded files.
 
 \section{Roadmap for the lines not yet run on real data}
 \label{sec:roadmap}
@@ -1388,6 +1407,11 @@ The Cancer Genome Atlas Network,
 C.~A.~Tracy, H.~Widom,
 \newblock ``Level-spacing distributions and the Airy kernel,''
 \newblock \emph{Communications in Mathematical Physics} \textbf{159}, 151--174 (1994).
+
+\bibitem[Tracy \& Widom(1996)]{tracywidom1996}
+C.~A.~Tracy, H.~Widom,
+\newblock ``On orthogonal and symplectic matrix ensembles,''
+\newblock \emph{Communications in Mathematical Physics} \textbf{177}, 727--754 (1996).
 
 \bibitem[Voiculescu(1991)]{voiculescu1991}
 D.~Voiculescu,
