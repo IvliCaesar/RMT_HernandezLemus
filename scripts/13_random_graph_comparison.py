@@ -84,13 +84,16 @@ if __name__ == "__main__":
 
         cm_stats_list = []
         for rep in range(N_RANDOM_REPS):
-            try:
-                G_cm = nx.random_degree_sequence_graph(
-                    degree_seq, seed=rep, tries=50)
-                G_cm = nx.Graph(G_cm)
-                G_cm.remove_edges_from(nx.selfloop_edges(G_cm))
-            except nx.NetworkXError:
-                continue
+            # nx.configuration_model uses fast stub-matching (Molloy-Reed),
+            # not random_degree_sequence_graph's slow rejection sampling
+            # (which stalls for skewed degree sequences on large n); the
+            # resulting multigraph is converted to a simple graph by
+            # dropping self-loops and parallel edges, the standard
+            # practical approach, which only weakly perturbs the exact
+            # degree sequence.
+            G_cm = nx.configuration_model(degree_seq, seed=rep)
+            G_cm = nx.Graph(G_cm)
+            G_cm.remove_edges_from(nx.selfloop_edges(G_cm))
             cm_stats_list.append(network_stats(G_cm))
         if cm_stats_list:
             cm_mean = {k: np.mean([s[k] for s in cm_stats_list])

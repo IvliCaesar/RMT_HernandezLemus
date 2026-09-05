@@ -528,6 +528,20 @@ first time this specific scaling check has been reported in this
 program; it supports treating the spiked-eigenvalue threshold
 $\lambda_+$ (Sec.~\ref{sec:spiked}) as a genuine edge with the
 expected finite-size behavior, rather than an arbitrary cutoff.
+Figure~\ref{fig:tw} shows the fit directly against both reference
+slopes.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{figures/fig7_tracy_widom_scaling.pdf}
+\caption{Empirical standard deviation of the top eigenvalue of a
+synthetic i.i.d.\ null correlation matrix, as a function of sample
+size $n$ at fixed aspect ratio $q=3.0$, log-log. The fitted slope
+($-0.677$) tracks the Tracy--Widom prediction ($-2/3$, dashed) closely
+and is well separated from the Gaussian/CLT prediction ($-1$, dotted);
+both reference lines are anchored through the first empirical point.}
+\label{fig:tw}
+\end{figure}
 
 \subsection{RMT threshold selection separates TNBC from LumA}
 \label{sec:tau-sweep}
