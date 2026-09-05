@@ -7,17 +7,20 @@ network against two standard random-graph nulls of the same size:
     (preserves the real hub-degree distribution, tests whether
     clustering/modularity beyond degree alone is real).
 Reports clustering coefficient, largest connected component size, and
-greedy-modularity community count/modularity for the real network and
-for the mean over random-graph replicates of each null -- the standard
+Louvain-community count/modularity for the real network and for the
+mean over random-graph replicates of each null -- the standard
 small-world/modular-network check (Luo et al. 2007 and the biological
 network literature generally use exactly this kind of comparison).
+Louvain (not greedy-modularity) is used for tractability on LumA's
+~146K-edge network; both are standard modularity-maximization
+heuristics.
 """
 import numpy as np
 import pandas as pd
 import networkx as nx
 import os
 
-N_RANDOM_REPS = 20
+N_RANDOM_REPS = 5
 
 
 def network_stats(G):
@@ -27,7 +30,7 @@ def network_stats(G):
     clustering = nx.average_clustering(G)
     giant = max(nx.connected_components(G), key=len)
     giant_frac = len(giant) / G.number_of_nodes()
-    communities = nx.community.greedy_modularity_communities(G)
+    communities = nx.community.louvain_communities(G, seed=0)
     modularity = nx.community.modularity(G, communities)
     return dict(clustering=clustering, giant_frac=giant_frac,
                 n_communities=len(communities), modularity=modularity)
