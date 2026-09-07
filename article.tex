@@ -55,8 +55,12 @@ variance per cohort, and the leading such directions are thematically
 coherent multi-gene programs (collagen/ECM, interferon, keratin)
 rather than single-gene artifacts. Tracking the top eigenvalues as the
 TNBC sample grows one patient at a time shows several pairs undergoing
-Dyson-type level repulsion (approach, then reopen, rather than cross).
-A wavelet multiscale decomposition failed a random-ordering control on
+Dyson-type level repulsion (approach, then reopen, rather than cross),
+reproducible across 20 random patient orders and replicated in LumA (a
+second, three-times-larger cohort), with the least reliable pair in
+both cohorts the one involving the largest, most spike-like
+eigenvalues, exactly as a new closed-form corollary of the governing
+SDE predicts. A wavelet multiscale decomposition failed a random-ordering control on
 real data but a synthetic positive control shows it works correctly at
 both scales given sufficient signal --- the real-data failure was a
 weak-ordering-axis problem, not a method problem. A classifier
@@ -76,7 +80,16 @@ ratio inverts relative to the bulk cohorts; the largest spiked
 eigenvalues split cleanly into real cell-type axes (immune, myeloid,
 epithelial, matching independent cell-type annotation) and known
 single-cell technical artifacts (ribosomal content, dissociation
-stress), a distinction the bulk analysis never had to draw.
+stress), a distinction the bulk analysis never had to draw. Restricting
+pseudo-time inference to a single continuous lineage within that same
+sample (894 Cancer Epithelial cells), as a corrected retest of the
+wavelet line proposed, still finds no stronger ordering axis (PC1
+variance share $8.6\%$, no better than the whole-sample $9.7\%$) and a
+wavelet coarse/fine split statistically indistinguishable from a random
+cell ordering; the same comparison against random orderings shows the
+single-cell Dyson-repulsion pattern itself reflects growing sample size
+rather than this specific ordering, clarifying rather than undermining
+the bulk-cohort repulsion result.
 
 \noindent\textbf{Conclusions:}
 Combining a static RMT threshold with an explicit Monte Carlo null and
@@ -1080,12 +1093,64 @@ matrices during training, is also directly observable in the spectrum
 of a real gene-coexpression correlation matrix as its sample size
 grows --- and therefore a plausible shared diagnostic for the data side
 and the model side of a recognition pipeline built on this data, as
-proposed originally in Line 6 of the wider research program. This
-remains a single-cohort, single-gene-subset check; extending it to
-LumA and to other gene subsets is the natural next step. The other
+proposed originally in Line 6 of the wider research program. This was,
+until this round, a single-cohort, single-gene-subset check; extending
+it to LumA is the direct next step this result itself proposes, and is
+attacked immediately below rather than left as a proposal. The other
 half of Line 6 --- the model's own weight-matrix dynamics, previously
 left as Roadmap item 6b --- is attacked directly, on real data, in the
-next subsection.
+subsection after that.
+
+\subsection{The Dyson-repulsion pattern replicates in a second, larger real cohort}
+\label{sec:results-dyson-luma}
+
+Everything above uses TNBC alone. Rerunning the identical single-order
+scan and 20-order reproducibility check
+(\texttt{scripts/27\_luma\_dyson\_repulsion.py}) on LumA's own top-60
+most-variable genes --- a cohort more than three times larger
+($n=430$ vs.\ $119$) and with a correspondingly smaller $q=p/n$
+(Table~\ref{tab:cohorts}) --- tests directly whether the repulsion
+signature is a TNBC-specific curiosity or a property of real
+coexpression matrices more generally. It replicates, and in the
+lower-lying pairs more reliably than in TNBC: $\lambda_5$--$\lambda_6$,
+$\lambda_6$--$\lambda_7$, and $\lambda_7$--$\lambda_8$ each show clear
+repulsion in all 20/20 random orders (vs.\ 18--19/20 for the
+corresponding TNBC pairs, Fig.~\ref{fig:repro}), and
+$\lambda_3$--$\lambda_4$ and $\lambda_4$--$\lambda_5$ in 14/20.
+
+The two least reliable pairs are again the ones involving the very
+largest eigenvalues: $\lambda_1$--$\lambda_2$ (11/20 clear repulsion)
+and $\lambda_2$--$\lambda_3$ (9/20), together the two weakest of
+LumA's seven pairs, echoing TNBC's own single unreliable pair
+($\lambda_1$--$\lambda_2$, 7/20) and consistent with the same mechanism
+Corollary~\ref{cor:weak-repulsion} makes quantitative: LumA has more
+than twice TNBC's spiked-eigenvalue count (29 vs.\ 14,
+Table~\ref{tab:spiked}), so it is plausible that its top \emph{three}
+eigenvalues, not just its top two, sit in the strong-spike regime the
+Corollary predicts weakens two-body repulsion, rather than only
+$\lambda_1$ as in TNBC --- a hypothesis this single check cannot fully
+separate from ordinary sampling variation across cohorts, but one the
+data are at least consistent with. Figure~\ref{fig:luma-repro} shows
+the full breakdown, directly comparable to Fig.~\ref{fig:repro}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig15_luma_repulsion_reproducibility.pdf}
+\caption{Dyson-repulsion reproducibility across 20 independent random
+patient-inclusion orders, LumA, top 60 genes, $n=430$ --- same method
+and criterion as Fig.~\ref{fig:repro} (TNBC). The two least-reliable
+pairs are again the ones adjacent to the largest eigenvalues.}
+\label{fig:luma-repro}
+\end{figure}
+
+Read together with the TNBC result, this is the same qualitative
+picture in a cohort more than three times larger and with a very
+different aspect ratio: level repulsion among coexpression-matrix
+eigenvalues, reproducible across random patient orders, weakest exactly
+where the local eigenvalue gap is largest (the eigenvalues closest to a
+genuine spectral spike), in both real cohorts this paper analyzes.
+Extending the same check to other gene subsets, beyond the top-60-by-
+variance choice used throughout, remains open.
 
 \subsection{Dyson dynamics of the classifier itself: a genuine, reproducible null}
 \label{sec:results-dyson-classifier}
@@ -1219,6 +1284,81 @@ assumes --- is not expected to keep applying uniformly across the whole
 of training in the first place; this paper's own early/late split is a
 direct, if smaller-scale, instance of that same phase structure.
 
+\subsection{Does a longer transient give a longer repulsion window? A direct test, with an honest complication}
+\label{sec:results-dyson-classifier-longer}
+
+The early/late split above rests on one specific training regime
+(learning rate $0.05$, converged by epoch $\sim\!50$ in every seed);
+the mechanism it proposes --- repulsion detectable only while the
+weight matrix is genuinely still changing --- makes a falsifiable
+prediction: slow convergence down, with nothing else about the task,
+architecture, or feature set changed, and the pre-convergence window in
+which repulsion is detectable should lengthen correspondingly.
+\texttt{scripts/28\_classifier\_dyson\_longer\_transient.py} tests this
+directly with a $5\times$ smaller learning rate ($0.01$) and a
+$5\times$ longer run ($1500$ epochs), splitting each of the same 20
+seeds at its own empirically measured convergence epoch rather than a
+reused fixed cutoff.
+
+The learning-rate change itself does not translate linearly into a
+convergence-time change: convergence epoch lengthens from
+$\sim\!50$ to a mean of $549.8$ (median $645.5$, range $90$--$947$
+across seeds) --- roughly $11\times$ longer for a $5\times$ smaller
+learning rate, not the $5\times$ a naively linear relationship would
+predict, and with substantial seed-to-seed spread the original
+$50$-epoch estimate did not need to address (every seed converged by
+epoch $\sim\!50$ there; here the fastest seed converges at epoch $90$
+and the slowest at epoch $947$, a full order of magnitude apart). Final
+accuracy is essentially unchanged ($0.987$--$0.991$, matching the
+original run), confirming this is the same task solved more slowly, not
+a harder or different one.
+
+The qualitative prediction holds, and in one respect more cleanly than
+before: summed over all 7 pairs and 20 seeds, the post-convergence
+window shows \emph{zero} repulsion-or-partial calls out of 140
+(vs.\ 3/140 in the original, shorter run) --- an even sharper null once
+each seed is judged against its own real convergence point rather than
+a shared fixed cutoff. But the pre-convergence count itself is
+\emph{lower} in raw terms, not higher: $11/140$ here against $36/140$
+in the original run, even though the pre-convergence window is, in
+epoch count, roughly an order of magnitude longer on average. This is
+not a failure of the mechanism, but it is a real limitation of the
+detection criterion worth stating plainly rather than glossing over:
+the closest-approach/reopening classification (Sec.~\ref{sec:classifier-dyson-methods})
+looks for a gap to reopen within a fixed 5-\emph{epoch} window on each
+side of its minimum, and at a $5\times$ smaller learning rate the
+weight matrix moves roughly $5\times$ less per epoch, so the same
+5-epoch window covers a proportionally smaller slice of the underlying
+dynamics --- the criterion was tuned to the original run's convergence
+speed and does not automatically rescale with it. The honest reading of
+both results together is therefore two-part rather than a single clean
+confirmation: repulsion is confined to the pre-convergence transient
+regardless of how long that transient is made (the qualitative claim,
+now checked at two very different transient lengths and, if anything,
+strengthened by the cleaner post-convergence null), but this
+particular epoch-windowed detector's raw hit count is not a reliable
+absolute measure of how much repulsion is present when the underlying
+timescale itself changes --- a window that scales with the empirical
+per-epoch step size, rather than a fixed 5 epochs, is the concrete fix
+a future round should make before comparing raw counts across
+learning-rate regimes directly. Figure~\ref{fig:classifier-longer-transient}
+shows both the convergence-epoch distribution and the early/late
+breakdown.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/fig17_classifier_longer_transient.pdf}
+\caption{Left: early (pre-own-convergence) vs.\ late (post-own-convergence)
+repulsion-or-partial counts, by pair, at $5\times$ smaller learning
+rate / $5\times$ more epochs, each seed split at its own empirical
+convergence point. Right: distribution of empirical convergence epochs
+across the 20 seeds (mean $549.8$, vs.\ $\sim\!50$ at the original
+learning rate) --- convergence time lengthens by roughly
+$11\times$ for a $5\times$ smaller learning rate, not a proportional
+$5\times$.}
+\label{fig:classifier-longer-transient}
+\end{figure}
+
 \subsection{Machine-learning recognition test: an honest null result}
 \label{sec:ml-results}
 
@@ -1328,6 +1468,8 @@ $26.8\%$ of total variance --- a smaller variance share than either
 bulk cohort ($48.2\%$, $57.3\%$), consistent with a mixed-tumor
 single-cell sample's real structure being spread across more distinct
 biological axes (cell types) rather than concentrated in a few.
+Figure~\ref{fig:singlecell-spectrum} shows the full raw spectrum against
+this bulk edge directly.
 
 \begin{table}[h]
 \centering
@@ -1442,13 +1584,101 @@ genuine single-cell-specific caveat the bulk data never raised
 (technical dissociation/ribosomal spikes indistinguishable from
 biological ones without independent metadata). It also directly
 resolves the open question Sec.~\ref{sec:wavelets} left about
-single-cell pseudo-time: this sample's own PC1 does not provide the
-stronger ordering axis that line was hoping for, so that revisit still
-needs genuine single-lineage trajectory inference, not just single-cell
-data of any kind. One patient, one subtype, is the honest scope of this
-result; extending it across the other 8 TNBC patients in the series
-(pooled, with an explicit batch-effect check this single-patient
+single-cell pseudo-time: this sample's own (whole-sample) PC1 does not
+provide the stronger ordering axis that line was hoping for, so that
+revisit needs genuine single-lineage trajectory inference rather than
+single-cell data of any kind --- checked directly, not just proposed,
+immediately below. One patient, one subtype, is the honest scope of
+this result; extending it across the other 8 TNBC patients in the
+series (pooled, with an explicit batch-effect check this single-patient
 analysis did not need) is the direct next step.
+
+\subsection{Single-lineage pseudo-time: a corrected retest, still null, with a clarifying result}
+\label{sec:singlecell-epithelial}
+
+The corrected candidate this Roadmap item itself proposed --- pseudo-
+time restricted to a single, continuously varying lineage, rather than
+the whole 9-cell-type mixture --- is directly available in the same
+sample: 894 Cancer Epithelial cells (Sec.~\ref{sec:results-singlecell}),
+the largest non-immune population and the natural candidate for a
+proliferation or differentiation gradient. Running the identical
+PC1-ordering, Dyson-trajectory, and wavelet-decomposition pipeline used
+elsewhere in this paper (Sec.~\ref{sec:epithelial-methods}) on this
+subset alone, rather than assuming the restriction helps, gives three
+specific, honest answers.
+
+First, the ordering-axis hypothesis itself does not survive the check:
+PC1 restricted to the 894 Cancer Epithelial cells explains $8.6\%$ of
+variance --- \emph{not} an improvement over the whole-sample single-cell
+PC1 ($9.7\%$, Sec.~\ref{sec:wavelets}) or bulk-patient PC1 ($10.2\%$,
+Sec.~\ref{sec:wavelets}), if anything slightly worse. Restricting to a
+single lineage removes the categorical T-cell-vs-everything-else split
+that was diluting the whole-sample PC1, but it does not, on its own,
+turn this population into the strong continuous gradient the Roadmap
+anticipated; whatever developmental or proliferative structure this
+lineage has is evidently not concentrated in a single dominant linear
+direction either.
+
+Second, the wavelet retest itself (Line 5) remains a genuine null on
+this corrected axis, exactly as it was on the uncorrected one
+(Sec.~\ref{sec:wavelets}): the coarse and fine coexpression networks
+share $0$ of their top-10 hub genes, and a 20-replicate random-cell-order
+control shows this bare result is not even unusual --- every one of the
+20 random orderings matches or exceeds the real ordering's $0/10$
+overlap. The specific genes involved are nonetheless thematically sharp
+and worth recording: the coarse-scale network's hubs are proteasome/
+ribosome-biogenesis genes (\emph{PSMA7}, \emph{PSMD8}, \emph{ADRM1});
+the fine-scale network's hubs are almost entirely mitochondrially
+encoded respiratory-chain genes (\emph{MT-ND4L}, \emph{MT-CO1},
+\emph{MT-ND1}, \emph{MT-CO2}, \emph{MT-ND3}, \emph{MT-CO3},
+\emph{MT-ATP6}, \emph{MT-ND4}). Two biologically coherent, mutually
+exclusive gene programs sit at the two scales, but the coarse/fine
+\emph{split itself} is statistically indistinguishable from an
+arbitrary cell ordering --- a real, specific null, not merely an
+absence of structure, and the same caveat applies here as in
+Sec.~\ref{sec:wavelets}: this is a data/ordering problem, not evidence
+against the wavelet method, whose own positive control
+(Sec.~\ref{sec:wavelets}) already showed it works correctly given a
+genuinely strong ordering axis.
+
+Third, and the most useful methodological clarification this retest
+provides: the Dyson-trajectory diagnostic itself (Line 4(ii)) does show
+the qualitative approach-and-reopen pattern along this pseudo-time for
+most pairs ($\lambda_4$--$\lambda_5$ through $\lambda_7$--$\lambda_8$),
+but a direct comparison against 20 independent \emph{random} cell
+orderings (not attempted for the bulk cohorts' original patient-order
+scan, only their reproducibility \emph{across} random orders) shows
+random orderings reproduce the same repulsion pattern at comparable or
+higher rates for every one of those pairs (e.g.\
+$\lambda_6$--$\lambda_7$: real order shows clear repulsion, and so do
+18/20 random orders). This does not contradict the bulk-cohort Dyson
+result: it clarifies what that result, and this paper's own framing of
+Dyson's SDE (Definition~\ref{def:dyson-sde}), already say --- ``time''
+in this diagnostic is sample size accumulating, not a specific
+biologically meaningful axis, so the repulsion signature is expected to
+appear under \emph{any} growing sequence of real correlation matrices
+built from the same underlying data, ordering included. Put plainly:
+the bulk-cohort multi-order reproducibility check
+(Sec.~\ref{sec:results-dyson}, Fig.~\ref{fig:repro}) already tested
+exactly this, at scale, months before this specific single-cell
+comparison was run, and got the same answer; this retest confirms it
+again, explicitly, on an entirely different dataset and cell population,
+rather than leaving it as an assumption carried over from the bulk
+result. Figure~\ref{fig:singlecell-epithelial-dyson} shows the
+comparison directly.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig16_singlecell_epithelial_real_vs_random.pdf}
+\caption{Single-cell Cancer-Epithelial pseudo-time Dyson-repulsion scan:
+clear-repulsion rate under the real pseudo-time ordering (blue, all-or-
+nothing since there is only one such ordering) vs.\ under 20 independent
+random cell orderings (orange, count out of 20). Random orderings match
+or exceed the real ordering for every pair with a clear signal,
+consistent with repulsion here reflecting growing sample size rather
+than this specific ordering's biological content.}
+\label{fig:singlecell-epithelial-dyson}
+\end{figure}
 
 \section{Discussion}
 \label{sec:limitations}
@@ -1501,27 +1731,58 @@ The Dyson-repulsion result (Sec.~\ref{sec:results-dyson}) was, in an
 earlier round, the newest and least tested of the four executed lines,
 resting on one cohort, one 60-gene subset, and one random
 patient-inclusion order; the multi-order reproducibility check
-(Fig.~\ref{fig:repro}) has since closed that specific gap and, in doing
-so, resolved the one open question it had left (whether
-$\lambda_2$--$\lambda_3$ repels at all) in the affirmative. What
-remains open is broader, not narrower: one cohort (TNBC only) and one
-gene subset (top-60-by-variance); extending the same multi-order check
-to LumA and to other gene-selection criteria is the natural next step.
-Corollary~\ref{cor:weak-repulsion}, new in this round, also gives that
-one lingering data-side anomaly ($\lambda_1$--$\lambda_2$'s
-unreliability) a quantitative account directly from the same SDE,
-rather than leaving it as a qualitative aside.
+(Fig.~\ref{fig:repro}) closed that specific gap and resolved the one
+open question it had left (whether $\lambda_2$--$\lambda_3$ repels at
+all) in the affirmative. Corollary~\ref{cor:weak-repulsion}, from that
+same round, gives the one lingering data-side anomaly
+($\lambda_1$--$\lambda_2$'s unreliability) a quantitative account
+directly from the same SDE. What had remained open --- one cohort only
+--- is now closed too: the identical check on LumA
+(Sec.~\ref{sec:results-dyson-luma}) replicates the pattern in a cohort
+more than three times larger, with the same qualitative signature
+(the pair(s) adjacent to the largest, most spike-like eigenvalues the
+least reliable), and Corollary~\ref{cor:weak-repulsion}'s account
+extends naturally to LumA's two unreliable pairs given its larger
+spiked-eigenvalue count (Table~\ref{tab:spiked}). What remains open
+now is narrower still: extending the multi-order check to gene subsets
+other than the top-60-by-variance choice used throughout.
+
+The single-cell side of the same question (Line 4(ii),
+Sec.~\ref{sec:singlecell-epithelial}) gives a genuinely different kind
+of answer: restricting pseudo-time to the 894-cell Cancer Epithelial
+lineage does not improve the ordering axis over the whole-sample PC1
+($8.6\%$ vs.\ $9.7\%$ variance), leaves the wavelet retest a null
+indistinguishable from a random ordering exactly as before, and --- most
+usefully --- shows directly, for the first time, that the
+Dyson-repulsion signature at single-cell resolution is a property of
+growing sample size rather than of this specific ordering (random cell
+orders reproduce it at comparable or higher rates). This is a
+clarification of what ``time'' means in this diagnostic
+(Definition~\ref{def:dyson-sde}), consistent with, not contradicted by,
+the bulk-cohort reproducibility results, and it means the concrete
+open item here is no longer ``restrict to one lineage'' (tried, and
+insufficient on its own) but genuinely different pseudo-time inference
+entirely (RNA velocity or a dedicated trajectory-inference tool).
 
 Line 6b's classifier-side extension (Sec.~\ref{sec:results-dyson-classifier})
 is now run rather than merely proposed, and closes with a specific,
 mechanistic finding rather than a flat null: weight-matrix repulsion is
 real but confined to the pre-convergence training transient, a
 12-fold difference between the early and late windows
-(\texttt{scripts/22\_classifier\_dyson\_early\_late.py}). Whether a
-longer genuine transient (a deeper network, or a harder task that does
-not plateau by epoch 50) produces a correspondingly longer window of
-detectable repulsion is the direct next test this result proposes for
-itself, stated concretely in Sec.~\ref{sec:roadmap}.
+(\texttt{scripts/22\_classifier\_dyson\_early\_late.py}). The direct
+follow-up test this result proposed for itself --- does a longer
+genuine transient produce a longer detectable-repulsion window? --- has
+also now been run (Sec.~\ref{sec:results-dyson-classifier-longer}): at
+a $5\times$ smaller learning rate the transient lengthens by
+$\sim\!11\times$ (not the $5\times$ a linear relationship would
+predict), the post-convergence null gets even cleaner ($0/140$ vs.\
+$3/140$), and the qualitative claim holds, but the raw pre-convergence
+detection count actually falls ($11/140$ vs.\ $36/140$) because the
+closest-approach/reopening criterion's fixed 5-epoch window does not
+rescale with the slower per-epoch dynamics --- a real limitation of the
+detector, honestly surfaced rather than smoothed over, and a concrete
+methodological fix (a window sized to the empirical per-epoch step,
+not a fixed epoch count) for a future round.
 
 The classification ceiling effect in Table~\ref{tab:ml} is itself an
 argument for redirecting the ML line toward harder, clinically framed
@@ -1581,17 +1842,26 @@ point of comparison for whatever the RMT threshold selects.
 The synthetic positive control (Results) already confirms the
 coarse/fine wavelet pipeline works correctly given enough real signal,
 so what remains is not a method fix but a data fix. This was checked
-directly, not just proposed: the global PC1 of the single-cell data
-now in hand (Sec.~\ref{sec:results-singlecell}) carries only $9.7\%$ of
-variance, no improvement over bulk-patient PC1's $10.2\%$
-(Sec.~\ref{sec:wavelets}), because this sample's real structure is
-spread across many distinct cell-type axes rather than one dominant
-gradient. The corrected next step is narrower: infer pseudo-time within
-a single, continuously varying lineage only --- the 894 Cancer
-Epithelial cells already present in this same sample are the natural
-candidate, rather than the full 9-cell-type mixture whose dominant axis
-is categorical (T-cells vs.\ everything else), not a gradient a wavelet
-decomposition could meaningfully coarse/fine-grain.
+directly, not just proposed, in two rounds now. First: the global PC1
+of the single-cell data (Sec.~\ref{sec:results-singlecell}) carries
+only $9.7\%$ of variance, no improvement over bulk-patient PC1's
+$10.2\%$ (Sec.~\ref{sec:wavelets}), because this sample's real structure
+is spread across many distinct cell-type axes rather than one dominant
+gradient. Second, the corrected candidate that round proposed ---
+pseudo-time restricted to the 894-cell Cancer Epithelial lineage alone
+--- has itself now been tried (Sec.~\ref{sec:singlecell-epithelial})
+and does not fix the problem either: its own PC1 explains only $8.6\%$
+of variance, no better than the whole-sample figure, and the wavelet
+retest on that ordering remains a null indistinguishable from a random
+cell order. Restricting to a single lineage removes the categorical
+T-cell-vs-everything-else split, but does not on its own supply a
+strong continuous gradient. What remains is therefore not another restriction of the same
+PC1-based approach, already tried twice, but a genuinely different
+pseudo-time estimator --- RNA-velocity-style splicing information (not
+available in this processed count matrix and would require
+re-processing from raw reads) or a dedicated trajectory-inference tool
+run on the same Cancer Epithelial cells --- before this line can be
+retested a third time.
 
 \subsection{Line 1 extension: multi-omic spectral denoising}
 Sec.~\ref{sec:spiked}'s spiked-eigenvalue analysis was run on RNA-seq
@@ -1624,16 +1894,21 @@ extend from one patient to the other 8 TNBC-labeled samples in the same
 series, pooled, with an explicit check for cross-patient batch effects
 in the spike structure (the single-patient design here was chosen
 specifically to avoid that confound, not to avoid the question
-entirely); (ii) the Dyson-trajectory diagnostic of
-Sec.~\ref{sec:results-dyson} remains untried at single-cell resolution
---- cells ordered along a real inferred pseudo-time, not the global PC1
-already checked and found insufficient (Sec.~\ref{sec:wavelets}),
-would give the eigenvalue-trajectory scan an actual temporal axis, and
-restricting that pseudo-time inference to a single, continuously
-varying lineage (the 894 Cancer Epithelial cells in this same sample
-are the natural candidate, rather than the full 9-cell-type mixture)
-is the concrete, corrected version of the single-cell wavelet retest
-this Roadmap originally proposed. (iii) The global polynomial unfolding
+entirely); (ii) the Dyson-trajectory diagnostic and the corrected,
+single-lineage wavelet retest have both now been run
+(Sec.~\ref{sec:singlecell-epithelial}) on the 894 Cancer Epithelial
+cells in this same sample: the lineage-restricted PC1 does not improve
+on the whole-sample ordering axis ($8.6\%$ vs.\ $9.7\%$ variance), the
+wavelet coarse/fine split remains statistically indistinguishable from
+a random cell ordering, and the Dyson-repulsion pattern itself proved
+attributable to growing sample size rather than to this specific
+ordering (a real-vs-random-order comparison not previously run at
+single-cell resolution). What remains open on this front is a genuinely
+different ordering signal --- real experimentally-derived pseudo-time
+(e.g.\ RNA velocity or a published trajectory-inference tool run on
+this same lineage) rather than a linear PC1 of any kind, since PC1
+itself, restricted or not, has now been checked twice and found
+insufficient both times. (iii) The global polynomial unfolding
 used for the NNSD test itself shows a heavier outlier tail at this
 sample's much denser threshold ($20.4\%$ edge density) than the sparser
 bulk cohorts ever exercise it at (Sec.~\ref{sec:results-singlecell}); a
@@ -1648,16 +1923,23 @@ MLP's weight-matrix Gram eigenvalues do not repel as reliably as the
 data-side correlation-matrix eigenvalues over a full 300-epoch training
 run, but the repulsion that is present concentrates almost entirely in
 the pre-convergence transient (epochs 0--49), a 12-fold difference
-against the post-convergence window. The concrete next step this
-result itself points to is testing whether that transient-only pattern
-is a property of small, quickly-converging classifiers specifically:
-rerunning the same diagnostic on a deeper or wider network, or on a
-harder task that does not plateau by epoch 50 (the within-TNBC or
-survival tasks proposed in Sec.~\ref{sec:limitations} would both keep
-training in a non-trivial regime for longer), would test directly
-whether a longer genuine transient produces a longer window of
-detectable repulsion, which is what the mechanism identified above
-predicts.
+against the post-convergence window. The direct follow-up this result
+proposed for itself --- does a longer genuine transient produce a
+longer detectable-repulsion window? --- has also now been run
+(Sec.~\ref{sec:results-dyson-classifier-longer}, a $5\times$ smaller
+learning rate): the qualitative claim holds and the post-convergence
+null gets even cleaner, but the raw detection count itself is not a
+reliable measure once the underlying timescale changes, because the
+fixed 5-epoch reopening window used throughout this paper does not
+rescale with a slower learning rate. The concrete next step this result
+now points to is narrower and purely methodological: redefine the
+reopening criterion in units of the empirical per-epoch weight-change
+magnitude rather than a fixed epoch count, then rerun this same
+comparison so the early-window counts across learning-rate regimes are
+directly comparable; only after that fix would a deeper/wider network
+or a harder, non-plateauing task (the within-TNBC or survival tasks of
+Sec.~\ref{sec:limitations}) add genuinely new information here, since
+either change would face the identical rescaling problem on its own.
 
 \subsection{RMT threshold vs.\ ARACNE on the same cohort}
 The comparison sketched in Background --- RMT spectral thresholding
@@ -1682,50 +1964,59 @@ coherent (collagen/ECM, interferon, keratin) spiked correlation
 components identified by a Marchenko--Pastur threshold rather than by
 eigenvector localization alone, and level repulsion among
 coexpression-matrix eigenvalues as sample size grows, now checked for
-reproducibility across 20 random patient orders rather than asserted
-from one, with a new quantitative corollary
+reproducibility across 20 random patient orders in \emph{two} real
+cohorts (TNBC and, since this round, LumA) rather than asserted from
+one, with a new quantitative corollary
 (Corollary~\ref{cor:weak-repulsion}) explaining directly, from the same
-SDE, which one pair fails to repel reliably and by how much. It is also
-enough to surface three honest negative results, reported as such
-rather than dropped: TNBC-vs-LumA classification is too easy a
-benchmark to distinguish feature-selection methods; a wavelet
-multiscale decomposition, tried as part of the original six-line
-program, produced a headline result statistically indistinguishable
-from a biologically meaningless random patient ordering, so it is
-reported and excluded from the main results rather than kept as an
-unearned positive finding; and the classifier's own weight-matrix
-eigenvalues, tracked across SGD training for the first time in this
-program (closing Roadmap item 6b), repel far less reliably than the
-data's do over a full run, but the repulsion present concentrates
-almost entirely in the pre-convergence transient, a specific,
-quantified pattern rather than an unexplained absence. The same
-pipeline also now runs on single-cell data (Line 4,
-Sec.~\ref{sec:results-singlecell}) for the first time in this program:
-a real, permutation-confirmed RMT threshold in a $q\ll1$ regime the
-bulk cohorts cannot reach, with spikes that split cleanly into real
-cell-type axes (immune, myeloid, epithelial) and known technical
-artifacts (ribosomal content, dissociation stress) once checked against
-independent metadata --- and a direct, negative check on the single-cell
-wavelet retest this Roadmap had proposed: the sample's own global PC1
-turns out to carry no more signal than bulk PC1 did, so that line needs
-single-lineage pseudo-time specifically, not single-cell data of any
-kind. A validation-first collaboration should want all of this reported
-exactly this way --- the real results, the honest nulls, and the
-negative checks on the program's own prior assumptions alike. The next
-concrete steps, in order of how directly they extend what is already
-running, are: extending the (now reproducibility-checked)
-Dyson-repulsion scan from TNBC to LumA and to other gene subsets;
-testing whether a longer pre-convergence transient (a deeper
-classifier, or a harder task than TNBC-vs-LumA) produces a
-correspondingly longer window of detectable weight-matrix repulsion;
-pooling the single-cell result across the other 8 TNBC patients in
-GSE176078 with an explicit batch-effect check, and inferring pseudo-time
-within the Cancer Epithelial lineage alone for a corrected wavelet
-retest; extracting one chromosome's contact matrix from GSE167150's
-already-processed \texttt{.hic} files (Line 3, still fully unattempted)
-with \texttt{hicstraw}; and replacing the classification benchmark with
-a within-TNBC or survival-outcome task where a feature-selection
-advantage, if real, would actually be visible.
+SDE, which pairs fail to repel reliably and by how much in both
+cohorts alike. It is also enough to surface three honest negative
+results, reported as such rather than dropped: TNBC-vs-LumA
+classification is too easy a benchmark to distinguish feature-selection
+methods; a wavelet multiscale decomposition, tried as part of the
+original six-line program, produced a headline result statistically
+indistinguishable from a biologically meaningless random patient
+ordering on two different ordering axes now (bulk PC1 and, since this
+round, single-lineage single-cell pseudo-time alike), so it is reported
+and excluded from the main results rather than kept as an unearned
+positive finding; and the classifier's own weight-matrix eigenvalues,
+tracked across SGD training (closing Roadmap item 6b) at two very
+different learning rates now, repel far less reliably than the data's
+do over a full run, but the repulsion present concentrates almost
+entirely in the pre-convergence transient regardless of how long that
+transient is made, a specific, quantified pattern rather than an
+unexplained absence --- with an honest complication surfaced in the
+second learning-rate regime: the fixed-epoch-window detector used
+throughout this paper does not itself rescale with training speed, so
+its raw counts should not be compared directly across learning rates
+without that fix. The same pipeline also now runs on single-cell data
+(Line 4, Sec.~\ref{sec:results-singlecell}) for the first time in this
+program: a real, permutation-confirmed RMT threshold in a $q\ll1$
+regime the bulk cohorts cannot reach, with spikes that split cleanly
+into real cell-type axes (immune, myeloid, epithelial) and known
+technical artifacts (ribosomal content, dissociation stress) once
+checked against independent metadata --- and a direct, negative check,
+now run twice, on the single-cell wavelet retest this Roadmap had
+proposed: neither the sample's whole-population global PC1 nor its
+PC1 restricted to the 894-cell Cancer Epithelial lineage alone carries
+more signal than bulk PC1 did, so that line needs a genuinely different
+pseudo-time estimator, not a different restriction of the same
+PC1-based approach. A validation-first collaboration should want all of
+this reported exactly this way --- the real results, the honest nulls,
+and the negative checks on the program's own prior assumptions alike.
+The next concrete steps, in order of how directly they extend what is
+already running, are: extending the (now two-cohort) Dyson-repulsion
+scan to gene subsets other than the top-60-by-variance choice used
+throughout; fixing the classifier-repulsion detector to rescale with
+the empirical per-epoch step size before comparing early-window counts
+across learning rates or architectures; pooling the single-cell result
+across the other 8 TNBC patients in GSE176078 with an explicit
+batch-effect check, and obtaining a genuinely non-PC1 pseudo-time
+estimate (RNA velocity or a dedicated trajectory-inference tool) for a
+third wavelet retest; extracting one chromosome's contact matrix from
+GSE167150's already-processed \texttt{.hic} files (Line 3, still fully
+unattempted) with \texttt{hicstraw}; and replacing the classification
+benchmark with a within-TNBC or survival-outcome task where a
+feature-selection advantage, if real, would actually be visible.
 
 \section{Methods}
 
@@ -1822,6 +2113,32 @@ $\ge\!1.5\times$ its minimum on both the 5-steps-before and
 boundary), partial if only one side qualifies, inconclusive if the
 closest approach is at the boundary $n=119$ itself (still narrowing,
 no reopening observable within the data), and none otherwise.
+\texttt{scripts/27\_luma\_dyson\_repulsion.py} repeats this identical
+procedure, unchanged, on LumA's own top-60 most-variable genes
+(seed 1 for the single-order scan, seeds $0$--$19$ for the
+reproducibility check, $n=15,\dots,430$).
+
+\subsection{Single-cell pseudo-time: single-lineage retest}
+\label{sec:epithelial-methods}
+
+The 894 Cancer-Epithelial-annotated cells within the same GSE176078
+CID44971 sample (Sec.~\ref{sec:singlecell-methods}) were extracted by
+real cell-type label (\texttt{celltype\_major}, never used elsewhere in
+the pipeline) before any further processing.
+\texttt{scripts/26\_singlecell\_epithelial\_pseudotime.py} then applies,
+unchanged: (i) the same CP10K/log1p normalization and $\ge\!3\%$-of-cells
+detection filter as Sec.~\ref{sec:singlecell-methods}, restricted to
+this 894-cell subset; (ii) PC1 of the top-1500-variance genes within
+this subset as the pseudo-time ordering, exactly the same construction
+as the bulk-cohort and whole-sample single-cell PC1 orderings
+(Sec.~\ref{sec:wavelets}); (iii) the identical Dyson-trajectory scan
+(previous subsection) on the top-60-variance genes within this subset,
+$n=30,\dots,894$ cells added along that pseudo-time ordering, plus 20
+independent \emph{random} (non-pseudo-time) cell orderings for direct
+comparison; and (iv) the identical wavelet coarse/fine decomposition
+(Sec.~\ref{sec:wavelets} method) on the top-1500-variance genes ordered
+along the same pseudo-time, plus 20 random-order replicates for the
+hub-overlap control, following exactly the criterion of script 04b.
 
 \subsection{Classifier weight-matrix Dyson trajectory}
 \label{sec:classifier-dyson-methods}
@@ -1844,7 +2161,18 @@ shuffling, \texttt{scripts/19\_dyson\_classifier\_weights.py},
 early/late split (\texttt{scripts/22\_classifier\_dyson\_early\_late.py})
 reapplies the same classification separately to epochs 0--49 and
 50--299 of each of the 20 already-computed trajectories, with no
-retraining.
+retraining. \texttt{scripts/28\_classifier\_dyson\_longer\_transient.py}
+tests directly whether a longer pre-convergence transient produces a
+longer repulsion window: identical architecture, features, cohort, and
+20 seeds, but a $5\times$ smaller learning rate ($0.01$ vs.\ $0.05$)
+and a $5\times$ longer run ($1500$ vs.\ $300$ epochs), the single most
+direct way to slow convergence without altering anything else that
+could confound the comparison. Each seed's own empirical convergence
+epoch (the first epoch after which training accuracy never again drops
+more than $0.5$ points below its own final value) sets that seed's
+early/late split, rather than reusing the original run's fixed
+epoch-50 cutoff, which assumed that run's own convergence speed and
+would beg the question here.
 
 \subsection{Machine learning}
 
@@ -1903,7 +2231,7 @@ data).
 \subsection{Code and reproducibility}
 
 All analysis code is in \texttt{scripts/01\_build\_cohorts.py} through
-\texttt{scripts/25\_singlecell\_figures.py}, numbered in the order
+\texttt{scripts/29\_new\_figures\_round3.py}, numbered in the order
 they must be run (\texttt{04b}, an ordering-control check, and
 \texttt{rmt\_threshold\_demo.py}, the synthetic-data reference
 implementation, are named descriptively rather than fitting the main
@@ -1911,9 +2239,17 @@ sequence; \texttt{scripts/21\_classifier\_dyson\_figures.py} plots
 results from scripts 19--20, \texttt{scripts/22} reruns script 20's
 already-saved trajectories with no retraining, and
 \texttt{scripts/25\_singlecell\_figures.py} plots results from scripts
-23--24); every number and figure in this paper is produced directly by
-this code from the raw downloaded files (two bulk TCGA-BRCA files, one
-single-cell sample), with no intermediate manual editing of results.
+23--24; \texttt{scripts/27\_luma\_dyson\_repulsion.py} and
+\texttt{scripts/26\_singlecell\_epithelial\_pseudotime.py} are
+independent extensions requiring no output from any other script beyond
+the raw cohort/single-cell data already described above,
+\texttt{scripts/28\_classifier\_dyson\_longer\_transient.py} is an
+independent rerun of scripts 19--20's training procedure at a different
+learning rate/epoch budget, and \texttt{scripts/29\_new\_figures\_
+round3.py} plots results from scripts 26--28); every number and figure
+in this paper is produced directly by this code from the raw downloaded
+files (two bulk TCGA-BRCA files, one single-cell sample), with no
+intermediate manual editing of results.
 
 \section{Declarations}
 

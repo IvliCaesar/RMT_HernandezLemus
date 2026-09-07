@@ -10,7 +10,7 @@ en cada línea.
 ## Contenido
 
 - **`article.tex`** / **`.pdf`** — el artículo de investigación (inglés,
-  34pp, formato BMC Bioinformatics: abstract estructurado,
+  40pp, formato BMC Bioinformatics: abstract estructurado,
   referencias numeradas, Declarations completas), con análisis real
   sobre TCGA-BRCA: umbral RMT (Luo et al. 2007) comparando TNBC vs.
   Luminal A, null de Monte Carlo por permutación, eigenvalores
@@ -56,7 +56,7 @@ en cada línea.
   afirmación anterior, ya incorrecta, de que no existía un Hi-C
   público a nivel paciente para esta comparación).
 - **`scripts/`** — pipeline completo, numerado en orden de ejecución
-  (`01_build_cohorts.py` … `25_singlecell_figures.py`),
+  (`01_build_cohorts.py` … `29_new_figures_round3.py`),
   más `rmt_threshold_demo.py` (implementación de referencia del
   método de Luo et al. 2007, validada primero sobre datos sintéticos
   con estructura modular conocida antes de aplicarse a TCGA-BRCA) y
@@ -68,14 +68,22 @@ en cada línea.
   hub RMT, epoch a epoch; `21_classifier_dyson_figures.py` genera 3
   figuras (fig9–fig11); `22_classifier_dyson_early_late.py`
   reparte el mismo análisis en ventana temprana (epochs 0–49) vs.
-  tardía (50–299) sin reentrenar. Nuevos en la ronda 2026-09-05b:
+  tardía (50–299) sin reentrenar. De la ronda 2026-09-05b:
   `23_singlecell_line4_rmt.py` corre el mismo pipeline RMT (spikes +
   umbral tau) sobre datos reales de célula única (GSE176078, paciente
   CID44971, 7986 células); `24_singlecell_monte_carlo_null.py` es el
   null de permutación correspondiente (20/20 semillas exactas en
   τ=0.035, muy por debajo del τ* real de 0.10); `25_singlecell_figures.py`
   genera 3 figuras más (fig12–fig14), incluyendo un fix real de un
-  problema de unfolding descubierto en el camino (ver Estado abajo).
+  problema de unfolding descubierto en el camino. Nuevos en la ronda
+  2026-09-07b: `26_singlecell_epithelial_pseudotime.py` (retesta Línea
+  5/Línea 4(ii) restringiendo el pseudo-tiempo a las 894 células Cancer
+  Epithelial, con control real-vs-orden-aleatorio); `27_luma_dyson_
+  repulsion.py` (extiende la repulsión de Dyson a LumA, segundo cohorte
+  real, n=430); `28_classifier_dyson_longer_transient.py` (prueba
+  directa de si un transitorio más largo, lr 5× menor, alarga la
+  ventana de repulsión detectable); `29_new_figures_round3.py` genera
+  3 figuras más (fig15–fig17).
 
 ## Líneas de trabajo (resumen)
 
@@ -106,6 +114,50 @@ un módulo plantado (chequeo contra verdad conocida, no usado por el
 método mismo).
 
 ## Estado
+
+2026-09-07b: pase de referato completo (narrativa, matemáticas, citas)
+más tres extensiones numéricas reales, todas cerrando huecos ya
+identificados explícitamente en el propio Roadmap:
+
+1. **Repulsión de Dyson en LumA** (`27_luma_dyson_repulsion.py`,
+   nueva §"The Dyson-repulsion pattern replicates in a second, larger
+   real cohort"): el mismo chequeo de reproducibilidad (20 órdenes
+   aleatorios) corrido en LumA (n=430, antes solo TNBC) replica el
+   patrón — λ5–λ6, λ6–λ7, λ7–λ8 repelen en 20/20 órdenes (vs. 18–19/20
+   en TNBC) — y reproduce cualitativamente el hallazgo del Corolario:
+   los pares menos confiables (λ1–λ2 en 11/20, λ2–λ3 en 9/20) son de
+   nuevo los adyacentes a los eigenvalores más grandes/tipo-spike,
+   consistente con que LumA tiene más del doble de eigenvalores spiked
+   que TNBC (29 vs. 14).
+2. **Retest de pseudo-tiempo en un solo linaje** (`26_singlecell_
+   epithelial_pseudotime.py`, nueva §"Single-lineage pseudo-time: a
+   corrected retest, still null, with a clarifying result"): restringir
+   el pseudo-tiempo a las 894 células Cancer Epithelial (la corrección
+   que el propio Roadmap proponía) NO mejora el eje de ordenamiento
+   (PC1 = 8.6%, incluso un poco peor que el 9.7% de la muestra
+   completa) y el retest de wavelets sigue siendo un null genuino
+   (0/10 overlap, igualado o superado por 20/20 órdenes aleatorios de
+   control) — pero el hallazgo más útil es metodológico: una
+   comparación real-vs-orden-aleatorio (nunca antes corrida a
+   resolución de célula única) muestra que la repulsión de Dyson aquí
+   es una propiedad de que la muestra crezca, no de este ordenamiento
+   específico — aclara, no contradice, el resultado de bulk.
+3. **¿Transitorio más largo, ventana de repulsión más larga?**
+   (`28_classifier_dyson_longer_transient.py`, nueva §"Does a longer
+   transient give a longer repulsion window? A direct test, with an
+   honest complication"): lr 5× menor (0.01) y 1500 epochs (5× más) —
+   el transitorio se alarga ~11× (no 5×, superlineal), el null
+   post-convergencia se vuelve aún más limpio (0/140 vs. 3/140 antes),
+   pero el conteo crudo pre-convergencia baja (11/140 vs. 36/140)
+   porque el criterio de "reabre en 5 epochs" no se reescala con la
+   velocidad de entrenamiento — honestamente reportado como limitación
+   real del detector, no como contradicción del mecanismo.
+
+3 figuras nuevas (fig15–fig17), 3 scripts nuevos (26–28) + 1 de
+figuras (29). Roadmap, Discusión y Conclusiones actualizados en
+consecuencia (Líneas 4(ii), 5 y 6b ya no son "próximo paso" sino
+resultados reales, con su propio próximo paso más específico cada
+una). Recompila 0 errores, 40pp (de 34pp).
 
 2026-09-07: pase de referato enfocado en la bibliografía y en la
 reproducibilidad literal del código citado. Dos entradas bibliográficas
