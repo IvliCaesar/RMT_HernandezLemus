@@ -10,7 +10,7 @@ en cada línea.
 ## Contenido
 
 - **`article.tex`** / **`.pdf`** — el artículo de investigación (inglés,
-  40pp, formato BMC Bioinformatics: abstract estructurado,
+  42pp, formato BMC Bioinformatics: abstract estructurado,
   referencias numeradas, Declarations completas), con análisis real
   sobre TCGA-BRCA: umbral RMT (Luo et al. 2007) comparando TNBC vs.
   Luminal A, null de Monte Carlo por permutación, eigenvalores
@@ -45,9 +45,13 @@ en cada línea.
 - **`data/README.md`** — los conjuntos de datos públicos identificados
   (GSE171958, GSE176078, GSE167150, TCGA-BRCA, METABRIC);
   `data/TCGA-BRCA/README.md` documenta la descarga real ya hecha y cómo
-  reproducirla; `data/GSE176078_singlecell/README.md` (nuevo
-  2026-09-05) documenta la descarga real de célula única (paciente
-  CID44971, ~178MB, no versionada por tamaño, ver `.gitignore`).
+  reproducirla; `data/GSE176078_singlecell/README.md` documenta la
+  descarga real de célula única (paciente CID44971, ~178MB, no
+  versionada por tamaño, ver `.gitignore`); `data/GSE167150_HiC/README.md`
+  (nuevo 2026-09-07b) documenta la descarga real de Hi-C (muestra
+  GSM5098082 "TNBC_Tissue3", ~645MB, extraída con un solo Range request
+  dirigido dentro del tar combinado de 6.2GB de GEO, sin bajar el resto
+  — ver `scripts/download_hic_tnbc_tissue3.py`).
 - **`references/`** — dos artículos reales del propio Dr.
   Hernández-Lemus, encontrados 2026-09-04, que fundamentan
   directamente dos líneas del Roadmap: Hernández-Lemus \& Ochoa
@@ -56,11 +60,13 @@ en cada línea.
   afirmación anterior, ya incorrecta, de que no existía un Hi-C
   público a nivel paciente para esta comparación).
 - **`scripts/`** — pipeline completo, numerado en orden de ejecución
-  (`01_build_cohorts.py` … `29_new_figures_round3.py`),
+  (`01_build_cohorts.py` … `31_hic_figures.py`),
   más `rmt_threshold_demo.py` (implementación de referencia del
   método de Luo et al. 2007, validada primero sobre datos sintéticos
-  con estructura modular conocida antes de aplicarse a TCGA-BRCA) y
-  `04b_wavelet_random_order_control.py` (control de orden aleatorio).
+  con estructura modular conocida antes de aplicarse a TCGA-BRCA),
+  `04b_wavelet_random_order_control.py` (control de orden aleatorio) y
+  `download_hic_tnbc_tissue3.py` (descarga dirigida del Hi-C real, ver
+  Estado abajo).
   De la ronda 2026-09-05a: `19_dyson_classifier_weights.py`
   (una semilla) y `20_dyson_classifier_weights_multi_seed.py` (20
   semillas, reproducibilidad) trackean los eigenvalores de
@@ -83,7 +89,14 @@ en cada línea.
   real, n=430); `28_classifier_dyson_longer_transient.py` (prueba
   directa de si un transitorio más largo, lr 5× menor, alarga la
   ventana de repulsión detectable); `29_new_figures_round3.py` genera
-  3 figuras más (fig15–fig17).
+  3 figuras más (fig15–fig17). Nuevo en la ronda 2026-09-07c, la
+  Línea 3 (Hi-C) atacada por primera vez con datos reales:
+  `30_hic_line3_rmt.py` construye la matriz de correlación bin-bin
+  O/E-normalizada (Lieberman-Aiden et al. 2009) del chr18 de un tumor
+  TNBC real (GSM5098082, 100kb, 750 bins tras filtrar 31 bins de
+  cobertura cero) y corre el mismo pipeline RMT (tau-sweep + null de
+  Monte Carlo); `31_hic_figures.py` genera 1 figura nueva (fig18: mapa
+  de calor plaid + sweep + track de compartimentos PC1).
 
 ## Líneas de trabajo (resumen)
 
@@ -114,6 +127,36 @@ un módulo plantado (chequeo contra verdad conocida, no usado por el
 método mismo).
 
 ## Estado
+
+2026-09-07c: **Línea 3 (Hi-C) atacada con datos reales por primera vez
+en todo el programa** — cierra el último hueco genuinamente no
+intentado de las 6 líneas originales. Se descargó GSM5098082
+("TNBC_Tissue3", GSE167150, el más pequeño de los tres tumores TNBC
+reales de la serie, ~645MB) con una técnica real de Range request
+dirigido dentro del tar combinado de GEO (6.2GB), sin bajar el resto de
+la serie (`scripts/download_hic_tnbc_tissue3.py`); se instaló
+`hic-straw==0.0.6` (la versión pura-Python de `straw`, ya que no había
+compilador de C++ disponible para la versión moderna pybind11). Se
+extrajo la matriz de contacto del chr18 a 100kb (781 bins), se filtraron
+31 bins de cobertura cero (artefacto técnico real, centromérico/no
+mapeable — un bug real encontrado y corregido: sin este filtro,
+`corrcoef` producía NaNs que, puestos en cero ingenuamente, dominaban el
+eigenvector principal de forma espuria), se normalizó O/E (Lieberman-Aiden
+et al. 2009, cita nueva verificada en Science) y se corrió el mismo
+pipeline RMT (tau-sweep + NNSD + null de Monte Carlo) ya usado en todo
+el artículo. Resultado real: τ*=0.15, confirmado por permutación (null
+en 0.10 o sin transición limpia, nunca en 0.15); el mapa de correlación
+bin-bin muestra el patrón "plaid" clásico de compartimentos A/B, y el
+eigenvector principal se divide en bloques genómicos contiguos
+(457 positivos, 293 negativos) — consistente con, pero no todavía
+validado independientemente contra, la interpretación de compartimentos
+(la validación contra densidad génica/GC queda como próximo paso
+explícito, no se afirma de más). Integrado en Resultados, Discusión,
+Roadmap, Conclusiones, Métodos, Declarations y abstract; Roadmap ahora
+dice explícitamente que las 6 líneas originales ya se corrieron al
+menos una vez con datos reales. 1 figura nueva (fig18), 2 scripts
+nuevos (30, 31) + 1 script de descarga. Recompila 0 errores, 42pp
+(de 40pp).
 
 2026-09-07b: pase de referato completo (narrativa, matemáticas, citas)
 más tres extensiones numéricas reales, todas cerrando huecos ya

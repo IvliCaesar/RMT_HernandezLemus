@@ -99,9 +99,16 @@ same discipline exposes three honest negative results (the wavelet
 real-data application, the classification benchmark's ceiling effect,
 and the classifier's weight-matrix repulsion outside its training
 transient) rather than dropping them.
-All numbers are produced by included, re-runnable code; one originally
-proposed line remains genuinely unattempted with real data (3D genomic
-structure via Hi-C), stated as such with a concretely-sized next step.
+All numbers are produced by included, re-runnable code. The one
+originally proposed line left genuinely unattempted through several
+earlier rounds --- 3D genomic structure via Hi-C --- is attempted here
+too: the identical machinery, applied to one chromosome of a real TNBC
+tumor's Hi-C contact map after the one standard preprocessing step Hi-C
+data requires (observed/expected normalization), selects a real,
+permutation-confirmed threshold and a bin-bin correlation matrix
+showing the plaid pattern characteristic of chromatin compartments,
+though independent validation of that compartment interpretation
+remains for a follow-up round.
 \end{abstract}
 
 \noindent\textbf{Keywords:} random matrix theory; gene coexpression networks;
@@ -1680,6 +1687,88 @@ than this specific ordering's biological content.}
 \label{fig:singlecell-epithelial-dyson}
 \end{figure}
 
+\subsection{3D genomic structure: Line 3 attacked with real Hi-C data}
+\label{sec:results-hic}
+
+Line 3 was, until this round, the one originally proposed line never
+attempted with real data at all --- earlier rounds of this paper
+reported no public, patient-cohort-scale TNBC Hi-C dataset as
+identified, a claim already corrected once the group's own
+\citet{reyesgopar2025} was found (Sec.~\ref{sec:limitations},
+Roadmap). We now run the identical RMT threshold/spiked-eigenvalue
+machinery used throughout this paper on real Hi-C data for the first
+time: GSM5098082 (``TNBC\_Tissue3''), the smallest of GSE167150's three
+real TNBC tumor \texttt{.hic} files, chromosome 18 at 100kb resolution
+(Sec.~\ref{sec:hic-methods}). One chromosome, the smallest
+of the three real TNBC tumors, is a deliberately narrow first attempt,
+matching the concretely-sized single-file, single-chromosome first step
+this Roadmap item already specified.
+
+A raw Hi-C contact matrix is not directly comparable to a gene
+coexpression matrix: nearby genomic bins always contact each other more
+than distant ones regardless of any real biology, a genomic-distance
+trend with no analogue in expression data. Following
+\citet{liebermanaiden2009}, we therefore first divide every diagonal
+band of the raw contact matrix by its own genome-wide mean (observed
+over expected, O/E), removing that distance trend, and then compute the
+Pearson correlation matrix of the O/E matrix's rows --- exactly the
+construction \citet{liebermanaiden2009} introduced to reveal A/B
+chromatin compartments, and the direct structural analogue of the
+gene-gene correlation matrices used everywhere else in this paper.
+$31$ of chr18's $781$ 100kb bins have zero total contact coverage
+(unmappable or centromeric regions, a known, purely technical Hi-C
+artifact); these are dropped before O/E normalization and correlation,
+the direct genomic-bin analogue of this paper's own single-cell gene
+filter (Sec.~\ref{sec:singlecell-methods}), leaving $750$ bins.
+
+The identical tau-sweep/NNSD method (Sec.~\ref{sec:tau-sweep}) selects
+$\tau^*=0.15$ on this bin-bin correlation matrix
+(Figure~\ref{fig:hic}, center panel). A Monte Carlo permutation null
+--- each bin's own O/E profile independently shuffled across the other
+bins, 20 replicates, identical recipe to Sec.~\ref{sec:montecarlo} ---
+finds a transition at $\tau=0.10$ or no clean transition at all in 20/20
+replicates, never at $0.15$ or above: the real threshold is not a
+dense-matrix artifact, the same qualitative confirmation the bulk
+cohorts and the single-cell sample both received. The bin-bin
+correlation matrix itself (Figure~\ref{fig:hic}, left panel) shows the
+plaid/checkerboard pattern that is the visual signature of A/B
+compartments in every published Hi-C compartment analysis since
+\citet{liebermanaiden2009}, and the top eigenvector's sign pattern
+splits the $750$ retained bins into contiguous genomic blocks
+($457$ positive, $293$ negative bins, Figure~\ref{fig:hic}, right
+panel) rather than an unstructured scatter of signs --- consistent
+with, but not yet independently validated against, the classic
+compartment interpretation. That validation (correlating the sign
+pattern against an independent genomic feature such as gene density or
+GC content, neither of which this round loads) is the concrete next
+step before reading this eigenvector as biologically confirmed
+compartments rather than a real but uninterpreted spectral feature.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/fig18_hic_compartment_rmt.pdf}
+\caption{Real TNBC Hi-C, chr18, 100kb resolution (GSM5098082,
+\citealp{reyesgopar2025}). Left: O/E-normalized bin-bin correlation
+matrix, showing the plaid pattern characteristic of A/B chromatin
+compartments \citep{liebermanaiden2009}. Center: RMT threshold sweep,
+same method as Fig.~\ref{fig:tausweep}, selecting $\tau^*=0.15$.
+Right: the top eigenvector's sign pattern along the chromosome,
+forming contiguous blocks rather than scattered signs.}
+\label{fig:hic}
+\end{figure}
+
+This is a first, single-chromosome, single-tumor result, not a
+validated genome-wide compartment map: it establishes that the
+identical spectral machinery this paper uses for gene expression
+applies, without modification beyond the one standard O/E
+preprocessing step, to real Hi-C contact data, and that the resulting
+threshold is real by the same permutation-null standard applied
+everywhere else in this paper. Extending to the other two real TNBC
+tumors and the matched normal-tissue file already in GSE167150, other
+chromosomes, and the independent compartment validation described
+above are the direct next steps, stated concretely in
+Sec.~\ref{sec:roadmap}.
+
 \section{Discussion}
 \label{sec:limitations}
 
@@ -1715,17 +1804,22 @@ the bulk cohorts exactly as anticipated, with a real permutation-
 confirmed threshold and a new, single-cell-specific caveat (ribosomal/
 dissociation-stress spikes indistinguishable from biological ones
 without independent cell-type metadata) that the bulk analysis never
-had to face. One line remains genuinely unattempted with real data:
-3D genomic structure (Hi-C). A concrete real public dataset is
-identified --- GSE167150 (TNBC Hi-C with matched contralateral healthy
-tissue, \citealp{reyesgopar2025}), found only after an earlier round of
-this paper reported no such Hi-C dataset as identified, six 40kb-to-
-500kb-resolution \texttt{.hic} files per condition (270MB--2.5GB each,
-6.2GB total for the series) --- and downloading and running the same
-RMT machinery on its contact matrices (chromosome by chromosome, via
-the \texttt{hicstraw}/\texttt{straw} extraction tools rather than raw
-HiC-Pro reprocessing, since GSE167150 already provides processed
-\texttt{.hic} files) is the direct next step for Line 3.
+had to face. 3D genomic structure (Line 3, Hi-C), the line left
+genuinely unattempted through several earlier rounds, has now been run
+too (Sec.~\ref{sec:results-hic}): GSE167150 (TNBC Hi-C with matched
+contralateral healthy tissue, \citealp{reyesgopar2025}, found only
+after an earlier round of this paper reported no such Hi-C dataset as
+identified), one chromosome (chr18) of the smallest of its three real
+TNBC tumor \texttt{.hic} files, observed/expected normalization
+following \citet{liebermanaiden2009}, and the identical RMT threshold
+machinery --- a real, permutation-confirmed threshold and a bin-bin
+correlation matrix with the plaid pattern characteristic of A/B
+chromatin compartments, though that compartment reading is not yet
+independently validated against genomic annotation. All six originally
+proposed lines have now been run on real data at least once; what
+remains, for each, is depth (more chromosomes and tumors for Line 3,
+more patients for Line 4, other gene subsets for the Dyson-repulsion
+lines, a rescaled detector for Line 6b) rather than a first attempt.
 
 The Dyson-repulsion result (Sec.~\ref{sec:results-dyson}) was, in an
 earlier round, the newest and least tested of the four executed lines,
@@ -1803,40 +1897,46 @@ downloaded files.
 \section{Roadmap: remaining and revisited lines}
 \label{sec:roadmap}
 
-Line 3 (below) remains genuinely unattempted with real data. Lines 4
-and 6b, previously in this same category, have since been run
-(Sec.~\ref{sec:results-singlecell}, \ref{sec:results-dyson-classifier});
-their entries below are kept, relabeled ``revisited,'' to state the
-sharper next step each result now points to rather than the original,
-now-resolved question.
+All six originally proposed lines, including Line 3 and Line 4, both
+previously unattempted with any real data, and Line 6b, previously an
+untried extension, have now been run at least once
+(Sec.~\ref{sec:results-hic}, \ref{sec:results-singlecell},
+\ref{sec:results-dyson-classifier}); every entry below is kept,
+relabeled ``revisited,'' to state the sharper next step each result now
+points to rather than the original, now-resolved question of whether
+it could be attempted at all.
 
-\subsection{Line 3: 3D genomic structure (Hi-C)}
+\subsection{Line 3 revisited: beyond one chromosome, one tumor}
 This line was reported as blocked, in an earlier round, for lack of a
-public patient-cohort-scale TNBC Hi-C dataset; that claim no longer
-holds. \citet{reyesgopar2025} --- Hern\'andez-Lemus's own group ---
-published patient-derived TNBC Hi-C data with matched contralateral
-healthy tissue (GEO accession GSE167150, processed with HiC-Pro at
-40\,kb resolution, chromosome-specific intrachromosomal networks built
-via a non-central-hypergeometric significance model) exactly one
-paper we had not yet found when this Roadmap item was first written.
-We checked the actual download this round rather than only citing the
-accession: GSE167150's supplementary files are already-processed
-\texttt{.hic} contact matrices (multi-resolution, 10\,kb--500\,kb) per
-sample, not raw sequencing reads --- three TNBC tumors (646MB, 755MB,
-847MB), one large matched-normal reference (2.5GB), and several breast
-cancer cell lines (270--395MB each), 6.2GB for the full series --- so
-the concrete next step is extracting one chromosome's contact matrix at
-a fixed resolution with \texttt{hicstraw}/\texttt{straw} (the standard
-reader for this format) from one TNBC tumor file, not running HiC-Pro
-from scratch: build the same contact-matrix correlation structure per
-chromosome, and apply the identical RMT threshold-selection machinery
-from Sec.~\ref{sec:tau-sweep} to contact-frequency correlations instead
-of expression correlations --- no new methodology, only the data this
-paper did not yet have, and now a concretely-sized, single-file first
-step rather than an abstract one. \citet{reyesgopar2025}'s own network measures
-(Jaccard similarity between normal and TNBC networks, degree and
-Z-weighted degree, hub identification) are, themselves, a natural
-point of comparison for whatever the RMT threshold selects.
+public patient-cohort-scale TNBC Hi-C dataset; that claim was corrected
+once \citet{reyesgopar2025} --- Hern\'andez-Lemus's own group --- was
+found (GEO accession GSE167150, three real TNBC tumor \texttt{.hic}
+files among six 40\,kb--500\,kb-resolution files per condition,
+270MB--2.5GB each, 6.2GB total for the series), and the concrete
+single-file, single-chromosome first step that correction proposed has
+now been run for real (Sec.~\ref{sec:results-hic}): chr18 of the
+smallest real TNBC tumor file, observed/expected normalization
+\citep{liebermanaiden2009}, and the identical RMT threshold machinery,
+giving a real, permutation-confirmed $\tau^*=0.15$ and a plaid bin-bin
+correlation pattern consistent with A/B compartment structure. The
+direct next steps this result itself points to: (i) independently
+validate the compartment interpretation of the top eigenvector's sign
+pattern against genomic annotation (gene density or GC content along
+chr18), rather than reading the plaid pattern and contiguous sign
+blocks as compartments on visual resemblance alone; (ii) extend from
+one chromosome to the rest of the genome and from one tumor to the
+other two real TNBC tumors and the matched-normal file already in
+GSE167150, directly testing whether the RMT-selected threshold and
+compartment structure differ between tumor and normal tissue, the
+comparison \citet{reyesgopar2025}'s own network measures (Jaccard
+similarity between normal and TNBC networks, degree and Z-weighted
+degree) were themselves designed for; (iii) a Monte-Carlo-permutation-
+consistent but --- unlike the bulk and single-cell cohorts --- single-
+sample threshold means this result cannot yet distinguish real
+patient-to-patient variability from one tumor's own idiosyncrasy, the
+direct reason for extending to the other two tumors before treating
+$\tau^*=0.15$ as characteristic of TNBC Hi-C generally rather than of
+this one sample.
 
 \subsection{Line 5 revisited: applying the validated wavelet method to real signal}
 The synthetic positive control (Results) already confirms the
@@ -2000,23 +2100,35 @@ proposed: neither the sample's whole-population global PC1 nor its
 PC1 restricted to the 894-cell Cancer Epithelial lineage alone carries
 more signal than bulk PC1 did, so that line needs a genuinely different
 pseudo-time estimator, not a different restriction of the same
-PC1-based approach. A validation-first collaboration should want all of
-this reported exactly this way --- the real results, the honest nulls,
-and the negative checks on the program's own prior assumptions alike.
-The next concrete steps, in order of how directly they extend what is
-already running, are: extending the (now two-cohort) Dyson-repulsion
-scan to gene subsets other than the top-60-by-variance choice used
-throughout; fixing the classifier-repulsion detector to rescale with
-the empirical per-epoch step size before comparing early-window counts
-across learning rates or architectures; pooling the single-cell result
-across the other 8 TNBC patients in GSE176078 with an explicit
-batch-effect check, and obtaining a genuinely non-PC1 pseudo-time
-estimate (RNA velocity or a dedicated trajectory-inference tool) for a
-third wavelet retest; extracting one chromosome's contact matrix from
-GSE167150's already-processed \texttt{.hic} files (Line 3, still fully
-unattempted) with \texttt{hicstraw}; and replacing the classification
-benchmark with a within-TNBC or survival-outcome task where a
-feature-selection advantage, if real, would actually be visible.
+PC1-based approach. The pipeline extends to a third data modality too:
+3D genomic structure (Line 3, Sec.~\ref{sec:results-hic}), the one
+originally proposed line left completely unattempted through several
+earlier rounds, now has a real result --- one chromosome of a real TNBC
+tumor's Hi-C map, observed/expected normalized following
+\citet{liebermanaiden2009}, gives a real, permutation-confirmed RMT
+threshold and a bin-bin correlation matrix with the plaid pattern
+characteristic of A/B compartments, with the compartment reading itself
+flagged as not yet independently validated rather than asserted on
+visual resemblance alone. Every one of the six originally proposed
+lines has now been attempted on real data at least once. A
+validation-first collaboration should want all of this reported exactly
+this way --- the real results, the honest nulls, and the negative
+checks on the program's own prior assumptions alike. The next concrete
+steps, in order of how directly they extend what is already running,
+are: extending the (now two-cohort) Dyson-repulsion scan to gene
+subsets other than the top-60-by-variance choice used throughout;
+fixing the classifier-repulsion detector to rescale with the empirical
+per-epoch step size before comparing early-window counts across
+learning rates or architectures; pooling the single-cell result across
+the other 8 TNBC patients in GSE176078 with an explicit batch-effect
+check, and obtaining a genuinely non-PC1 pseudo-time estimate (RNA
+velocity or a dedicated trajectory-inference tool) for a third wavelet
+retest; validating the chr18 compartment call against real genomic
+annotation and extending it to the other two real TNBC tumors and the
+matched-normal file in GSE167150 (Line 3); and replacing the
+classification benchmark with a within-TNBC or survival-outcome task
+where a feature-selection advantage, if real, would actually be
+visible.
 
 \section{Methods}
 
@@ -2228,13 +2340,45 @@ sweep range (correlations under gene-wise permutation are weaker here,
 consistent with the smaller real $\tau^*$ found for the unpermuted
 data).
 
+\subsection{Hi-C RMT pipeline}
+\label{sec:hic-methods}
+
+GSM5098082 (``TNBC\_Tissue3'', GSE167150 \citep{reyesgopar2025}), the
+smallest of the series' three real TNBC tumor \texttt{.hic} files
+(645MB), was downloaded with \texttt{scripts/download\_hic\_tnbc\_
+tissue3.py}, which locates the target member inside GEO's combined
+\texttt{GSE167150\_RAW.tar} (6.2GB, mostly unrelated cell-line and
+normal-tissue files not needed here) via a sequence of small HTTP Range
+requests against the tar's sequential USTAR headers, then downloads
+only that one member. The intrachromosomal contact matrix for
+chromosome 18 at 100kb resolution was extracted with the pure-Python
+\texttt{straw} reader (\texttt{pip} package \texttt{hic-straw==0.0.6},
+the aidenlab/straw project prior to its C++/pybind11 rewrite; no C++
+compiler was available in this environment, and this legacy reader
+works identically for a local file), giving $781$ 100kb bins. Bins with
+zero total contact coverage ($31$ of $781$; unmappable/centromeric
+regions) were dropped, the direct genomic-bin analogue of the
+single-cell gene-detection filter above, leaving $750$ bins. Each
+diagonal band of the raw contact matrix (all bin pairs at a fixed
+genomic distance) was divided by its own genome-wide mean (observed
+over expected, O/E), following \citet{liebermanaiden2009}, and the
+Pearson correlation matrix of the O/E matrix's rows was then passed
+through the identical tau-sweep/NNSD threshold selection
+(Sec.~\ref{sec:tau-sweep}) and Monte Carlo permutation null
+(Sec.~\ref{sec:montecarlo}, here permuting each bin's own O/E profile
+across the other bins, 20 replicates), with no methodological change
+beyond the O/E step Hi-C data specifically requires
+(\texttt{scripts/30\_hic\_line3\_rmt.py},
+\texttt{scripts/31\_hic\_figures.py}).
+
 \subsection{Code and reproducibility}
 
 All analysis code is in \texttt{scripts/01\_build\_cohorts.py} through
-\texttt{scripts/29\_new\_figures\_round3.py}, numbered in the order
-they must be run (\texttt{04b}, an ordering-control check, and
+\texttt{scripts/31\_hic\_figures.py}, numbered in the order
+they must be run (\texttt{04b}, an ordering-control check,
 \texttt{rmt\_threshold\_demo.py}, the synthetic-data reference
-implementation, are named descriptively rather than fitting the main
+implementation, and \texttt{download\_hic\_tnbc\_tissue3.py}, a data
+download helper, are named descriptively rather than fitting the main
 sequence; \texttt{scripts/21\_classifier\_dyson\_figures.py} plots
 results from scripts 19--20, \texttt{scripts/22} reruns script 20's
 already-saved trajectories with no retraining, and
@@ -2245,18 +2389,24 @@ independent extensions requiring no output from any other script beyond
 the raw cohort/single-cell data already described above,
 \texttt{scripts/28\_classifier\_dyson\_longer\_transient.py} is an
 independent rerun of scripts 19--20's training procedure at a different
-learning rate/epoch budget, and \texttt{scripts/29\_new\_figures\_
-round3.py} plots results from scripts 26--28); every number and figure
-in this paper is produced directly by this code from the raw downloaded
-files (two bulk TCGA-BRCA files, one single-cell sample), with no
+learning rate/epoch budget, \texttt{scripts/29\_new\_figures\_
+round3.py} plots results from scripts 26--28, and
+\texttt{scripts/31\_hic\_figures.py} plots results from script 30);
+every number and figure in this paper is produced directly by this code
+from the raw downloaded files (two bulk TCGA-BRCA files, one
+single-cell sample, one Hi-C sample), with no
 intermediate manual editing of results.
 
 \section{Declarations}
 
 \subsection{Availability of data and materials}
 TCGA-BRCA expression and clinical data are public and available from
-the UCSC Xena TCGA hub (\url{https://tcga.xenahubs.net}). No
-proprietary or restricted-access data were used in this paper.
+the UCSC Xena TCGA hub (\url{https://tcga.xenahubs.net}). Single-cell
+RNA-seq data (patient CID44971) are public and available from GEO
+accession GSE176078 (GSM5354531). Hi-C data (sample GSM5098082,
+``TNBC\_Tissue3'') are public and available from GEO accession
+GSE167150. No proprietary or restricted-access data were used in this
+paper.
 
 \subsection{Ethics approval and consent to participate}
 Not applicable. This study uses only publicly available, de-identified
@@ -2385,6 +2535,11 @@ R.~K\"onig, G.~Schramm, M.~Oswald, et al.,
 G.~R.~Lee, R.~Gommers, F.~Wasilewski, K.~Wohlfahrt, A.~O'Leary,
 \newblock ``PyWavelets: A Python package for wavelet analysis,''
 \newblock \emph{Journal of Open Source Software} \textbf{4}(36), 1237 (2019).
+
+\bibitem[Lieberman-Aiden et al.(2009)]{liebermanaiden2009}
+E.~Lieberman-Aiden, N.~L.~van~Berkum, L.~Williams, M.~Imakaev, T.~Ragoczy, A.~Telling, I.~Amit, B.~R.~Lajoie, P.~J.~Sabo, M.~O.~Dorschner, R.~Sandstrom, B.~Bernstein, M.~A.~Bender, M.~Groudine, A.~Gnirke, J.~Stamatoyannopoulos, L.~A.~Mirny, E.~S.~Lander, J.~Dekker,
+\newblock ``Comprehensive Mapping of Long-Range Interactions Reveals Folding Principles of the Human Genome,''
+\newblock \emph{Science} \textbf{326}(5950), 289--293 (2009).
 
 \bibitem[Luo et al.(2007)]{luo2007}
 F.~Luo, Y.~Yang, J.~Zhong, H.~Gao, L.~Khan, D.~K.~Thompson, J.~Zhou,
