@@ -2,6 +2,8 @@
 *.log
 *.out
 *.toc
+*.fls
+*.fdb_latexmk
 __pycache__/
 *.pyc
 
@@ -11,3 +13,9 @@ data/TCGA-BRCA/*.gz
 data/TCGA-BRCA/BRCA_clinicalMatrix
 data/TCGA-BRCA/tnbc_expr.csv
 data/TCGA-BRCA/luma_expr.csv
+
+# Real GSE176078 single-cell TNBC download (CID44971, ~178MB raw .mtx,
+# public, reproducible via GEO accession GSM5354531, see data/GSE176078_singlecell/README.md)
+data/GSE176078_singlecell/*.mtx
+data/GSE176078_singlecell/*.tsv
+data/GSE176078_singlecell/*.csv

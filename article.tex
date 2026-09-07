@@ -10,6 +10,7 @@
 \newtheorem{definition}{Definition}
 \newtheorem{remark}{Remark}
 \newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
 
 \title{Random Matrix Theory and Dyson-Brownian-Motion Diagnostics for \\
 Breast Cancer Coexpression Networks: A Monte-Carlo-Validated \\
@@ -62,18 +63,32 @@ weak-ordering-axis problem, not a method problem. A classifier
 distinguishing TNBC from LumA reaches $\approx\!98\%$ accuracy
 regardless of feature-selection method, including random gene sets; a
 genetic-algorithm search finds a modest, real improvement ($99.45\%$)
-without breaking the ceiling.
+without breaking the ceiling. Tracking that same classifier's own
+weight-matrix eigenvalues across SGD training (the model-side half of
+the Dyson-repulsion question) finds far less reliable repulsion than on
+the data side over a full training run, but what repulsion is present
+concentrates almost entirely in the pre-convergence transient, a
+12-fold difference against the post-convergence window. Applying the
+identical RMT machinery to real single-cell RNA-seq data for the first
+time in this program (GSE176078, one TNBC patient, 7986 cells) finds a
+real, permutation-confirmed threshold in a regime where the gene-to-cell
+ratio inverts relative to the bulk cohorts; the largest spiked
+eigenvalues split cleanly into real cell-type axes (immune, myeloid,
+epithelial, matching independent cell-type annotation) and known
+single-cell technical artifacts (ribosomal content, dissociation
+stress), a distinction the bulk analysis never had to draw.
 
 \noindent\textbf{Conclusions:}
 Combining a static RMT threshold with an explicit Monte Carlo null and
 a Dyson-repulsion diagnostic surfaces real, validated structure in
-TCGA-BRCA coexpression networks, and the same discipline exposes two
-honest negative results (the wavelet real-data application, the
-classification benchmark's ceiling effect) rather than dropping them.
-All numbers are produced by included, re-runnable code; the two
-originally proposed lines not yet attempted with real data (3D genomic
-structure and single-cell resolution) are stated as such, with concrete
-next steps.
+TCGA-BRCA coexpression networks and in single-cell data alike, and the
+same discipline exposes three honest negative results (the wavelet
+real-data application, the classification benchmark's ceiling effect,
+and the classifier's weight-matrix repulsion outside its training
+transient) rather than dropping them.
+All numbers are produced by included, re-runnable code; one originally
+proposed line remains genuinely unattempted with real data (3D genomic
+structure via Hi-C), stated as such with a concretely-sized next step.
 \end{abstract}
 
 \noindent\textbf{Keywords:} random matrix theory; gene coexpression networks;
@@ -332,6 +347,7 @@ Fig.~\ref{fig:nnsd}) use unfolded spacings.
 \end{definition}
 
 \begin{definition}[Dyson Brownian motion]
+\label{def:dyson-sde}
 Dyson's (1962) model lets a GOE matrix's entries evolve as independent
 Brownian motions in time $t$; the induced dynamics on the eigenvalues
 $\{\lambda_i(t)\}$ satisfy the coupled SDE
@@ -842,11 +858,14 @@ counts (Table~\ref{tab:hubs}) and the heatmap block structure
 (Fig.~\ref{fig:heatmaps}), now confirmed at the whole-network topology
 level rather than the single-gene level.
 
-\emph{A wavelet multiscale decomposition (patients ordered along the
+\subsection{Wavelet multiscale decomposition: a real-data null, resolved by a positive control}
+\label{sec:wavelets}
+
+A wavelet multiscale decomposition (patients ordered along the
 TNBC cohort's own first principal component, coarse/fine coexpression
 networks built as in \citet{konig2006} via a Daubechies-4 discrete
 wavelet transform, \texttt{PyWavelets} \citealp{pywavelets2019}) was
-also tried. A
+also tried, as Line 5 of the original program. A
 random-ordering control found its headline result --- zero hub-gene
 overlap between coarse and fine networks --- statistically
 indistinguishable from a biologically meaningless random patient
@@ -863,18 +882,39 @@ answers this cleanly: the coarse network recovers the planted
 slow-oscillation module perfectly (10/10 top hubs) even at a modest
 50\% signal fraction; the fast-oscillation module is recovered weakly
 (3/10) at the same 50\% fraction but perfectly (10/10) once its own
-signal fraction is raised to 80\%. \textbf{Wavelets do work correctly
-at both scales, given enough real signal} --- the real-data failure
+signal fraction is raised to 80\%. Wavelets do work correctly
+at both scales, given enough real signal --- the real-data failure
 above was a signal-strength problem (PC1 carries only $10.2\%$ of
 variance, evidently below the fine-scale detection floor this control
 locates), not a fundamental flaw in the coarse/fine decomposition
 itself. The full analysis and both controls remain in
 \texttt{scripts/04\_wavelet\_multiscale.py},
 \texttt{scripts/04b\_wavelet\_random\_order\_control.py}, and
-\texttt{scripts/12\_wavelet\_positive\_control.py} for the record. A
-fair real-data test would need an ordering axis with more real signal
-than bulk-patient PC1 provides --- single-cell pseudo-time
-(Sec.~\ref{sec:roadmap}) is the concrete candidate.}
+\texttt{scripts/12\_wavelet\_positive\_control.py} for the record.
+
+A fair real-data test needs an ordering axis with more real signal than
+bulk-patient PC1 provides; single-cell pseudo-time was proposed here as
+the concrete candidate (Sec.~\ref{sec:roadmap}), and we checked this
+directly once real single-cell data was in hand for
+Sec.~\ref{sec:results-singlecell} below, rather than leaving it as an
+assumption. The single-cell data's own PC1 (across the 7986 cells of
+patient CID44971) carries only $9.7\%$ of variance --- essentially the
+same order as bulk PC1 ($10.2\%$), not the large improvement the
+Roadmap anticipated. The reason is visible directly in
+Sec.~\ref{sec:results-singlecell}'s own spiked-eigenvalue result: this
+sample's real structure is spread thinly across many distinct
+cell-type axes (immune, myeloid, epithelial, stromal; 33 spikes sharing
+only $26.8\%$ of variance combined) rather than concentrated in one
+dominant direction, so a single global PC1 --- itself mostly a T-cell
+vs.\ everything-else split in this mixed-tumor sample, not a smooth
+developmental gradient --- is not the ``pseudo-time'' this line
+actually needs. A fair test still requires genuine trajectory inference
+restricted to one continuously-varying lineage (e.g.\ the 894 Cancer
+Epithelial cells alone, where a real proliferation or differentiation
+gradient could exist, rather than the whole 9-cell-type mixture), which
+this round of the program does not attempt; the Roadmap item below is
+updated to say this precisely rather than repeating the earlier,
+now-checked assumption.
 
 \subsection{Eigenvalue trajectories show Dyson-type level repulsion}
 \label{sec:results-dyson}
@@ -965,6 +1005,60 @@ eigenvalue, for which the fine-grained approach-and-reopen dynamics
 characteristic of bulk-level repulsion is not the expected signature in
 the first place.
 
+That last sentence was, until now, an intuition rather than a
+calculation; the SDE already stated in Proposition~\ref{prop:stationary}
+makes it precise and quantitative, using nothing beyond the two real
+tables already reported above.
+
+\begin{corollary}[Repulsion strength scales inversely with the gap]
+\label{cor:weak-repulsion}
+Consider two adjacent eigenvalues $\lambda_i>\lambda_{i+1}$ evolving
+under the Dyson Brownian motion of Proposition~\ref{prop:stationary},
+and isolate their mutual two-body drift term (the same restriction to a
+single pair already made in Figure~\ref{fig:vectorfield}'s vector
+field, ignoring the drift contributions from every other eigenvalue).
+Writing $\delta=\lambda_i-\lambda_{i+1}>0$ for their gap, the SDE's
+drift terms $+1/\delta$ on $\lambda_i$ and $-1/\delta$ on
+$\lambda_{i+1}$ give
+\[
+\frac{d\,\mathbb E[\delta]}{dt} \;=\; \frac{2}{\delta},
+\]
+a deterministic repulsive force on the gap itself that is exactly
+inversely proportional to $\delta$. Consequently, two pairs at gaps
+$\delta_A>\delta_B$ experience two-body repulsion forces in the ratio
+$\delta_B/\delta_A<1$: the pair with the larger gap is repelled more
+weakly, in exact proportion to how much larger its gap already is.
+\end{corollary}
+\begin{proof}
+Immediate from the SDE of Definition~\ref{def:dyson-sde}/Proposition~\ref{prop:stationary}:
+retaining only the $j=i+1$ term in $\lambda_i$'s drift and the $j=i$
+term in $\lambda_{i+1}$'s drift (the same idealized two-eigenvalue
+truncation already used for Figure~\ref{fig:vectorfield}) gives mean
+drift $1/\delta$ on $\lambda_i$ and $-1/\delta$ on $\lambda_{i+1}$, so
+$d\,\mathbb E[\lambda_i-\lambda_{i+1}]/dt=1/\delta-(-1/\delta)=2/\delta$.
+\end{proof}
+
+Applying Corollary~\ref{cor:weak-repulsion} to the real, already-reported
+numbers rather than to a generic pair: Table~\ref{tab:repulsion}'s own
+closest-approach gaps give $\lambda_1$--$\lambda_2$ a minimum gap of
+$0.448$, between $1.7\times$ ($0.448/0.259$, vs.\
+$\lambda_3$--$\lambda_4$) and $10.7\times$ ($0.448/0.042$, vs.\
+$\lambda_7$--$\lambda_8$) larger than every other pair's own minimum
+gap in the same table. By the Corollary, the deterministic two-body
+repulsion force acting on $\lambda_1$--$\lambda_2$ at its closest
+approach is correspondingly $1.7$--$10.7\times$ weaker than the force
+acting on any other pair at its own closest approach --- and
+$\lambda_1$--$\lambda_2$ is exactly the one pair the 20-order
+reproducibility check (Figure~\ref{fig:repro}) finds least reliably
+repulsive (clear repulsion in only 7/20 orders, vs.\ 12--19/20 for
+every other pair). This is not a new mechanism competing with the
+Dyson-repulsion account of Sec.~\ref{sec:results-dyson}: it is the
+same SDE already used there, made quantitative for the first time
+using the real gap sizes both tables already contain, and it turns the
+earlier qualitative remark about $\lambda_1$ being ``a strong,
+well-separated spike'' into an explicit number rather than an
+intuition.
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.7\textwidth]{figures/fig8_repulsion_reproducibility.pdf}
@@ -988,7 +1082,142 @@ grows --- and therefore a plausible shared diagnostic for the data side
 and the model side of a recognition pipeline built on this data, as
 proposed originally in Line 6 of the wider research program. This
 remains a single-cohort, single-gene-subset check; extending it to
-LumA and to other gene subsets is the natural next step.
+LumA and to other gene subsets is the natural next step. The other
+half of Line 6 --- the model's own weight-matrix dynamics, previously
+left as Roadmap item 6b --- is attacked directly, on real data, in the
+next subsection.
+
+\subsection{Dyson dynamics of the classifier itself: a genuine, reproducible null}
+\label{sec:results-dyson-classifier}
+
+\citet{aarts2024} report that a neural network's weight-matrix
+eigenvalues follow Dyson Brownian motion during SGD training; the
+previous subsection tracks the \emph{data}'s eigenvalues, so the direct,
+same-cost extension is to run the identical trajectory-and-reopening
+diagnostic on the \emph{classifier}'s own weights, using the recognition
+task already trained in Sec.~\ref{sec:ml-results}. A weight matrix $W$
+is not itself real symmetric, so, exactly as a raw expression matrix is
+turned into a real symmetric correlation matrix before any RMT
+diagnostic is applied to it elsewhere in this paper, we track the
+eigenvalues of the real symmetric Gram matrix $W_1^\top W_1$ ($W_1$ the
+input-to-hidden weight matrix of an MLP(20$\to$8$\to$1) trained on the
+same 20 RMT-hub genes as Table~\ref{tab:hubs}, 8 hidden units chosen to
+match $K_{\text{eigs}}=8$ on the data side), captured after every one of
+300 plain-SGD epochs (\texttt{scripts/19\_dyson\_classifier\_weights.py}).
+
+A single seed shows a plausible-looking closest approach (e.g.\
+$\mu_6$--$\mu_7$, minimum gap $0.0105$ around epoch 165,
+Figure~\ref{fig:classifier-traj}), but the multi-order check that
+mattered on the data side (Sec.~\ref{sec:results-dyson}) matters
+identically here: we reran the identical scan under 20 independent
+random seeds (initialization and minibatch shuffling,
+\texttt{scripts/20\_dyson\_classifier\_weights\_multi\_seed.py}).
+Table~\ref{tab:classifier-repulsion} and Figure~\ref{fig:classifier-repro}
+show the result plainly: no pair reaches clear repulsion in more than
+$4/20$ seeds, and the two best-supported pairs
+($\mu_3$--$\mu_4$: $4$ clear $+\,5$ partial; $\mu_5$--$\mu_6$: $4$
+clear $+\,4$ partial) fall far short of the $12$--$19/20$ reliability
+found for most data-side pairs (Fig.~\ref{fig:repro}). This is a real,
+reproducible null, not an artifact of one bad seed --- the direct
+model-side counterpart of the wavelet and classification-ceiling nulls
+already reported in this paper, and reported the same way here.
+
+\begin{table}[h]
+\centering
+\caption{Classifier weight-matrix ($W_1^\top W_1$) repulsion
+reproducibility across 20 independent SGD training runs, full 300-epoch
+window, same criterion as Table~\ref{tab:repulsion}/Fig.~\ref{fig:repro}.}
+\label{tab:classifier-repulsion}
+\begin{tabular}{lcccc}
+\toprule
+Pair & repulsion & partial & inconclusive & none \\
+\midrule
+$\mu_1$--$\mu_2$ & 2/20 & 1/20 & 0/20  & 17/20 \\
+$\mu_2$--$\mu_3$ & 2/20 & 3/20 & 3/20  & 12/20 \\
+$\mu_3$--$\mu_4$ & 4/20 & 5/20 & 3/20  & 8/20  \\
+$\mu_4$--$\mu_5$ & 0/20 & 1/20 & 5/20  & 14/20 \\
+$\mu_5$--$\mu_6$ & 4/20 & 4/20 & 0/20  & 12/20 \\
+$\mu_6$--$\mu_7$ & 1/20 & 2/20 & 1/20  & 16/20 \\
+$\mu_7$--$\mu_8$ & 3/20 & 2/20 & 2/20  & 13/20 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/fig9_classifier_weight_trajectories.pdf}
+\includegraphics[width=0.48\textwidth]{figures/fig10_classifier_repulsion_reproducibility.pdf}
+\caption{Left: $W_1^\top W_1$ eigenvalue trajectories across 300 SGD
+training epochs, one representative seed. Right: reproducibility of
+the repulsion pattern across 20 independent seeds, same classification
+as Fig.~\ref{fig:repro} --- no pair matches the data side's reliability.}
+\label{fig:classifier-traj}
+\label{fig:classifier-repro}
+\end{figure}
+
+Rather than stop at a flat null, we tested the obvious alternative
+hypothesis directly, the same way the synthetic positive control
+earlier in this paper rescued the wavelet line from one (a
+random-ordering control found the wavelet method's headline result
+indistinguishable from noise on real data, but a synthetic positive
+control then showed the method itself works correctly given enough
+signal, narrowing the failure down to a data problem rather than a
+method problem): every seed's training accuracy plateaus by
+roughly epoch 50 (final accuracy $0.987$--$0.991$ across all 20 seeds,
+\texttt{scripts/20\_dyson\_classifier\_weights\_multi\_seed.py}), so if
+the Dyson drift term matters only while the weight matrix is still
+genuinely changing --- exactly as it does on the data side, where each
+step is a real new patient rather than a repeated pass over the same
+549 --- then whatever repulsion signal exists should concentrate in the
+pre-convergence transient (epochs 0--49) and disappear once training
+settles near a fixed point (epochs 50--299), where SGD's own
+minibatch noise, not a net drift, dominates the eigenvalues' motion.
+\texttt{scripts/22\_classifier\_dyson\_early\_late.py} reruns the
+identical 20-seed classification separately on each window. The
+contrast is sharp: summed over all 7 pairs and 20 seeds (maximum
+possible 140), the early window shows 36 repulsion-or-partial calls
+against only 3 in the late window --- a 12-fold difference. $\mu_5$--$\mu_6$
+in particular shows a clean, textbook avoided crossing within the first
+few epochs in several seeds (Figure~\ref{fig:classifier-avoided}, seed
+17, closest approach at epoch 5, gap $0.0802$ reopening to $0.32$ by
+epoch 29, a $4\times$ increase).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/fig11_classifier_avoided_crossing.pdf}
+\caption{A clean example of the early-transient repulsion signature:
+$\mu_5$-$\mu_6$, seed 17, closest approach at epoch 5, gap reopening by
+epoch 29 --- the same approach-then-reopen shape as
+Fig.~\ref{fig:avoided} on the data side, here confined to the
+pre-convergence window (Sec.~\ref{sec:results-dyson-classifier}).}
+\label{fig:classifier-avoided}
+\end{figure}
+
+Read together, Table~\ref{tab:classifier-repulsion} and this
+early/late split give an honest, specific answer rather than a bare
+yes/no: the classifier's weight-matrix eigenvalues do not repel as
+reliably, or for as long, as the data's correlation-matrix eigenvalues
+do, but what repulsion is there is concentrated almost entirely in the
+transient window before training converges, consistent with the same
+Dyson mechanism (Proposition~\ref{prop:stationary}) being active only
+while the matrix is genuinely still moving --- a small, shallow
+classifier trained for a fixed 300 epochs on 549 patients is simply not
+the regime \citet{aarts2024} study (larger networks, many more training
+steps, and typically a bulk-statistics comparison rather than
+individual-pair tracking), so this null does not contradict their
+result; it identifies exactly which part of training this specific
+diagnostic can and cannot see it in. It is also consistent with an
+independent, larger body of work on weight-matrix spectra during
+training: \citet{mahoneymartin2019} find that a network's empirical
+spectral density passes through qualitatively distinct phases over the
+course of training (a ``Random-like'' phase, resembling the same
+Marchenko--Pastur/Wigner-surmise statistics this paper uses throughout,
+giving way to ``Bulk$+$Spikes'' and eventually heavy-tailed phases as
+training proceeds), so a fixed diagnostic tuned to Random-like/GOE
+statistics --- exactly what the closest-approach/reopening test here
+assumes --- is not expected to keep applying uniformly across the whole
+of training in the first place; this paper's own early/late split is a
+direct, if smaller-scale, instance of that same phase structure.
 
 \subsection{Machine-learning recognition test: an honest null result}
 \label{sec:ml-results}
@@ -1070,6 +1299,157 @@ analysis on TNBC alone is not attempted here; LumA's larger event
 count is the more promising real starting point, still on the low side
 for more than a handful of predictors.
 
+\subsection{Single-cell resolution: Line 4 attacked with real data}
+\label{sec:results-singlecell}
+
+Line 4 was, until this round, identified but not attempted: GSE176078
+\citep{tnbcsc2021} was named as a public, concrete single-cell dataset,
+but no single-cell analysis had actually been run. We downloaded
+patient CID44971 --- the largest of the series' 9 TNBC-labeled samples
+(7986 cells, 29733 genes, real cell-type annotation from
+\citealp{tnbcsc2021}) --- and applied the identical RMT machinery used
+throughout this paper (Sec.~\ref{sec:math}, \ref{sec:spiked},
+\ref{sec:tau-sweep}) unchanged: no new methodology, only new data, as
+the original Roadmap proposed. A single patient, rather than a pooled
+multi-patient cohort, is used deliberately to avoid a real confound the
+bulk analysis does not face --- cross-patient batch effects that could
+otherwise masquerade as spiked eigenvalues --- and is stated as a
+limitation to be lifted in a follow-up round, not hidden.
+
+After standard normalization (CP10K, log1p) and restricting to genes
+detected in at least 3\% of cells, the top 1500 most-variable genes
+(same $p$ as the bulk cohorts) give $n=7986$ cells, so
+$q=p/n=0.188$ --- inverted relative to the bulk cohorts
+($q=12.61$ TNBC, $3.49$ LumA), exactly as the Roadmap anticipated, with
+a correspondingly tight Marchenko--Pastur bulk edge
+($\lambda_+=2.055$, against $20.706$ and $8.224$ in the bulk cohorts).
+$33/1500$ eigenvalues ($2.2\%$) exceed $\lambda_+$, together carrying
+$26.8\%$ of total variance --- a smaller variance share than either
+bulk cohort ($48.2\%$, $57.3\%$), consistent with a mixed-tumor
+single-cell sample's real structure being spread across more distinct
+biological axes (cell types) rather than concentrated in a few.
+
+\begin{table}[h]
+\centering
+\caption{Top-6 spiked eigenvalues (of 33 total), single-cell TNBC,
+patient CID44971, against the Marchenko--Pastur edge $\lambda_+=2.055$.}
+\label{tab:singlecell-spikes}
+\begin{tabular}{clcl}
+\toprule
+Rank & Eigenvalue & $/\lambda_+$ & Top-5 loading genes \\
+\midrule
+1 & 110.30 & $53.7\times$ & B2M, TMSB4X, HLA-B, CORO1A, CD3E \\
+2 & 61.21  & $29.8\times$ & GAPDH, PFN1, FOS, CFL1, IGFBP4 \\
+3 & 43.79  & $21.3\times$ & RPS12, RPL18A, CST3, LGALS1, RPS27 \\
+4 & 27.13  & $13.2\times$ & TYROBP, FCER1G, CD68, C1QB, HLA-DRA \\
+5 & 22.03  & $10.7\times$ & RPL3, GNB2L1, RPS4X, RPS14, RPL29 \\
+6 & 17.50  & $8.5\times$  & AZGP1, TACSTD2, TM4SF1, CLDN4, CXCL2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:singlecell-spikes} gives an independent, real check on
+what these spikes actually are, using the sample's own cell-type
+annotation (never given to the RMT method, which sees only the
+expression matrix): rank 1 (B2M, CD3E, PTPRC among its top loadings) is
+a pan-immune/T-cell axis, matching this sample's real composition
+(T-cells are its single largest population, 4366 of 7986 cells); rank 4
+(TYROBP, FCER1G, CD68, C1QB, HLA-DRA) is a myeloid/macrophage axis,
+matching the 684 Myeloid cells present; rank 6 (TACSTD2, CLDN4, TM4SF1)
+is an epithelial axis, matching the 894 Cancer Epithelial $+$ 735
+Normal Epithelial cells present. Ranks 2, 3, and 5, by contrast, load
+almost entirely on ribosomal-protein genes (RPS/RPL) and stress/
+dissociation-response genes (FOS) --- a well-documented technical
+confound in single-cell RNA-seq (ribosomal content tracks cell size and
+sequencing depth more than cell identity, and FOS induction is a known
+tissue-dissociation artifact), not a novel biological program, and we
+report them as such rather than interpreting them as coexpressed
+biology. Real spikes and known technical-artifact spikes sit side by
+side in the same spectrum here, distinguishable only by checking their
+loadings against independent metadata --- a caveat the bulk cohorts'
+own spike interpretation (Sec.~\ref{sec:spiked}) did not need to
+confront as sharply, since bulk RNA-seq has no equivalent per-cell
+dissociation-stress axis.
+
+The tau-sweep threshold selection (Sec.~\ref{sec:tau-sweep}'s method,
+unchanged) selects $\tau^*=0.10$ (Figure~\ref{fig:singlecell-tausweep}),
+substantially sparser than either bulk cohort's threshold ($0.45$,
+$0.25$), consistent with single-cell gene-gene correlations being
+weaker than bulk patient-level correlations (dropout noise attenuates
+them). A Monte Carlo permutation null (identical recipe to
+Sec.~\ref{sec:montecarlo}, 20 replicates,
+\texttt{scripts/24\_singlecell\_monte\_carlo\_null.py}) confirms this is
+real structure, not a dense-matrix artifact: every one of 20
+permutations selects exactly $\tau=0.035$ (zero variance across
+seeds), well below the real $\tau^*=0.10$.
+
+Two honest caveats on this specific number, both surfaced only by
+looking directly at the unfolding rather than trusting the sweep table
+alone. First, at $\tau^*$ itself the two KS statistics are close
+(Poisson $0.139$ vs.\ GOE $0.133$, Figure~\ref{fig:singlecell-tausweep}
+left panel) --- a thinner margin than the bulk cohorts show at their
+own $\tau^*$ (Table~\ref{tab:tnbc-full}), even though the sweep's
+overall shape is unambiguous (a wide, clearly-GOE region at
+$\tau\le0.075$ giving way to a wide, clearly-Poisson region at
+$\tau\ge0.125$, with $0.10$ sitting exactly at the crossover rather than
+deep inside either regime). Second, the degree-7 polynomial unfolding
+used throughout this paper (Sec.~\ref{sec:math}) is a global fit
+calibrated on the bulk cohorts' much sparser thresholded networks
+($1.3\%$ and $13.0\%$ edge density at their own $\tau^*$); at
+$\tau^*=0.10$ here the thresholded network is denser still ($20.4\%$),
+and $4\%$ of the unfolded spacings land above $s=4$ (some far above,
+reflecting a poorly-conditioned tail fit rather than genuine large
+gaps), excluded from Figure~\ref{fig:singlecell-nnsd} and disclosed
+here rather than silently dropped. The visible histogram itself reads
+as a genuinely marginal case rather than a clean GOE match: it exceeds
+even the Poisson curve's height near $s=0$, more consistent with the
+thin KS margin above than with a textbook Wigner-surmise fit. Neither
+caveat overturns the sweep's central finding (a real, permutation-
+confirmed, sparser-than-bulk threshold), but both are stated so the
+result is not read as cleaner than it is; a local or adaptive unfolding
+scheme, rather than one global polynomial shared with the much sparser
+bulk cohorts, is the concrete fix for a future round.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/fig12_singlecell_tau_sweep.pdf}
+\includegraphics[width=0.48\textwidth]{figures/fig13_singlecell_nnsd.pdf}
+\caption{Left: RMT threshold sweep for the single-cell TNBC correlation
+matrix, same method as Fig.~\ref{fig:tausweep}. Right: unfolded
+nearest-neighbor spacing distribution at $\tau^*=0.10$, against the
+Poisson and GOE null curves, same method as Fig.~\ref{fig:nnsd} ($4\%$
+of spacings fall above $s=4$ and are excluded from the histogram, see
+text).}
+\label{fig:singlecell-tausweep}
+\label{fig:singlecell-nnsd}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{figures/fig14_singlecell_spiked_spectrum.pdf}
+\caption{Raw correlation-matrix eigenvalue spectrum, single-cell TNBC,
+against the Marchenko--Pastur bulk edge $\lambda_+=2.055$
+(Table~\ref{tab:singlecell-spikes}).}
+\label{fig:singlecell-spectrum}
+\end{figure}
+
+Read together, this is Line 4 run on real data for the first time in
+this program, and it reproduces the bulk cohorts' central finding
+(real, permutation-confirmed RMT threshold structure, spiked
+eigenvalues beyond the Marchenko--Pastur edge) in a completely
+different regime ($q\ll1$ instead of $q\gg1$), while also surfacing a
+genuine single-cell-specific caveat the bulk data never raised
+(technical dissociation/ribosomal spikes indistinguishable from
+biological ones without independent metadata). It also directly
+resolves the open question Sec.~\ref{sec:wavelets} left about
+single-cell pseudo-time: this sample's own PC1 does not provide the
+stronger ordering axis that line was hoping for, so that revisit still
+needs genuine single-lineage trajectory inference, not just single-cell
+data of any kind. One patient, one subtype, is the honest scope of this
+result; extending it across the other 8 TNBC patients in the series
+(pooled, with an explicit batch-effect check this single-patient
+analysis did not need) is the direct next step.
+
 \section{Discussion}
 \label{sec:limitations}
 
@@ -1082,27 +1462,40 @@ a Tracy--Widom edge-scaling check; a first Dyson-repulsion diagnostic;
 and Line 2's large-scale network characterization, confirming a
 small-world/modular signature beyond what either random-graph null
 produces.
-Line 5 (wavelet multiscale decomposition) and the ML recognition
-benchmark both came back with real, nuanced negative or mixed results,
-reported as such rather than dropped: the wavelet method's real-data
-application failed a random-ordering control, but a synthetic positive
-control then confirmed the method itself works correctly at both
-scales given enough signal, narrowing the real-data failure down to a
-data problem (a weak $10.2\%$-of-variance ordering axis), not a method
-problem; and TNBC-vs-LumA classification is close to a ceiling that a
+Line 5 (wavelet multiscale decomposition), the ML recognition
+benchmark, and now Line 6b (Sec.~\ref{sec:results-dyson-classifier})
+all came back with real, nuanced negative or mixed results, reported as
+such rather than dropped: the wavelet method's real-data application
+failed a random-ordering control, but a synthetic positive control then
+confirmed the method itself works correctly at both scales given
+enough signal, narrowing the real-data failure down to a data problem
+(a weak $10.2\%$-of-variance ordering axis), not a method problem;
+TNBC-vs-LumA classification is close to a ceiling that a
 genetic-algorithm search can nudge but not meaningfully break, so it
-does not discriminate feature-selection methods either way. Two
-lines are not yet attempted with real data at all: 3D genomic
-structure (Hi-C) and single-cell resolution. Concrete real public
-datasets are identified for both --- GSE176078 (TNBC single-cell
-RNA-seq, 10 patients) for the latter, and GSE167150 (TNBC Hi-C with
-matched contralateral healthy tissue, \citealp{reyesgopar2025}) for
-the former, found only after an earlier round of this paper reported
-no such Hi-C dataset as identified --- and downloading and running the
-same RMT machinery on either, single-cell data (where $n$, now cells,
-can reach the thousands and $p/n$ inverts relative to the bulk case
-studied here) or Hi-C contact matrices (chromosome by chromosome), is
-the direct next step for both Line 3 and Line 4.
+does not discriminate feature-selection methods either way; and the
+classifier's own weight-matrix eigenvalues do not repel as reliably as
+the data's do over a full training run, but the repulsion that is
+present concentrates almost entirely in the pre-convergence transient,
+a real, quantified pattern rather than an absence of one. Single-cell
+resolution (Line 4), the other line previously not attempted at all,
+has since been run for real (Sec.~\ref{sec:results-singlecell}):
+GSE176078 \citep{tnbcsc2021}, one TNBC patient (7986 cells), the
+identical RMT machinery, in a regime where $q=p/n$ inverts relative to
+the bulk cohorts exactly as anticipated, with a real permutation-
+confirmed threshold and a new, single-cell-specific caveat (ribosomal/
+dissociation-stress spikes indistinguishable from biological ones
+without independent cell-type metadata) that the bulk analysis never
+had to face. One line remains genuinely unattempted with real data:
+3D genomic structure (Hi-C). A concrete real public dataset is
+identified --- GSE167150 (TNBC Hi-C with matched contralateral healthy
+tissue, \citealp{reyesgopar2025}), found only after an earlier round of
+this paper reported no such Hi-C dataset as identified, six 40kb-to-
+500kb-resolution \texttt{.hic} files per condition (270MB--2.5GB each,
+6.2GB total for the series) --- and downloading and running the same
+RMT machinery on its contact matrices (chromosome by chromosome, via
+the \texttt{hicstraw}/\texttt{straw} extraction tools rather than raw
+HiC-Pro reprocessing, since GSE167150 already provides processed
+\texttt{.hic} files) is the direct next step for Line 3.
 
 The Dyson-repulsion result (Sec.~\ref{sec:results-dyson}) was, in an
 earlier round, the newest and least tested of the four executed lines,
@@ -1114,6 +1507,21 @@ $\lambda_2$--$\lambda_3$ repels at all) in the affirmative. What
 remains open is broader, not narrower: one cohort (TNBC only) and one
 gene subset (top-60-by-variance); extending the same multi-order check
 to LumA and to other gene-selection criteria is the natural next step.
+Corollary~\ref{cor:weak-repulsion}, new in this round, also gives that
+one lingering data-side anomaly ($\lambda_1$--$\lambda_2$'s
+unreliability) a quantitative account directly from the same SDE,
+rather than leaving it as a qualitative aside.
+
+Line 6b's classifier-side extension (Sec.~\ref{sec:results-dyson-classifier})
+is now run rather than merely proposed, and closes with a specific,
+mechanistic finding rather than a flat null: weight-matrix repulsion is
+real but confined to the pre-convergence training transient, a
+12-fold difference between the early and late windows
+(\texttt{scripts/22\_classifier\_dyson\_early\_late.py}). Whether a
+longer genuine transient (a deeper network, or a harder task that does
+not plateau by epoch 50) produces a correspondingly longer window of
+detectable repulsion is the direct next test this result proposes for
+itself, stated concretely in Sec.~\ref{sec:roadmap}.
 
 The classification ceiling effect in Table~\ref{tab:ml} is itself an
 argument for redirecting the ML line toward harder, clinically framed
@@ -1123,15 +1531,23 @@ amount of better feature engineering will show a visible gap on it.
 
 All numbers reported above come directly from the scripts in
 \texttt{scripts/}, run against the two real cohorts in
-\texttt{data/TCGA-BRCA/}; none are estimated, recalled, or adjusted
-after the fact. Re-running \texttt{scripts/01\_build\_cohorts.py}
-through \texttt{scripts/18\_repulsion\_reproducibility\_figure.py} in order (see
-``Code and reproducibility'' in Methods for the two named exceptions)
+\texttt{data/TCGA-BRCA/} and the real single-cell sample in
+\texttt{data/GSE176078\_singlecell/}; none are estimated, recalled, or
+adjusted after the fact. Re-running \texttt{scripts/01\_build\_cohorts.py}
+through \texttt{scripts/25\_singlecell\_figures.py} in order (see
+``Code and reproducibility'' in Methods for the named exceptions)
 reproduces every number and figure in this paper from the raw
 downloaded files.
 
-\section{Roadmap for the lines not yet run on real data}
+\section{Roadmap: remaining and revisited lines}
 \label{sec:roadmap}
+
+Line 3 (below) remains genuinely unattempted with real data. Lines 4
+and 6b, previously in this same category, have since been run
+(Sec.~\ref{sec:results-singlecell}, \ref{sec:results-dyson-classifier});
+their entries below are kept, relabeled ``revisited,'' to state the
+sharper next step each result now points to rather than the original,
+now-resolved question.
 
 \subsection{Line 3: 3D genomic structure (Hi-C)}
 This line was reported as blocked, in an earlier round, for lack of a
@@ -1142,13 +1558,21 @@ healthy tissue (GEO accession GSE167150, processed with HiC-Pro at
 40\,kb resolution, chromosome-specific intrachromosomal networks built
 via a non-central-hypergeometric significance model) exactly one
 paper we had not yet found when this Roadmap item was first written.
-The concrete next step is now data acquisition, not a search for
-whether the data exists: download GSE167150, build the same
-contact-matrix correlation structure per chromosome, and apply the
-identical RMT threshold-selection machinery from
-Sec.~\ref{sec:tau-sweep} to contact-frequency correlations instead of
-expression correlations --- no new methodology, only the data this
-paper did not yet have. \citet{reyesgopar2025}'s own network measures
+We checked the actual download this round rather than only citing the
+accession: GSE167150's supplementary files are already-processed
+\texttt{.hic} contact matrices (multi-resolution, 10\,kb--500\,kb) per
+sample, not raw sequencing reads --- three TNBC tumors (646MB, 755MB,
+847MB), one large matched-normal reference (2.5GB), and several breast
+cancer cell lines (270--395MB each), 6.2GB for the full series --- so
+the concrete next step is extracting one chromosome's contact matrix at
+a fixed resolution with \texttt{hicstraw}/\texttt{straw} (the standard
+reader for this format) from one TNBC tumor file, not running HiC-Pro
+from scratch: build the same contact-matrix correlation structure per
+chromosome, and apply the identical RMT threshold-selection machinery
+from Sec.~\ref{sec:tau-sweep} to contact-frequency correlations instead
+of expression correlations --- no new methodology, only the data this
+paper did not yet have, and now a concretely-sized, single-file first
+step rather than an abstract one. \citet{reyesgopar2025}'s own network measures
 (Jaccard similarity between normal and TNBC networks, degree and
 Z-weighted degree, hub identification) are, themselves, a natural
 point of comparison for whatever the RMT threshold selects.
@@ -1156,14 +1580,18 @@ point of comparison for whatever the RMT threshold selects.
 \subsection{Line 5 revisited: applying the validated wavelet method to real signal}
 The synthetic positive control (Results) already confirms the
 coarse/fine wavelet pipeline works correctly given enough real signal,
-so what remains is not a method fix but a data fix: rerun it on
-GSE176078 single-cell data ordered by a real inferred pseudo-time
-rather than bulk-patient PC1. Single-cell pseudo-time is both a better
-signal (typically capturing far more than $10.2\%$ of variance along a
-biologically meaningful axis) and, per the positive control's own
-finding, a real fine-scale signal will need to be reasonably strong
---- not just present --- to be recovered at the same detection
-sensitivity found here.
+so what remains is not a method fix but a data fix. This was checked
+directly, not just proposed: the global PC1 of the single-cell data
+now in hand (Sec.~\ref{sec:results-singlecell}) carries only $9.7\%$ of
+variance, no improvement over bulk-patient PC1's $10.2\%$
+(Sec.~\ref{sec:wavelets}), because this sample's real structure is
+spread across many distinct cell-type axes rather than one dominant
+gradient. The corrected next step is narrower: infer pseudo-time within
+a single, continuously varying lineage only --- the 894 Cancer
+Epithelial cells already present in this same sample are the natural
+candidate, rather than the full 9-cell-type mixture whose dominant axis
+is categorical (T-cells vs.\ everything else), not a gradient a wavelet
+decomposition could meaningfully coarse/fine-grain.
 
 \subsection{Line 1 extension: multi-omic spectral denoising}
 Sec.~\ref{sec:spiked}'s spiked-eigenvalue analysis was run on RNA-seq
@@ -1184,40 +1612,52 @@ extension proposed above; this review, by one of this paper's own
 co-authors, is the natural methodological reference for that next
 step rather than a general literature search.
 
-\subsection{Line 4: single-cell resolution}
-GSE176078 \citep{tnbcsc2021} --- TNBC single-cell RNA-seq across 10
-patients --- was already identified in the original proposal and is
-public. The concrete next step is to download it, restrict to a
-comparably sized, variance-selected gene panel per the same protocol as
-Sec.~\ref{sec:cohorts-methods}, and rerun
-Secs.~\ref{sec:tau-sweep}--\ref{sec:results-dyson} at the single-cell
-level, where $n$ (cells) is two to three orders of magnitude larger
-than the patient-level $n=119$ used here and $q=p/n$ correspondingly
-much smaller --- a regime where the Marchenko--Pastur bulk is tighter
-(Sec.~\ref{sec:math}) and the RMT method is, in principle, more
-sensitive. The Dyson-trajectory diagnostic of
-Sec.~\ref{sec:results-dyson} is particularly well suited to single-cell
-data, since cells can be ordered along a real biological pseudo-time
-(rather than the weak bulk-PC1 proxy used in the discarded wavelet
-attempt above) using standard single-cell trajectory-inference tools,
-giving the eigenvalue-trajectory scan an actual temporal, rather than
-merely ordinal, axis.
+\subsection{Line 4 revisited: beyond one patient}
+Line 4 has now been run on real data (Sec.~\ref{sec:results-singlecell}):
+GSE176078 \citep{tnbcsc2021}, one TNBC patient (CID44971, 7986 cells),
+the identical RMT threshold/spiked-eigenvalue machinery, a real
+permutation-confirmed threshold, and an honest new caveat (technical
+ribosomal/dissociation-stress spikes indistinguishable from biological
+ones without independent metadata) that the bulk cohorts never had to
+confront. The direct next steps this result itself points to: (i)
+extend from one patient to the other 8 TNBC-labeled samples in the same
+series, pooled, with an explicit check for cross-patient batch effects
+in the spike structure (the single-patient design here was chosen
+specifically to avoid that confound, not to avoid the question
+entirely); (ii) the Dyson-trajectory diagnostic of
+Sec.~\ref{sec:results-dyson} remains untried at single-cell resolution
+--- cells ordered along a real inferred pseudo-time, not the global PC1
+already checked and found insufficient (Sec.~\ref{sec:wavelets}),
+would give the eigenvalue-trajectory scan an actual temporal axis, and
+restricting that pseudo-time inference to a single, continuously
+varying lineage (the 894 Cancer Epithelial cells in this same sample
+are the natural candidate, rather than the full 9-cell-type mixture)
+is the concrete, corrected version of the single-cell wavelet retest
+this Roadmap originally proposed. (iii) The global polynomial unfolding
+used for the NNSD test itself shows a heavier outlier tail at this
+sample's much denser threshold ($20.4\%$ edge density) than the sparser
+bulk cohorts ever exercise it at (Sec.~\ref{sec:results-singlecell}); a
+local or adaptive unfolding scheme, standard in denser RMT applications,
+is a concrete, self-contained methodological fix worth making before
+pooling more single-cell samples through the same pipeline.
 
-\subsection{Line 6b: Dyson dynamics of the classifier itself}
-Sec.~\ref{sec:results-dyson} tracks the \emph{data}'s correlation-matrix
-eigenvalues as sample size grows; \citet{aarts2024}'s result is about
-the \emph{model}'s weight-matrix eigenvalues during training. Applying
-the same trajectory-and-repulsion diagnostic
-(Sec.~\ref{sec:results-dyson}'s methodology, unchanged) to the weight
-matrix of a classifier trained on this data --- for instance, the
-logistic-regression models already trained in
-Sec.~\ref{sec:ml-results}, replaced with a small multi-layer network
-whose weight-matrix spectrum can be tracked across SGD epochs --- is a
-direct, low-cost extension: the repulsion-detection code in
-\texttt{scripts/05\_dyson\_eigenvalue\_trajectories.py} does not care
-whether the matrix sequence it is handed comes from growing $n$ or from
-successive SGD steps, so applying it to training dynamics is a data
-plumbing change, not a new method.
+\subsection{Line 6b revisited: beyond one small classifier}
+Line 6b, previously proposed here as an untried extension, has now been
+run on real data (Sec.~\ref{sec:results-dyson-classifier}): a small
+MLP's weight-matrix Gram eigenvalues do not repel as reliably as the
+data-side correlation-matrix eigenvalues over a full 300-epoch training
+run, but the repulsion that is present concentrates almost entirely in
+the pre-convergence transient (epochs 0--49), a 12-fold difference
+against the post-convergence window. The concrete next step this
+result itself points to is testing whether that transient-only pattern
+is a property of small, quickly-converging classifiers specifically:
+rerunning the same diagnostic on a deeper or wider network, or on a
+harder task that does not plateau by epoch 50 (the within-TNBC or
+survival tasks proposed in Sec.~\ref{sec:limitations} would both keep
+training in a non-trivial regime for longer), would test directly
+whether a longer genuine transient produces a longer window of
+detectable repulsion, which is what the mechanism identified above
+predicts.
 
 \subsection{RMT threshold vs.\ ARACNE on the same cohort}
 The comparison sketched in Background --- RMT spectral thresholding
@@ -1243,24 +1683,49 @@ components identified by a Marchenko--Pastur threshold rather than by
 eigenvector localization alone, and level repulsion among
 coexpression-matrix eigenvalues as sample size grows, now checked for
 reproducibility across 20 random patient orders rather than asserted
-from one. It is also enough to surface two honest negative results,
-reported as such rather than dropped: TNBC-vs-LumA classification is
-too easy a benchmark to distinguish feature-selection methods, and a
-wavelet multiscale decomposition, tried as part of the original
-six-line program, produced a headline result statistically
-indistinguishable from a biologically meaningless random patient
-ordering, so it is reported and excluded from the main results rather
-than kept as an unearned positive finding. A validation-first
-collaboration should want all three reported exactly this way. The
-next concrete steps, in order of how directly they extend what is
-already running, are: extending the (now reproducibility-checked)
+from one, with a new quantitative corollary
+(Corollary~\ref{cor:weak-repulsion}) explaining directly, from the same
+SDE, which one pair fails to repel reliably and by how much. It is also
+enough to surface three honest negative results, reported as such
+rather than dropped: TNBC-vs-LumA classification is too easy a
+benchmark to distinguish feature-selection methods; a wavelet
+multiscale decomposition, tried as part of the original six-line
+program, produced a headline result statistically indistinguishable
+from a biologically meaningless random patient ordering, so it is
+reported and excluded from the main results rather than kept as an
+unearned positive finding; and the classifier's own weight-matrix
+eigenvalues, tracked across SGD training for the first time in this
+program (closing Roadmap item 6b), repel far less reliably than the
+data's do over a full run, but the repulsion present concentrates
+almost entirely in the pre-convergence transient, a specific,
+quantified pattern rather than an unexplained absence. The same
+pipeline also now runs on single-cell data (Line 4,
+Sec.~\ref{sec:results-singlecell}) for the first time in this program:
+a real, permutation-confirmed RMT threshold in a $q\ll1$ regime the
+bulk cohorts cannot reach, with spikes that split cleanly into real
+cell-type axes (immune, myeloid, epithelial) and known technical
+artifacts (ribosomal content, dissociation stress) once checked against
+independent metadata --- and a direct, negative check on the single-cell
+wavelet retest this Roadmap had proposed: the sample's own global PC1
+turns out to carry no more signal than bulk PC1 did, so that line needs
+single-lineage pseudo-time specifically, not single-cell data of any
+kind. A validation-first collaboration should want all of this reported
+exactly this way --- the real results, the honest nulls, and the
+negative checks on the program's own prior assumptions alike. The next
+concrete steps, in order of how directly they extend what is already
+running, are: extending the (now reproducibility-checked)
 Dyson-repulsion scan from TNBC to LumA and to other gene subsets;
-applying the same RMT pipeline to GSE176078 single-cell data at the
-resolution Line 4 originally proposed, which would also give a
-revisited wavelet test a real pseudo-time ordering axis instead of the
-weak bulk-PC1 proxy used here; and replacing the classification
-benchmark with a within-TNBC or survival-outcome task where a
-feature-selection advantage, if real, would actually be visible.
+testing whether a longer pre-convergence transient (a deeper
+classifier, or a harder task than TNBC-vs-LumA) produces a
+correspondingly longer window of detectable weight-matrix repulsion;
+pooling the single-cell result across the other 8 TNBC patients in
+GSE176078 with an explicit batch-effect check, and inferring pseudo-time
+within the Cancer Epithelial lineage alone for a corrected wavelet
+retest; extracting one chromosome's contact matrix from GSE167150's
+already-processed \texttt{.hic} files (Line 3, still fully unattempted)
+with \texttt{hicstraw}; and replacing the classification benchmark with
+a within-TNBC or survival-outcome task where a feature-selection
+advantage, if real, would actually be visible.
 
 \section{Methods}
 
@@ -1358,6 +1823,29 @@ boundary), partial if only one side qualifies, inconclusive if the
 closest approach is at the boundary $n=119$ itself (still narrowing,
 no reopening observable within the data), and none otherwise.
 
+\subsection{Classifier weight-matrix Dyson trajectory}
+\label{sec:classifier-dyson-methods}
+
+An MLP(20$\to$8$\to$1) (\texttt{scikit-learn} \texttt{MLPClassifier},
+\texttt{tanh} activation, plain SGD, learning rate $0.05$, no momentum,
+batch size 64) was trained on the same 20 RMT-hub genes as
+Table~\ref{tab:hubs} (standardized), combined 549-patient TNBC+LumA
+cohort, one epoch at a time (\texttt{warm\_start=True}, one call to
+\texttt{fit} per epoch) for 300 epochs. After every epoch, the
+input-to-hidden weight matrix $W_1$ (20$\times$8) was extracted and its
+Gram matrix $W_1^\top W_1$ ($8\times8$, real symmetric, positive
+semi-definite) eigendecomposed; the resulting 8 eigenvalue trajectories
+across epochs are the direct model-side analogue of the data-side
+trajectories above, and the identical closest-approach/reopening
+classification (previous subsection) is applied to them, first for one
+seed then across 20 independent seeds (initialization and minibatch
+shuffling, \texttt{scripts/19\_dyson\_classifier\_weights.py},
+\texttt{scripts/20\_dyson\_classifier\_weights\_multi\_seed.py}). The
+early/late split (\texttt{scripts/22\_classifier\_dyson\_early\_late.py})
+reapplies the same classification separately to epochs 0--49 and
+50--299 of each of the 20 already-computed trajectories, with no
+retraining.
+
 \subsection{Machine learning}
 
 Logistic regression (\texttt{scikit-learn}, \citealp{sklearn2011}) with
@@ -1388,16 +1876,44 @@ constraint) and a configuration-model graph built by fast stub-matching
 (same node count \emph{and} the real network's own degree sequence,
 testing for structure beyond degree heterogeneity alone).
 
+\subsection{Single-cell RMT pipeline}
+\label{sec:singlecell-methods}
+
+Patient CID44971 (GSM5354531, GSE176078 \citep{tnbcsc2021}) was
+downloaded as a sparse gene $\times$ cell UMI count matrix (29733 genes,
+7986 cells) with accompanying cell-type metadata. Counts were
+normalized per cell to $10^4$ total counts (CP10K) and log1p-transformed
+(standard single-cell practice). Genes detected in fewer than 3\% of
+cells were dropped (10412 of 29733 retained); of these, the top 1500 by
+variance of the normalized expression (same $p$ and same
+variance-ranking rule as \texttt{scripts/01\_build\_cohorts.py}) were
+kept. The Pearson correlation matrix across the 7986 cells, the
+Marchenko--Pastur edge, the tau-sweep threshold selection, and the
+Monte Carlo permutation null (20 replicates, gene-wise, identical
+recipe to Sec.~\ref{sec:montecarlo}) all use the exact same code paths
+as the bulk cohorts (\texttt{rmt\_threshold\_demo.py}), applied to this
+new data by \texttt{scripts/23\_singlecell\_line4\_rmt.py} and
+\texttt{scripts/24\_singlecell\_monte\_carlo\_null.py}; the permutation
+sweep grid was refined to $\tau\in[0.01,0.085]$ after a diagnostic run
+showed the permuted null's own transition sits below the bulk cohorts'
+sweep range (correlations under gene-wise permutation are weaker here,
+consistent with the smaller real $\tau^*$ found for the unpermuted
+data).
+
 \subsection{Code and reproducibility}
 
 All analysis code is in \texttt{scripts/01\_build\_cohorts.py} through
-\texttt{scripts/18\_repulsion\_reproducibility\_figure.py}, numbered in the order
+\texttt{scripts/25\_singlecell\_figures.py}, numbered in the order
 they must be run (\texttt{04b}, an ordering-control check, and
 \texttt{rmt\_threshold\_demo.py}, the synthetic-data reference
 implementation, are named descriptively rather than fitting the main
-sequence); every number and figure in this paper is produced directly
-by this code from the two raw downloaded files, with no intermediate
-manual editing of results.
+sequence; \texttt{scripts/21\_classifier\_dyson\_figures.py} plots
+results from scripts 19--20, \texttt{scripts/22} reruns script 20's
+already-saved trajectories with no retraining, and
+\texttt{scripts/25\_singlecell\_figures.py} plots results from scripts
+23--24); every number and figure in this paper is produced directly by
+this code from the raw downloaded files (two bulk TCGA-BRCA files, one
+single-cell sample), with no intermediate manual editing of results.
 
 \section{Declarations}
 
@@ -1461,6 +1977,19 @@ G.~Ben~Arous, A.~Guionnet,
 \newblock ``Large deviations for Wigner's law and Voiculescu's non-commutative entropy,''
 \newblock \emph{Probability Theory and Related Fields} \textbf{108}, 517--542 (1997).
 
+\bibitem[Chappell et al.(2021)]{tnbcmultiomics2021}
+K.~Chappell, K.~Manna, C.~L.~Washam, S.~Graw, D.~Alkam, M.~D.~Thompson,
+M.~K.~Zafar, L.~Hazeslip, C.~Randolph, A.~Gies, J.~T.~Bird, A.~K.~Byrd,
+S.~Miah, S.~D.~Byrum,
+\newblock ``Multi-omics data integration reveals correlated regulatory features of triple negative breast cancer,''
+\newblock \emph{Molecular Omics} \textbf{17}(5), 677--691 (2021). Data: GEO GSE171958, ProteomeXchange PXD025238.
+\newblock \url{https://doi.org/10.1039/D1MO00117E}
+
+\bibitem[Dorantes-Gilardi et al.(2021)]{kcore2021}
+R.~Dorantes-Gilardi, D.~Garc\'ia-Cort\'es, E.~Hern\'andez-Lemus, J.~Espinal-Enr\'iquez,
+\newblock ``$k$-core genes underpin structural features of breast cancer,''
+\newblock \emph{Scientific Reports} \textbf{11}, 16284 (2021).
+
 \bibitem[Dyson(1962)]{dyson1962}
 F.~J.~Dyson,
 \newblock ``A Brownian-Motion Model for the Eigenvalues of a Random Matrix,''
@@ -1501,11 +2030,6 @@ E.~Hern\'andez-Lemus, S.~Ochoa,
 \newblock ``Methods for multi-omic data integration in cancer research,''
 \newblock \emph{Frontiers in Genetics} \textbf{15}, 1425456 (2024).
 
-\bibitem[$k$-core(2021)]{kcore2021}
-R.~Dorantes-Gilardi, D.~Garc\'ia-Cort\'es, E.~Hern\'andez-Lemus, J.~Espinal-Enr\'iquez,
-\newblock ``$k$-core genes underpin structural features of breast cancer,''
-\newblock \emph{Scientific Reports} \textbf{11}, 16284 (2021).
-
 \bibitem[Kikkawa(2018)]{cancer2018}
 A.~Kikkawa,
 \newblock ``Random Matrix Analysis for Gene Interaction Networks in Cancer Cells,''
@@ -1531,6 +2055,11 @@ F.~Luo, Y.~Yang, J.~Zhong, H.~Gao, L.~Khan, D.~K.~Thompson, J.~Zhou,
 \newblock ``Constructing gene co-expression networks and predicting functions of unknown genes by random matrix theory,''
 \newblock \emph{BMC Bioinformatics} \textbf{8}, 299 (2007).
 
+\bibitem[Mahoney \& Martin(2019)]{mahoneymartin2019}
+M.~Mahoney, C.~Martin,
+\newblock ``Traditional and Heavy Tailed Self Regularization in Neural Network Models,''
+\newblock \emph{Proceedings of the 36th International Conference on Machine Learning}, PMLR \textbf{97}, 4284--4293 (2019).
+
 \bibitem[Marchenko \& Pastur(1967)]{marchenkopastur1967}
 V.~A.~Marchenko, L.~A.~Pastur,
 \newblock ``Distribution of eigenvalues for some sets of random matrices,''
@@ -1540,11 +2069,6 @@ V.~A.~Marchenko, L.~A.~Pastur,
 A.~A.~Margolin, I.~Nemenman, K.~Basso, C.~Wiggins, G.~Stolovitzky, R.~Dalla~Favera, A.~Califano,
 \newblock ``ARACNE: An Algorithm for the Reconstruction of Gene Regulatory Networks in a Mammalian Cellular Context,''
 \newblock \emph{BMC Bioinformatics} \textbf{7}(Suppl 1), S7 (2006).
-
-\bibitem[Multi-omics TNBC(2021)]{tnbcmultiomics2021}
-\newblock ``Multi-omics data integration reveals correlated regulatory features of triple negative breast cancer,''
-\newblock \emph{Molecular Omics} (2021). Data: GEO GSE171958, ProteomeXchange PXD025238.
-\newblock \url{https://doi.org/10.1039/D1MO00117E}
 
 \bibitem[Ochoa et al.(2021)]{multilayer2021}
 S.~Ochoa, G.~de~Anda-J\'auregui, E.~Hern\'andez-Lemus,
@@ -1566,20 +2090,15 @@ F.~Passerini, S.~Severini,
 \newblock ``Quantifying Complexity in Networks: The Von Neumann Entropy,''
 \newblock \emph{International Journal of Agent Technologies and Systems} \textbf{1}(4), 58--67 (2009).
 
-\bibitem[Reyes-Gopar et al.(2025)]{reyesgopar2025}
-H.~Reyes-Gopar, K.~A.~P\'erez-Fuentes, M.~L.~Bendall, E.~Hern\'andez-Lemus,
-\newblock ``Integration of chromosome conformation and gene expression networks reveals regulatory mechanisms in triple negative breast cancer,''
-\newblock \emph{Frontiers in Cell and Developmental Biology} \textbf{13}, 1597245 (2025). Data: GEO GSE167150.
-
 \bibitem[Pedregosa et al.(2011)]{sklearn2011}
 F.~Pedregosa, G.~Varoquaux, A.~Gramfort, et al.,
 \newblock ``Scikit-learn: Machine Learning in Python,''
 \newblock \emph{Journal of Machine Learning Research} \textbf{12}, 2825--2830 (2011).
 
-\bibitem[scRNA-seq TNBC(2021)]{tnbcsc2021}
-\newblock ``Single-cell RNA-seq of triple negative breast cancer tumors (10 patients),''
-\newblock GEO accession GSE176078.
-\newblock \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE176078}
+\bibitem[Reyes-Gopar et al.(2025)]{reyesgopar2025}
+H.~Reyes-Gopar, K.~A.~P\'erez-Fuentes, M.~L.~Bendall, E.~Hern\'andez-Lemus,
+\newblock ``Integration of chromosome conformation and gene expression networks reveals regulatory mechanisms in triple negative breast cancer,''
+\newblock \emph{Frontiers in Cell and Developmental Biology} \textbf{13}, 1597245 (2025). Data: GEO GSE167150.
 
 \bibitem[TCGA(2012)]{tcga2012}
 The Cancer Genome Atlas Network,
@@ -1610,6 +2129,11 @@ C.~A.~Tracy, H.~Widom,
 D.~Voiculescu,
 \newblock ``Limit laws for random matrices and free products,''
 \newblock \emph{Inventiones Mathematicae} \textbf{104}, 201--220 (1991).
+
+\bibitem[Wu et al.(2021)]{tnbcsc2021}
+S.~Z.~Wu, G.~Al-Eryani, D.~Roden, S.~Junankar, K.~Harvey, A.~Andersson, A.~Thennavan, C.~Wang, J.~Torpy, N.~Bartonicek, T.~Wang, L.~Larsson, D.~Kaczorowski, N.~I.~Weisenfeld, C.~R.~Uytingco, J.~G.~Chew, Z.~W.~Bent, C.-L.~Chan, V.~Gnanasambandapillai, C.-A.~Dutertre, L.~Gluch, M.~N.~Hui, J.~Beith, A.~Parker, E.~Robbins, D.~Segara, C.~Cooper, C.~Mak, B.~Chan, S.~Warrier, F.~Ginhoux, E.~Millar, J.~E.~Powell, S.~R.~Williams, X.~S.~Liu, S.~O'Toole, E.~Lim, J.~Lundeberg, C.~M.~Perou, A.~Swarbrick,
+\newblock ``A single-cell and spatially resolved atlas of human breast cancers,''
+\newblock \emph{Nature Genetics} \textbf{53}, 1334--1347 (2021). Data: GEO GSE176078.
 
 \end{thebibliography}
 

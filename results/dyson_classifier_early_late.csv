@@ -1,0 +1,15 @@
+window,pair,repulsion,partial,inconclusive,none
+"early (epochs 0-49, pre-convergence transient)",mu1-mu2,2,1,0,17
+"early (epochs 0-49, pre-convergence transient)",mu2-mu3,3,3,4,10
+"early (epochs 0-49, pre-convergence transient)",mu3-mu4,3,5,3,9
+"early (epochs 0-49, pre-convergence transient)",mu4-mu5,0,5,7,8
+"early (epochs 0-49, pre-convergence transient)",mu5-mu6,4,4,3,9
+"early (epochs 0-49, pre-convergence transient)",mu6-mu7,1,2,6,11
+"early (epochs 0-49, pre-convergence transient)",mu7-mu8,1,2,8,9
+"late (epochs 50-299, post-convergence)",mu1-mu2,0,0,0,20
+"late (epochs 50-299, post-convergence)",mu2-mu3,0,0,3,17
+"late (epochs 50-299, post-convergence)",mu3-mu4,1,0,7,12
+"late (epochs 50-299, post-convergence)",mu4-mu5,0,0,6,14
+"late (epochs 50-299, post-convergence)",mu5-mu6,0,0,4,16
+"late (epochs 50-299, post-convergence)",mu6-mu7,0,0,3,17
+"late (epochs 50-299, post-convergence)",mu7-mu8,2,0,3,15

@@ -1,0 +1,141 @@
+seed,pair,pattern,final_train_acc
+0,mu1-mu2,no clear repulsion,0.9872495446265938
+0,mu2-mu3,no clear repulsion,0.9872495446265938
+0,mu3-mu4,no clear repulsion,0.9872495446265938
+0,mu4-mu5,inconclusive (still narrowing at epoch_max),0.9872495446265938
+0,mu5-mu6,no clear repulsion,0.9872495446265938
+0,mu6-mu7,no clear repulsion,0.9872495446265938
+0,mu7-mu8,no clear repulsion,0.9872495446265938
+1,mu1-mu2,no clear repulsion,0.9872495446265938
+1,mu2-mu3,no clear repulsion,0.9872495446265938
+1,mu3-mu4,partial repulsion (one side reopens),0.9872495446265938
+1,mu4-mu5,inconclusive (still narrowing at epoch_max),0.9872495446265938
+1,mu5-mu6,no clear repulsion,0.9872495446265938
+1,mu6-mu7,no clear repulsion,0.9872495446265938
+1,mu7-mu8,partial repulsion (one side reopens),0.9872495446265938
+2,mu1-mu2,no clear repulsion,0.9872495446265938
+2,mu2-mu3,partial repulsion (one side reopens),0.9872495446265938
+2,mu3-mu4,no clear repulsion,0.9872495446265938
+2,mu4-mu5,inconclusive (still narrowing at epoch_max),0.9872495446265938
+2,mu5-mu6,repulsion (both sides reopen),0.9872495446265938
+2,mu6-mu7,no clear repulsion,0.9872495446265938
+2,mu7-mu8,no clear repulsion,0.9872495446265938
+3,mu1-mu2,no clear repulsion,0.9872495446265938
+3,mu2-mu3,repulsion (both sides reopen),0.9872495446265938
+3,mu3-mu4,no clear repulsion,0.9872495446265938
+3,mu4-mu5,no clear repulsion,0.9872495446265938
+3,mu5-mu6,no clear repulsion,0.9872495446265938
+3,mu6-mu7,no clear repulsion,0.9872495446265938
+3,mu7-mu8,repulsion (both sides reopen),0.9872495446265938
+4,mu1-mu2,no clear repulsion,0.9890710382513661
+4,mu2-mu3,no clear repulsion,0.9890710382513661
+4,mu3-mu4,no clear repulsion,0.9890710382513661
+4,mu4-mu5,no clear repulsion,0.9890710382513661
+4,mu5-mu6,partial repulsion (one side reopens),0.9890710382513661
+4,mu6-mu7,no clear repulsion,0.9890710382513661
+4,mu7-mu8,no clear repulsion,0.9890710382513661
+5,mu1-mu2,no clear repulsion,0.9890710382513661
+5,mu2-mu3,partial repulsion (one side reopens),0.9890710382513661
+5,mu3-mu4,inconclusive (still narrowing at epoch_max),0.9890710382513661
+5,mu4-mu5,no clear repulsion,0.9890710382513661
+5,mu5-mu6,no clear repulsion,0.9890710382513661
+5,mu6-mu7,no clear repulsion,0.9890710382513661
+5,mu7-mu8,repulsion (both sides reopen),0.9890710382513661
+6,mu1-mu2,no clear repulsion,0.9890710382513661
+6,mu2-mu3,no clear repulsion,0.9890710382513661
+6,mu3-mu4,repulsion (both sides reopen),0.9890710382513661
+6,mu4-mu5,no clear repulsion,0.9890710382513661
+6,mu5-mu6,no clear repulsion,0.9890710382513661
+6,mu6-mu7,no clear repulsion,0.9890710382513661
+6,mu7-mu8,inconclusive (still narrowing at epoch_max),0.9890710382513661
+7,mu1-mu2,no clear repulsion,0.9890710382513661
+7,mu2-mu3,no clear repulsion,0.9890710382513661
+7,mu3-mu4,no clear repulsion,0.9890710382513661
+7,mu4-mu5,no clear repulsion,0.9890710382513661
+7,mu5-mu6,no clear repulsion,0.9890710382513661
+7,mu6-mu7,repulsion (both sides reopen),0.9890710382513661
+7,mu7-mu8,no clear repulsion,0.9890710382513661
+8,mu1-mu2,no clear repulsion,0.9872495446265938
+8,mu2-mu3,repulsion (both sides reopen),0.9872495446265938
+8,mu3-mu4,partial repulsion (one side reopens),0.9872495446265938
+8,mu4-mu5,no clear repulsion,0.9872495446265938
+8,mu5-mu6,partial repulsion (one side reopens),0.9872495446265938
+8,mu6-mu7,no clear repulsion,0.9872495446265938
+8,mu7-mu8,partial repulsion (one side reopens),0.9872495446265938
+9,mu1-mu2,no clear repulsion,0.9872495446265938
+9,mu2-mu3,no clear repulsion,0.9872495446265938
+9,mu3-mu4,repulsion (both sides reopen),0.9872495446265938
+9,mu4-mu5,inconclusive (still narrowing at epoch_max),0.9872495446265938
+9,mu5-mu6,no clear repulsion,0.9872495446265938
+9,mu6-mu7,no clear repulsion,0.9872495446265938
+9,mu7-mu8,inconclusive (still narrowing at epoch_max),0.9872495446265938
+10,mu1-mu2,repulsion (both sides reopen),0.9908925318761385
+10,mu2-mu3,partial repulsion (one side reopens),0.9908925318761385
+10,mu3-mu4,repulsion (both sides reopen),0.9908925318761385
+10,mu4-mu5,no clear repulsion,0.9908925318761385
+10,mu5-mu6,no clear repulsion,0.9908925318761385
+10,mu6-mu7,no clear repulsion,0.9908925318761385
+10,mu7-mu8,no clear repulsion,0.9908925318761385
+11,mu1-mu2,no clear repulsion,0.9890710382513661
+11,mu2-mu3,no clear repulsion,0.9890710382513661
+11,mu3-mu4,inconclusive (still narrowing at epoch_max),0.9890710382513661
+11,mu4-mu5,partial repulsion (one side reopens),0.9890710382513661
+11,mu5-mu6,partial repulsion (one side reopens),0.9890710382513661
+11,mu6-mu7,no clear repulsion,0.9890710382513661
+11,mu7-mu8,no clear repulsion,0.9890710382513661
+12,mu1-mu2,no clear repulsion,0.9872495446265938
+12,mu2-mu3,inconclusive (still narrowing at epoch_max),0.9872495446265938
+12,mu3-mu4,repulsion (both sides reopen),0.9872495446265938
+12,mu4-mu5,no clear repulsion,0.9872495446265938
+12,mu5-mu6,repulsion (both sides reopen),0.9872495446265938
+12,mu6-mu7,inconclusive (still narrowing at epoch_max),0.9872495446265938
+12,mu7-mu8,no clear repulsion,0.9872495446265938
+13,mu1-mu2,no clear repulsion,0.9890710382513661
+13,mu2-mu3,no clear repulsion,0.9890710382513661
+13,mu3-mu4,no clear repulsion,0.9890710382513661
+13,mu4-mu5,inconclusive (still narrowing at epoch_max),0.9890710382513661
+13,mu5-mu6,no clear repulsion,0.9890710382513661
+13,mu6-mu7,partial repulsion (one side reopens),0.9890710382513661
+13,mu7-mu8,no clear repulsion,0.9890710382513661
+14,mu1-mu2,no clear repulsion,0.9872495446265938
+14,mu2-mu3,no clear repulsion,0.9872495446265938
+14,mu3-mu4,partial repulsion (one side reopens),0.9872495446265938
+14,mu4-mu5,no clear repulsion,0.9872495446265938
+14,mu5-mu6,no clear repulsion,0.9872495446265938
+14,mu6-mu7,no clear repulsion,0.9872495446265938
+14,mu7-mu8,no clear repulsion,0.9872495446265938
+15,mu1-mu2,no clear repulsion,0.9890710382513661
+15,mu2-mu3,no clear repulsion,0.9890710382513661
+15,mu3-mu4,partial repulsion (one side reopens),0.9890710382513661
+15,mu4-mu5,no clear repulsion,0.9890710382513661
+15,mu5-mu6,repulsion (both sides reopen),0.9890710382513661
+15,mu6-mu7,no clear repulsion,0.9890710382513661
+15,mu7-mu8,no clear repulsion,0.9890710382513661
+16,mu1-mu2,partial repulsion (one side reopens),0.9890710382513661
+16,mu2-mu3,inconclusive (still narrowing at epoch_max),0.9890710382513661
+16,mu3-mu4,inconclusive (still narrowing at epoch_max),0.9890710382513661
+16,mu4-mu5,no clear repulsion,0.9890710382513661
+16,mu5-mu6,no clear repulsion,0.9890710382513661
+16,mu6-mu7,no clear repulsion,0.9890710382513661
+16,mu7-mu8,repulsion (both sides reopen),0.9890710382513661
+17,mu1-mu2,no clear repulsion,0.9908925318761385
+17,mu2-mu3,no clear repulsion,0.9908925318761385
+17,mu3-mu4,no clear repulsion,0.9908925318761385
+17,mu4-mu5,no clear repulsion,0.9908925318761385
+17,mu5-mu6,repulsion (both sides reopen),0.9908925318761385
+17,mu6-mu7,no clear repulsion,0.9908925318761385
+17,mu7-mu8,no clear repulsion,0.9908925318761385
+18,mu1-mu2,no clear repulsion,0.9872495446265938
+18,mu2-mu3,inconclusive (still narrowing at epoch_max),0.9872495446265938
+18,mu3-mu4,no clear repulsion,0.9872495446265938
+18,mu4-mu5,no clear repulsion,0.9872495446265938
+18,mu5-mu6,partial repulsion (one side reopens),0.9872495446265938
+18,mu6-mu7,no clear repulsion,0.9872495446265938
+18,mu7-mu8,no clear repulsion,0.9872495446265938
+19,mu1-mu2,repulsion (both sides reopen),0.9890710382513661
+19,mu2-mu3,no clear repulsion,0.9890710382513661
+19,mu3-mu4,partial repulsion (one side reopens),0.9890710382513661
+19,mu4-mu5,no clear repulsion,0.9890710382513661
+19,mu5-mu6,no clear repulsion,0.9890710382513661
+19,mu6-mu7,partial repulsion (one side reopens),0.9890710382513661
+19,mu7-mu8,no clear repulsion,0.9890710382513661
