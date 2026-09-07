@@ -1,0 +1,8 @@
+pair,dpt_pattern,random_repulsion
+lambda1-lambda2,none,0
+lambda2-lambda3,partial,11
+lambda3-lambda4,none,14
+lambda4-lambda5,repulsion,15
+lambda5-lambda6,repulsion,16
+lambda6-lambda7,repulsion,18
+lambda7-lambda8,partial,16

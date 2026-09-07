@@ -34,7 +34,7 @@ Julio C\'esar Galindo L\'opez$^{1,*}$ \and Enrique Hern\'andez-Lemus$^{2}$
 \noindent\textbf{Background:}
 Random matrix theory (RMT) offers a principled way to decide which
 correlations in a noisy, finite-sample gene-expression matrix reflect
-real biology rather than sampling noise. We combine the classical
+real biology and not sampling noise. We combine the classical
 RMT correlation-threshold method with a Monte Carlo permutation null,
 a Dyson-Brownian-motion repulsion diagnostic, spectral
 entropy, and a graph-theoretic comparison against random-graph nulls,
@@ -52,8 +52,8 @@ well beyond what dense-matrix universality alone could produce. Fewer
 than $2\%$ of candidate genes' correlation directions exceed the
 Marchenko--Pastur noise bulk yet capture roughly half the total
 variance per cohort, and the leading such directions are thematically
-coherent multi-gene programs (collagen/ECM, interferon, keratin)
-rather than single-gene artifacts. Tracking the top eigenvalues as the
+coherent multi-gene programs (collagen/ECM, interferon, keratin), not
+single-gene artifacts. Tracking the top eigenvalues as the
 TNBC sample grows one patient at a time shows several pairs undergoing
 Dyson-type level repulsion (approach, then reopen, rather than cross),
 reproducible across 20 random patient orders and replicated in LumA (a
@@ -82,14 +82,15 @@ epithelial, matching independent cell-type annotation) and known
 single-cell technical artifacts (ribosomal content, dissociation
 stress), a distinction the bulk analysis never had to draw. Restricting
 pseudo-time inference to a single continuous lineage within that same
-sample (894 Cancer Epithelial cells), as a corrected retest of the
-wavelet line proposed, still finds no stronger ordering axis (PC1
-variance share $8.6\%$, no better than the whole-sample $9.7\%$) and a
-wavelet coarse/fine split statistically indistinguishable from a random
-cell ordering; the same comparison against random orderings shows the
-single-cell Dyson-repulsion pattern itself reflects growing sample size
-rather than this specific ordering, clarifying rather than undermining
-the bulk-cohort repulsion result.
+sample (894 Cancer Epithelial cells) still finds no stronger ordering
+axis (PC1 variance share $8.6\%$, no better than the whole-sample
+$9.7\%$), and replacing that linear axis with diffusion pseudotime, a
+real non-linear trajectory estimator confirmed distinct from PC1, gives
+the identical wavelet null a third time --- ordering choice is not the
+explanation. The same random-order comparison shows the single-cell
+Dyson-repulsion pattern itself reflects growing sample size, not any
+particular ordering, clarifying rather than undermining the bulk-cohort
+repulsion result.
 
 \noindent\textbf{Conclusions:}
 Combining a static RMT threshold with an explicit Monte Carlo null and
@@ -98,17 +99,21 @@ TCGA-BRCA coexpression networks and in single-cell data alike, and the
 same discipline exposes three honest negative results (the wavelet
 real-data application, the classification benchmark's ceiling effect,
 and the classifier's weight-matrix repulsion outside its training
-transient) rather than dropping them.
+transient) instead of dropping them.
 All numbers are produced by included, re-runnable code. The one
-originally proposed line left genuinely unattempted through several
-earlier rounds --- 3D genomic structure via Hi-C --- is attempted here
-too: the identical machinery, applied to one chromosome of a real TNBC
-tumor's Hi-C contact map after the one standard preprocessing step Hi-C
-data requires (observed/expected normalization), selects a real,
-permutation-confirmed threshold and a bin-bin correlation matrix
-showing the plaid pattern characteristic of chromatin compartments,
-though independent validation of that compartment interpretation
-remains for a follow-up round.
+originally proposed line left unattempted through several earlier
+rounds --- 3D genomic structure via Hi-C --- is attempted here too, and
+extended in the same round: the identical machinery, applied to one
+chromosome of a real TNBC tumor's Hi-C contact map after the one
+standard preprocessing step Hi-C data requires (observed/expected
+normalization), selects a real, permutation-confirmed threshold and a
+bin-bin correlation matrix whose top eigenvector correlates with real
+GC content and gene density exactly as the chromatin-compartment
+literature predicts, replicated across all three real TNBC tumors and
+a matched normal sample, with one tumor an outlier against the other
+three rather than a clean tumor-vs-normal split. Every one of the six
+originally proposed research lines has now been run on real data at
+least once.
 \end{abstract}
 
 \noindent\textbf{Keywords:} random matrix theory; gene coexpression networks;
@@ -1238,8 +1243,8 @@ method problem): every seed's training accuracy plateaus by
 roughly epoch 50 (final accuracy $0.987$--$0.991$ across all 20 seeds,
 \texttt{scripts/20\_dyson\_classifier\_weights\_multi\_seed.py}), so if
 the Dyson drift term matters only while the weight matrix is still
-genuinely changing --- exactly as it does on the data side, where each
-step is a real new patient rather than a repeated pass over the same
+actually changing --- exactly as it does on the data side, where each
+step is a real new patient, not a repeated pass over the same
 549 --- then whatever repulsion signal exists should concentrate in the
 pre-convergence transient (epochs 0--49) and disappear once training
 settles near a fixed point (epochs 50--299), where SGD's own
@@ -1272,7 +1277,7 @@ reliably, or for as long, as the data's correlation-matrix eigenvalues
 do, but what repulsion is there is concentrated almost entirely in the
 transient window before training converges, consistent with the same
 Dyson mechanism (Proposition~\ref{prop:stationary}) being active only
-while the matrix is genuinely still moving --- a small, shallow
+while the matrix is still actively moving --- a small, shallow
 classifier trained for a fixed 300 epochs on 549 patients is simply not
 the regime \citet{aarts2024} study (larger networks, many more training
 steps, and typically a bulk-statistics comparison rather than
@@ -1297,7 +1302,7 @@ direct, if smaller-scale, instance of that same phase structure.
 The early/late split above rests on one specific training regime
 (learning rate $0.05$, converged by epoch $\sim\!50$ in every seed);
 the mechanism it proposes --- repulsion detectable only while the
-weight matrix is genuinely still changing --- makes a falsifiable
+weight matrix is still actively changing --- makes a falsifiable
 prediction: slow convergence down, with nothing else about the task,
 architecture, or feature set changed, and the pre-convergence window in
 which repulsion is detectable should lengthen correspondingly.
@@ -1550,7 +1555,7 @@ and $4\%$ of the unfolded spacings land above $s=4$ (some far above,
 reflecting a poorly-conditioned tail fit rather than genuine large
 gaps), excluded from Figure~\ref{fig:singlecell-nnsd} and disclosed
 here rather than silently dropped. The visible histogram itself reads
-as a genuinely marginal case rather than a clean GOE match: it exceeds
+as a marginal case, not a clean GOE match: it exceeds
 even the Poisson curve's height near $s=0$, more consistent with the
 thin KS margin above than with a textbook Wigner-surmise fit. Neither
 caveat overturns the sweep's central finding (a real, permutation-
@@ -1646,7 +1651,7 @@ absence of structure, and the same caveat applies here as in
 Sec.~\ref{sec:wavelets}: this is a data/ordering problem, not evidence
 against the wavelet method, whose own positive control
 (Sec.~\ref{sec:wavelets}) already showed it works correctly given a
-genuinely strong ordering axis.
+strong enough ordering axis.
 
 Third, and the most useful methodological clarification this retest
 provides: the Dyson-trajectory diagnostic itself (Line 4(ii)) does show
@@ -1686,6 +1691,50 @@ consistent with repulsion here reflecting growing sample size rather
 than this specific ordering's biological content.}
 \label{fig:singlecell-epithelial-dyson}
 \end{figure}
+
+The corrected candidate above was still a linear one (PC1, only the
+population it was computed on changed); the sharper version of the same
+retest replaces PC1 itself with a genuinely non-linear estimator built
+for exactly this purpose. Diffusion pseudotime (DPT,
+\citealp{haghverdi2016}) builds a cell-cell diffusion process from a
+$k$-nearest-neighbor similarity graph rather than projecting onto one
+global linear axis, and orders cells by their diffusion distance from
+an extremal root cell; we implement it directly (no external
+single-cell package was available in this environment) and run it on
+the same $894$ Cancer Epithelial cells (Sec.~\ref{sec:dpt-methods}). This
+ordering is not a relabeling of PC1 under another name: the two
+rankings correlate at Spearman $\rho=-0.481$
+($p=6.5\times10^{-53}$) --- a real, significant association (diffusion
+pseudotime and a linear variance-maximizing axis are not independent
+processes on the same data) but far from the near-$\pm1$ that would
+mean DPT is just PC1 relabeled.
+
+Rerunning the identical Dyson-trajectory scan and its random-order
+control along DPT gives the same qualitative answer as the PC1 version
+above, now for a third time on a genuinely different ordering:
+$\lambda_4$--$\lambda_5$ through $\lambda_6$--$\lambda_7$ show clear
+repulsion under DPT, but $15$--$18$ of $20$ random cell orderings show
+the identical pattern for those same pairs, confirming again that this
+diagnostic's repulsion signature tracks growing sample size rather than
+which specific ordering is used --- the bulk-cohort check
+(Sec.~\ref{sec:results-dyson}), the PC1-based single-cell check above,
+and this DPT-based check now agree on the same point across three
+unrelated datasets and orderings. The wavelet retest, however, gives a
+cleaner and more useful negative result than either PC1 attempt did:
+coarse and fine hub genes still share $0$ of $10$, matched or exceeded
+by all $20$ random-order replicates, exactly as with global PC1
+(Sec.~\ref{sec:wavelets}) and lineage-restricted PC1 (above). Three
+independent ordering axes on this same cell population --- one
+categorical-mixture PC1, one single-lineage PC1, and now one genuinely
+non-linear diffusion pseudotime --- all fail the identical wavelet test
+identically. That consistency itself is informative: it is no longer
+plausible to blame the wavelet null on a poorly chosen ordering axis,
+of any kind tried so far; whatever is missing is more specific than
+``the ordering wasn't good enough,'' and a fair retest now needs either
+a substantially larger single-cell cohort (more cells per lineage than
+this one sample provides) or an experimentally measured time axis
+(e.g.\ a time-course or RNA-velocity-derived rate, not any expression-
+derived ordering) before trying again.
 
 \subsection{3D genomic structure: Line 3 attacked with real Hi-C data}
 \label{sec:results-hic}
@@ -1736,13 +1785,7 @@ compartments in every published Hi-C compartment analysis since
 \citet{liebermanaiden2009}, and the top eigenvector's sign pattern
 splits the $750$ retained bins into contiguous genomic blocks
 ($457$ positive, $293$ negative bins, Figure~\ref{fig:hic}, right
-panel) rather than an unstructured scatter of signs --- consistent
-with, but not yet independently validated against, the classic
-compartment interpretation. That validation (correlating the sign
-pattern against an independent genomic feature such as gene density or
-GC content, neither of which this round loads) is the concrete next
-step before reading this eigenvector as biologically confirmed
-compartments rather than a real but uninterpreted spectral feature.
+panel), not an unstructured scatter of signs.
 
 \begin{figure}[h]
 \centering
@@ -1752,22 +1795,87 @@ compartments rather than a real but uninterpreted spectral feature.
 matrix, showing the plaid pattern characteristic of A/B chromatin
 compartments \citep{liebermanaiden2009}. Center: RMT threshold sweep,
 same method as Fig.~\ref{fig:tausweep}, selecting $\tau^*=0.15$.
-Right: the top eigenvector's sign pattern along the chromosome,
-forming contiguous blocks rather than scattered signs.}
+Right: the top eigenvector's sign pattern along the chromosome, forming
+contiguous blocks, not scattered signs.}
 \label{fig:hic}
 \end{figure}
 
-This is a first, single-chromosome, single-tumor result, not a
-validated genome-wide compartment map: it establishes that the
+A plaid pattern and a contiguous sign split are visually suggestive of
+compartments, but neither is proof: this round checks the
+interpretation directly, against two real, independent genomic
+features the RMT method itself never sees, computed from the hg19
+reference sequence and the hg19 RefSeq gene table (the genome build the
+\texttt{.hic} file's own header declares, read before downloading
+anything --- Sec.~\ref{sec:hic-validation-methods}). The compartment interpretation
+holds up: the top eigenvector's sign correlates with real GC content
+($r=0.452$, $p=4.3\times10^{-39}$) and with real RefSeq gene density
+($r=0.306$, $p=9.3\times10^{-18}$) across the $750$ retained bins
+(Figure~\ref{fig:hic-validation}, left panel), and the two eigenvector-
+defined groups differ sharply on both features directly (positive-sign
+bins: mean GC $0.409$, $5.32$ transcripts/bin; negative-sign bins: mean
+GC $0.381$, $1.61$ transcripts/bin; Welch $t=10.84$, $p=1.8\times
+10^{-25}$ for GC and $t=7.22$, $p=1.5\times10^{-12}$ for gene density)
+--- higher GC, gene-dense bins on one side, lower GC, gene-poor bins on
+the other, exactly the A/B compartment signature
+\citet{liebermanaiden2009} first reported, not merely a resemblance to
+it.
+
+One chromosome, one tumor cannot separate a real biological signal from
+one sample's own idiosyncrasy, so we ran the identical pipeline ---
+O/E normalization, RMT threshold sweep, permutation null, GC/gene-
+density validation, no changes --- on the other two real TNBC tumors in
+GSE167150 and the matched-normal file
+(\texttt{scripts/33\_hic\_multi\_sample.py}). All four samples give a
+real, permutation-confirmed threshold well above the null ceiling of
+$\tau=0.10$ ($\tau^*=0.25$, $0.25$, $0.15$, $0.40$ for
+TNBC\_Tissue1/2/3 and Normal\_Tissue respectively), and all four show
+the same GC/gene-density compartment signature independently
+($r_{\text{GC}}=0.63$, $0.67$, $0.45$, $0.60$; all
+$p<10^{-38}$) --- the compartment finding is not one sample's
+coincidence.
+
+What is not simply a clean tumor-vs-normal story is the compartment
+\emph{map} itself: pairwise sign agreement between samples
+(Figure~\ref{fig:hic-validation}, right panel) shows TNBC\_Tissue1,
+TNBC\_Tissue2, and the normal sample mutually agreeing on $87$--$92\%$
+of bins, while TNBC\_Tissue3 --- the sample examined first, above ---
+agrees with each of the other three on only $74$--$76\%$ of bins,
+including the normal sample. If compartment structure tracked
+malignancy status cleanly, the three tumors should cluster together
+against the one normal sample; instead, one tumor (Tissue3) is the
+outlier against all three others, tumor and normal alike. With only
+three tumors this cannot distinguish real inter-patient heterogeneity
+--- well documented for TNBC generally \citep{foulkes2010} --- from a
+technical difference specific to one sample (sequencing depth, tissue
+quality), but it does mean the natural first hypothesis (compartments
+differ systematically between TNBC and normal breast tissue on chr18)
+is not what these four real samples show; a larger cohort is needed
+before either explanation can be preferred over the other.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/fig19_hic_validation_multisample.pdf}
+\caption{Left: TNBC\_Tissue3's compartment PC1 score vs.\ real GC
+content per bin (hg19 chr18), colored by compartment sign --- the
+independent validation the single-sample result needed.
+Right: pairwise compartment-sign agreement across all four real
+GSE167150 samples; TNBC\_Tissue3 is the outlier against the other
+three, not the two tumors clustering against the one normal sample.}
+\label{fig:hic-validation}
+\end{figure}
+
+This is still a single-chromosome result, not a validated genome-wide
+compartment map, but it now stands on more than visual resemblance: the
 identical spectral machinery this paper uses for gene expression
 applies, without modification beyond the one standard O/E
-preprocessing step, to real Hi-C contact data, and that the resulting
-threshold is real by the same permutation-null standard applied
-everywhere else in this paper. Extending to the other two real TNBC
-tumors and the matched normal-tissue file already in GSE167150, other
-chromosomes, and the independent compartment validation described
-above are the direct next steps, stated concretely in
-Sec.~\ref{sec:roadmap}.
+preprocessing step, to real Hi-C contact data; the resulting threshold
+is real by the same permutation-null standard applied everywhere else
+in this paper, in all four real samples tested; and the compartment
+reading of the top eigenvector is now independently confirmed against
+real genomic annotation, also in all four samples. Extending beyond
+chr18 to the rest of the genome, and resolving whether TNBC\_Tissue3's
+divergence reflects biology or a technical artifact with more tumors,
+are the concrete next steps, stated in Sec.~\ref{sec:roadmap}.
 
 \section{Discussion}
 \label{sec:limitations}
@@ -1842,21 +1950,26 @@ now is narrower still: extending the multi-order check to gene subsets
 other than the top-60-by-variance choice used throughout.
 
 The single-cell side of the same question (Line 4(ii),
-Sec.~\ref{sec:singlecell-epithelial}) gives a genuinely different kind
-of answer: restricting pseudo-time to the 894-cell Cancer Epithelial
-lineage does not improve the ordering axis over the whole-sample PC1
-($8.6\%$ vs.\ $9.7\%$ variance), leaves the wavelet retest a null
-indistinguishable from a random ordering exactly as before, and --- most
-usefully --- shows directly, for the first time, that the
-Dyson-repulsion signature at single-cell resolution is a property of
-growing sample size rather than of this specific ordering (random cell
-orders reproduce it at comparable or higher rates). This is a
-clarification of what ``time'' means in this diagnostic
+Sec.~\ref{sec:singlecell-epithelial}) gives a different kind of answer,
+now checked twice over. Restricting pseudo-time to the 894-cell Cancer
+Epithelial lineage does not improve the ordering axis over the
+whole-sample PC1 ($8.6\%$ vs.\ $9.7\%$ variance); replacing that linear
+axis with diffusion pseudotime \citep{haghverdi2016}, a real
+non-linear estimator built for exactly this purpose (Spearman
+$\rho=-0.481$ against PC1 --- a genuinely different ordering, not PC1
+under another name), changes nothing about either conclusion: the
+wavelet retest stays a null indistinguishable from a random ordering
+for a third distinct axis in a row, and the Dyson-repulsion signature
+at single-cell resolution again tracks growing sample size rather than
+which ordering is used (random cell orders match or exceed it). This is
+a clarification of what ``time'' means in this diagnostic
 (Definition~\ref{def:dyson-sde}), consistent with, not contradicted by,
-the bulk-cohort reproducibility results, and it means the concrete
-open item here is no longer ``restrict to one lineage'' (tried, and
-insufficient on its own) but genuinely different pseudo-time inference
-entirely (RNA velocity or a dedicated trajectory-inference tool).
+the bulk-cohort reproducibility results, and three-for-three across
+unrelated orderings now closes the ``was it the ordering?'' question for
+the wavelet line specifically: it was not, so the concrete open item is
+no longer any expression-derived ordering, linear or not, but an
+experimentally measured time axis or a substantially larger single-cell
+cohort.
 
 Line 6b's classifier-side extension (Sec.~\ref{sec:results-dyson-classifier})
 is now run rather than merely proposed, and closes with a specific,
@@ -1906,62 +2019,65 @@ relabeled ``revisited,'' to state the sharper next step each result now
 points to rather than the original, now-resolved question of whether
 it could be attempted at all.
 
-\subsection{Line 3 revisited: beyond one chromosome, one tumor}
+\subsection{Line 3 revisited: beyond one chromosome}
 This line was reported as blocked, in an earlier round, for lack of a
 public patient-cohort-scale TNBC Hi-C dataset; that claim was corrected
 once \citet{reyesgopar2025} --- Hern\'andez-Lemus's own group --- was
 found (GEO accession GSE167150, three real TNBC tumor \texttt{.hic}
-files among six 40\,kb--500\,kb-resolution files per condition,
-270MB--2.5GB each, 6.2GB total for the series), and the concrete
-single-file, single-chromosome first step that correction proposed has
-now been run for real (Sec.~\ref{sec:results-hic}): chr18 of the
-smallest real TNBC tumor file, observed/expected normalization
-\citep{liebermanaiden2009}, and the identical RMT threshold machinery,
-giving a real, permutation-confirmed $\tau^*=0.15$ and a plaid bin-bin
-correlation pattern consistent with A/B compartment structure. The
-direct next steps this result itself points to: (i) independently
-validate the compartment interpretation of the top eigenvector's sign
-pattern against genomic annotation (gene density or GC content along
-chr18), rather than reading the plaid pattern and contiguous sign
-blocks as compartments on visual resemblance alone; (ii) extend from
-one chromosome to the rest of the genome and from one tumor to the
-other two real TNBC tumors and the matched-normal file already in
-GSE167150, directly testing whether the RMT-selected threshold and
-compartment structure differ between tumor and normal tissue, the
-comparison \citet{reyesgopar2025}'s own network measures (Jaccard
-similarity between normal and TNBC networks, degree and Z-weighted
-degree) were themselves designed for; (iii) a Monte-Carlo-permutation-
-consistent but --- unlike the bulk and single-cell cohorts --- single-
-sample threshold means this result cannot yet distinguish real
-patient-to-patient variability from one tumor's own idiosyncrasy, the
-direct reason for extending to the other two tumors before treating
-$\tau^*=0.15$ as characteristic of TNBC Hi-C generally rather than of
-this one sample.
+files and a matched-normal file among six 40\,kb--500\,kb-resolution
+files per condition, 270MB--2.5GB each, 6.2GB total for the series),
+and every concrete next step that correction proposed has now been run
+for real (Sec.~\ref{sec:results-hic}): chr18 of all three real TNBC
+tumors and the normal sample, observed/expected normalization
+\citep{liebermanaiden2009}, the identical RMT threshold machinery, and
+independent validation of the compartment interpretation against real
+GC content and RefSeq gene density. All four samples give a real,
+permutation-confirmed threshold and the predicted GC/gene-density
+compartment signature; what they do \emph{not} give is a clean
+tumor-vs-normal split (TNBC\_Tissue1, TNBC\_Tissue2, and the normal
+sample mutually agree on $87$--$92\%$ of compartment calls,
+TNBC\_Tissue3 agrees with each of the other three, tumor or normal, on
+only $74$--$76\%$). The direct next steps this result itself points to:
+(i) extend from one chromosome to the rest of the genome, now that the
+per-chromosome pipeline and its validation are both established; (ii)
+resolve TNBC\_Tissue3's divergence with more tumors --- three samples
+cannot distinguish real inter-patient heterogeneity, well documented
+for TNBC generally \citep{foulkes2010}, from a technical artifact
+specific to that one sample (sequencing depth, tissue quality); (iii)
+compare the RMT-selected hub bins directly against
+\citet{reyesgopar2025}'s own network measures (Jaccard similarity
+between normal and TNBC networks, degree and Z-weighted degree), the
+comparison those measures were themselves designed for and which this
+round did not yet attempt.
 
-\subsection{Line 5 revisited: applying the validated wavelet method to real signal}
+\subsection{Line 5 revisited: three orderings, one answer}
 The synthetic positive control (Results) already confirms the
 coarse/fine wavelet pipeline works correctly given enough real signal,
 so what remains is not a method fix but a data fix. This was checked
-directly, not just proposed, in two rounds now. First: the global PC1
-of the single-cell data (Sec.~\ref{sec:results-singlecell}) carries
-only $9.7\%$ of variance, no improvement over bulk-patient PC1's
-$10.2\%$ (Sec.~\ref{sec:wavelets}), because this sample's real structure
-is spread across many distinct cell-type axes rather than one dominant
-gradient. Second, the corrected candidate that round proposed ---
-pseudo-time restricted to the 894-cell Cancer Epithelial lineage alone
---- has itself now been tried (Sec.~\ref{sec:singlecell-epithelial})
-and does not fix the problem either: its own PC1 explains only $8.6\%$
-of variance, no better than the whole-sample figure, and the wavelet
-retest on that ordering remains a null indistinguishable from a random
-cell order. Restricting to a single lineage removes the categorical
-T-cell-vs-everything-else split, but does not on its own supply a
-strong continuous gradient. What remains is therefore not another restriction of the same
-PC1-based approach, already tried twice, but a genuinely different
-pseudo-time estimator --- RNA-velocity-style splicing information (not
-available in this processed count matrix and would require
-re-processing from raw reads) or a dedicated trajectory-inference tool
-run on the same Cancer Epithelial cells --- before this line can be
-retested a third time.
+directly, not just proposed, in three rounds now, on three unrelated
+ordering axes. First: the global PC1 of the single-cell data
+(Sec.~\ref{sec:results-singlecell}) carries only $9.7\%$ of variance,
+no improvement over bulk-patient PC1's $10.2\%$ (Sec.~\ref{sec:wavelets}),
+because this sample's real structure is spread across many distinct
+cell-type axes rather than one dominant gradient. Second, pseudo-time
+restricted to the 894-cell Cancer Epithelial lineage alone
+(Sec.~\ref{sec:singlecell-epithelial}) does not fix the problem either:
+its own PC1 explains only $8.6\%$ of variance, no better than the
+whole-sample figure. Third, diffusion pseudotime
+\citep{haghverdi2016} on that same lineage --- a genuinely non-linear
+estimator, confirmed distinct from PC1 by their $-0.481$ Spearman
+correlation, not a restriction of the same linear approach at all ---
+gives the identical wavelet null a third time
+(Sec.~\ref{sec:singlecell-epithelial}). Three different orderings
+failing identically is itself the finding: it rules out ordering choice
+as the explanation, linear or not, restricted or not. What remains is
+an experimentally measured time axis --- RNA-velocity-style splicing
+information (not available in this processed count matrix and would
+require re-processing from raw reads) or a genuine time-course --- or
+enough additional cells, within one lineage, that any reasonable
+ordering estimator would agree on the same trajectory; a fourth
+expression-derived pseudo-time estimator on this same 894-cell sample
+is not a promising next step on its own.
 
 \subsection{Line 1 extension: multi-omic spectral denoising}
 Sec.~\ref{sec:spiked}'s spiked-eigenvalue analysis was run on RNA-seq
@@ -1994,21 +2110,20 @@ extend from one patient to the other 8 TNBC-labeled samples in the same
 series, pooled, with an explicit check for cross-patient batch effects
 in the spike structure (the single-patient design here was chosen
 specifically to avoid that confound, not to avoid the question
-entirely); (ii) the Dyson-trajectory diagnostic and the corrected,
-single-lineage wavelet retest have both now been run
-(Sec.~\ref{sec:singlecell-epithelial}) on the 894 Cancer Epithelial
-cells in this same sample: the lineage-restricted PC1 does not improve
-on the whole-sample ordering axis ($8.6\%$ vs.\ $9.7\%$ variance), the
-wavelet coarse/fine split remains statistically indistinguishable from
-a random cell ordering, and the Dyson-repulsion pattern itself proved
-attributable to growing sample size rather than to this specific
-ordering (a real-vs-random-order comparison not previously run at
-single-cell resolution). What remains open on this front is a genuinely
-different ordering signal --- real experimentally-derived pseudo-time
-(e.g.\ RNA velocity or a published trajectory-inference tool run on
-this same lineage) rather than a linear PC1 of any kind, since PC1
-itself, restricted or not, has now been checked twice and found
-insufficient both times. (iii) The global polynomial unfolding
+entirely); (ii) the Dyson-trajectory diagnostic and the wavelet retest
+have both now been run (Sec.~\ref{sec:singlecell-epithelial}) on the
+894 Cancer Epithelial cells in this same sample, under three different
+orderings (whole-sample PC1, lineage-restricted PC1, and diffusion
+pseudotime, \citealp{haghverdi2016}): none improves the wavelet result,
+and the Dyson-repulsion pattern proved attributable to growing sample
+size under all three, not to which ordering is used (a real-vs-random-
+order comparison not previously run at single-cell resolution). What
+remains open on this front is therefore not a fourth expression-derived
+ordering but a genuinely different \emph{kind} of signal ---
+real experimentally measured time (a time-course, or RNA-velocity-style
+splicing information) --- since PC1 (twice) and a real non-linear
+diffusion estimator have now all been checked and found insufficient.
+(iii) The global polynomial unfolding
 used for the NNSD test itself shows a heavier outlier tail at this
 sample's much denser threshold ($20.4\%$ edge density) than the sparser
 bulk cohorts ever exercise it at (Sec.~\ref{sec:results-singlecell}); a
@@ -2038,7 +2153,7 @@ magnitude rather than a fixed epoch count, then rerun this same
 comparison so the early-window counts across learning-rate regimes are
 directly comparable; only after that fix would a deeper/wider network
 or a harder, non-plateauing task (the within-TNBC or survival tasks of
-Sec.~\ref{sec:limitations}) add genuinely new information here, since
+Sec.~\ref{sec:limitations}) actually tell us anything new here, since
 either change would face the identical rescaling problem on its own.
 
 \subsection{RMT threshold vs.\ ARACNE on the same cohort}
@@ -2055,80 +2170,80 @@ against Table~\ref{tab:hubs} directly.
 \section{Conclusions}
 
 Combining a static RMT correlation threshold, a Monte Carlo permutation
-null, and a Dyson-repulsion eigenvalue diagnostic into one pipeline,
-and running that pipeline once on real TCGA-BRCA data, is enough to
-surface real, non-trivial structure: a sample-size-robust difference
-in coexpression-network density between TNBC and luminal A that a
-permutation null confirms is not a threshold artifact, biologically
-coherent (collagen/ECM, interferon, keratin) spiked correlation
-components identified by a Marchenko--Pastur threshold rather than by
-eigenvector localization alone, and level repulsion among
-coexpression-matrix eigenvalues as sample size grows, now checked for
+null, and a Dyson-repulsion eigenvalue diagnostic into one pipeline
+surfaces real, non-trivial structure in TCGA-BRCA: a sample-size-robust
+difference in coexpression-network density between TNBC and luminal A
+that a permutation null confirms is not a threshold artifact,
+biologically coherent (collagen/ECM, interferon, keratin) spiked
+correlation components identified by a Marchenko--Pastur threshold and
+not by eigenvector localization alone, and level repulsion among
+coexpression-matrix eigenvalues as sample size grows, checked for
 reproducibility across 20 random patient orders in \emph{two} real
-cohorts (TNBC and, since this round, LumA) rather than asserted from
-one, with a new quantitative corollary
+cohorts (TNBC and LumA), with a quantitative corollary
 (Corollary~\ref{cor:weak-repulsion}) explaining directly, from the same
-SDE, which pairs fail to repel reliably and by how much in both
-cohorts alike. It is also enough to surface three honest negative
-results, reported as such rather than dropped: TNBC-vs-LumA
-classification is too easy a benchmark to distinguish feature-selection
-methods; a wavelet multiscale decomposition, tried as part of the
-original six-line program, produced a headline result statistically
-indistinguishable from a biologically meaningless random patient
-ordering on two different ordering axes now (bulk PC1 and, since this
-round, single-lineage single-cell pseudo-time alike), so it is reported
-and excluded from the main results rather than kept as an unearned
-positive finding; and the classifier's own weight-matrix eigenvalues,
-tracked across SGD training (closing Roadmap item 6b) at two very
-different learning rates now, repel far less reliably than the data's
-do over a full run, but the repulsion present concentrates almost
-entirely in the pre-convergence transient regardless of how long that
-transient is made, a specific, quantified pattern rather than an
-unexplained absence --- with an honest complication surfaced in the
-second learning-rate regime: the fixed-epoch-window detector used
-throughout this paper does not itself rescale with training speed, so
-its raw counts should not be compared directly across learning rates
-without that fix. The same pipeline also now runs on single-cell data
-(Line 4, Sec.~\ref{sec:results-singlecell}) for the first time in this
-program: a real, permutation-confirmed RMT threshold in a $q\ll1$
-regime the bulk cohorts cannot reach, with spikes that split cleanly
-into real cell-type axes (immune, myeloid, epithelial) and known
-technical artifacts (ribosomal content, dissociation stress) once
-checked against independent metadata --- and a direct, negative check,
-now run twice, on the single-cell wavelet retest this Roadmap had
-proposed: neither the sample's whole-population global PC1 nor its
-PC1 restricted to the 894-cell Cancer Epithelial lineage alone carries
-more signal than bulk PC1 did, so that line needs a genuinely different
-pseudo-time estimator, not a different restriction of the same
-PC1-based approach. The pipeline extends to a third data modality too:
-3D genomic structure (Line 3, Sec.~\ref{sec:results-hic}), the one
-originally proposed line left completely unattempted through several
-earlier rounds, now has a real result --- one chromosome of a real TNBC
-tumor's Hi-C map, observed/expected normalized following
-\citet{liebermanaiden2009}, gives a real, permutation-confirmed RMT
-threshold and a bin-bin correlation matrix with the plaid pattern
-characteristic of A/B compartments, with the compartment reading itself
-flagged as not yet independently validated rather than asserted on
-visual resemblance alone. Every one of the six originally proposed
-lines has now been attempted on real data at least once. A
-validation-first collaboration should want all of this reported exactly
-this way --- the real results, the honest nulls, and the negative
-checks on the program's own prior assumptions alike. The next concrete
-steps, in order of how directly they extend what is already running,
-are: extending the (now two-cohort) Dyson-repulsion scan to gene
-subsets other than the top-60-by-variance choice used throughout;
-fixing the classifier-repulsion detector to rescale with the empirical
-per-epoch step size before comparing early-window counts across
-learning rates or architectures; pooling the single-cell result across
-the other 8 TNBC patients in GSE176078 with an explicit batch-effect
-check, and obtaining a genuinely non-PC1 pseudo-time estimate (RNA
-velocity or a dedicated trajectory-inference tool) for a third wavelet
-retest; validating the chr18 compartment call against real genomic
-annotation and extending it to the other two real TNBC tumors and the
-matched-normal file in GSE167150 (Line 3); and replacing the
-classification benchmark with a within-TNBC or survival-outcome task
-where a feature-selection advantage, if real, would actually be
-visible.
+SDE, which pairs fail to repel reliably and by how much in both cohorts
+alike.
+
+The same discipline surfaces three honest negative results, reported
+as such instead of dropped. TNBC-vs-LumA classification is too easy a
+benchmark to distinguish feature-selection methods. A wavelet
+multiscale decomposition produced a headline result statistically
+indistinguishable from a meaningless random ordering, checked now on
+four unrelated orderings across two data types (bulk-patient PC1,
+whole-sample and lineage-restricted single-cell PC1, and single-cell
+diffusion pseudotime) and failing identically every time --- evidence
+strong enough to rule out ordering choice as the explanation, not just
+suggest it. And the classifier's own weight-matrix eigenvalues, tracked
+across SGD training at two different learning rates, repel far less
+reliably than the data's do over a full run; what repulsion exists
+concentrates almost entirely in the pre-convergence transient
+regardless of how long that transient is made, a specific, quantified
+pattern rather than an unexplained absence, with one further honest
+complication surfaced by the second learning-rate regime: the
+fixed-epoch-window detector used throughout this paper does not itself
+rescale with training speed, so its raw counts should not be compared
+directly across learning rates without that fix.
+
+The same pipeline runs, for the first time in this program, on two
+further data modalities beyond bulk expression. On single-cell RNA-seq
+(Line 4), it gives a real, permutation-confirmed threshold in a
+$q\ll1$ regime the bulk cohorts cannot reach, with spikes that split
+cleanly into real cell-type axes (immune, myeloid, epithelial) and
+known technical artifacts (ribosomal content, dissociation stress) once
+checked against independent metadata. On Hi-C contact data (Line 3),
+the one line left completely unattempted through several earlier
+rounds, it gives a real, permutation-confirmed threshold and a bin-bin
+correlation matrix whose top eigenvector correlates with real GC
+content and gene density exactly as the A/B compartment literature
+predicts --- not asserted from a plaid-looking heatmap, but confirmed
+against independent genomic annotation, and replicated across all three
+real TNBC tumors and the matched normal sample in GSE167150, where one
+tumor (Tissue3) turns out to be the outlier against the other three
+rather than tumor and normal cleanly separating.
+
+Every one of the six originally proposed research lines has now been
+run on real data at least once, each with either a positive result, an
+honest null, or both. That is the actual shape of this paper: not six
+confirmations, but six real attempts, reported with whatever they
+turned up. A validation-first collaboration should want exactly this
+--- the real results, the honest nulls, and the negative checks on the
+program's own prior assumptions, all in one place. What is left is
+depth, not a first attempt: extending the two-cohort Dyson-repulsion
+scan to gene subsets beyond the top-60-by-variance choice used
+throughout; rescaling the classifier-repulsion detector to the
+empirical per-epoch step size before comparing learning-rate regimes
+directly; pooling the single-cell result across the other 8 TNBC
+patients in GSE176078 with an explicit batch-effect check, and finding
+an experimentally measured time axis for single-cell trajectory work,
+since three expression-derived pseudo-time estimators have now all
+given the same negative answer; extending the validated chr18
+compartment call to the rest of the genome and resolving, with more
+tumors, whether TNBC\_Tissue3's divergence is biology or artifact; and
+replacing the classification benchmark with a task where a
+feature-selection advantage, if real, would actually be visible. None
+of these next steps is a first attempt at an unopened question anymore
+--- every one of them is a sharper version of a question this paper has
+already answered once, for real, with real data.
 
 \section{Methods}
 
@@ -2252,6 +2367,31 @@ comparison; and (iv) the identical wavelet coarse/fine decomposition
 along the same pseudo-time, plus 20 random-order replicates for the
 hub-overlap control, following exactly the criterion of script 04b.
 
+\subsection{Diffusion pseudotime}
+\label{sec:dpt-methods}
+
+Diffusion pseudotime \citep{haghverdi2016} was implemented directly in
+\texttt{numpy}/\texttt{scipy} on the same 894 Cancer Epithelial cells,
+top-1500-variance genes: a $k=15$ mutual-nearest-neighbor Gaussian
+kernel affinity matrix $W$ (bandwidth set by the median squared
+distance to each cell's own 15th neighbor), symmetric-normalized to
+$S=D^{-1/2}WD^{-1/2}$ and eigendecomposed directly (real, symmetric,
+so \texttt{eigh} applies, unlike the corresponding non-symmetric Markov
+transition operator); the transition operator's own eigenvectors are
+recovered from $S$'s via the standard $D^{-1/2}$ correction, and the
+top 15 non-trivial components (the leading eigenvalue, $\approx\!1$,
+corresponds to the trivial stationary distribution and is dropped) form
+the diffusion coordinates. The root cell is the one furthest, in
+diffusion-coordinate space, from the population centroid, a
+marker-free extremal-point heuristic used because no biological root
+was specified for this sample; pseudotime is then the closed-form DPT
+distance from that root,
+$\mathrm{DPT}(i)=\big(\sum_k[\lambda_k/(1-\lambda_k)]^2(\psi_k(\mathrm{root})-\psi_k(i))^2\big)^{1/2}$,
+following \citet{haghverdi2016} exactly. Cells ordered by this distance
+replace the PC1 ordering of the previous subsection as the input to the
+identical Dyson-trajectory and wavelet pipelines, with no other change
+(\texttt{scripts/34\_singlecell\_diffusion\_pseudotime.py}).
+
 \subsection{Classifier weight-matrix Dyson trajectory}
 \label{sec:classifier-dyson-methods}
 
@@ -2371,31 +2511,65 @@ beyond the O/E step Hi-C data specifically requires
 (\texttt{scripts/30\_hic\_line3\_rmt.py},
 \texttt{scripts/31\_hic\_figures.py}).
 
+\subsection{Hi-C compartment validation and multi-sample comparison}
+\label{sec:hic-validation-methods}
+
+Independent validation used the hg19 chr18 reference sequence and the
+hg19 RefSeq gene table (both public, UCSC, downloaded directly for
+this check), matching the genome build the \texttt{.hic} file's own
+raw header declares (\texttt{chrom\_hg19.sizes}) rather than an assumed
+build. GC content per 100kb bin was computed directly from the reference
+sequence; gene density per bin counted RefSeq transcripts (chr18 only)
+whose annotated span overlapped that bin. Both were correlated (Pearson)
+against the top eigenvector's sign/magnitude at the same bins, and
+compared by Welch's $t$-test between positive- and negative-sign bins
+(\texttt{scripts/32\_hic\_compartment\_validation.py}). The other two
+real TNBC tumor \texttt{.hic} files (GSM5098079, GSM5098080) and the
+matched-normal file (GSM5098074), all in GSE167150, were downloaded
+with the identical targeted-Range-request method as
+Sec.~\ref{sec:hic-methods} and passed through the identical chr18
+pipeline --- load, filter zero-coverage bins, O/E normalize, correlate,
+tau-sweep, permutation null, GC/gene-density validation --- with no
+changes; pairwise compartment-sign agreement between samples was
+computed only on bins retained (non-zero-coverage) in both samples of
+each pair, after orienting every sample's top eigenvector sign so that
+positive means higher GC (avoiding a spurious 0\% or 100\% agreement
+score from two samples' eigenvectors having arbitrary, uncorrelated
+overall sign) (\texttt{scripts/33\_hic\_multi\_sample.py},
+\texttt{scripts/35\_hic\_validation\_figures.py}).
+
 \subsection{Code and reproducibility}
 
 All analysis code is in \texttt{scripts/01\_build\_cohorts.py} through
-\texttt{scripts/31\_hic\_figures.py}, numbered in the order
+\texttt{scripts/35\_hic\_validation\_figures.py}, numbered in the order
 they must be run (\texttt{04b}, an ordering-control check,
 \texttt{rmt\_threshold\_demo.py}, the synthetic-data reference
 implementation, and \texttt{download\_hic\_tnbc\_tissue3.py}, a data
-download helper, are named descriptively rather than fitting the main
-sequence; \texttt{scripts/21\_classifier\_dyson\_figures.py} plots
+download helper reused for all four real Hi-C samples, are named
+descriptively rather than fitting the main sequence;
+\texttt{scripts/21\_classifier\_dyson\_figures.py} plots
 results from scripts 19--20, \texttt{scripts/22} reruns script 20's
 already-saved trajectories with no retraining, and
 \texttt{scripts/25\_singlecell\_figures.py} plots results from scripts
-23--24; \texttt{scripts/27\_luma\_dyson\_repulsion.py} and
-\texttt{scripts/26\_singlecell\_epithelial\_pseudotime.py} are
+23--24; \texttt{scripts/27\_luma\_dyson\_repulsion.py},
+\texttt{scripts/26\_singlecell\_epithelial\_pseudotime.py}, and
+\texttt{scripts/34\_singlecell\_diffusion\_pseudotime.py} are
 independent extensions requiring no output from any other script beyond
 the raw cohort/single-cell data already described above,
 \texttt{scripts/28\_classifier\_dyson\_longer\_transient.py} is an
 independent rerun of scripts 19--20's training procedure at a different
 learning rate/epoch budget, \texttt{scripts/29\_new\_figures\_
-round3.py} plots results from scripts 26--28, and
-\texttt{scripts/31\_hic\_figures.py} plots results from script 30);
-every number and figure in this paper is produced directly by this code
-from the raw downloaded files (two bulk TCGA-BRCA files, one
-single-cell sample, one Hi-C sample), with no
-intermediate manual editing of results.
+round3.py} plots results from scripts 26--28,
+\texttt{scripts/31\_hic\_figures.py} plots results from script 30,
+\texttt{scripts/32\_hic\_compartment\_validation.py} and
+\texttt{scripts/33\_hic\_multi\_sample.py} both import functions
+directly from script 30 rather than duplicating them, and
+\texttt{scripts/35\_hic\_validation\_figures.py} plots results from
+scripts 32--33); every number and figure in this paper is produced
+directly by this code from the raw downloaded files (two bulk TCGA-BRCA
+files, one single-cell sample, four Hi-C samples, one reference-genome
+sequence, one gene-annotation table), with no intermediate manual
+editing of results.
 
 \section{Declarations}
 
@@ -2403,10 +2577,12 @@ intermediate manual editing of results.
 TCGA-BRCA expression and clinical data are public and available from
 the UCSC Xena TCGA hub (\url{https://tcga.xenahubs.net}). Single-cell
 RNA-seq data (patient CID44971) are public and available from GEO
-accession GSE176078 (GSM5354531). Hi-C data (sample GSM5098082,
-``TNBC\_Tissue3'') are public and available from GEO accession
-GSE167150. No proprietary or restricted-access data were used in this
-paper.
+accession GSE176078 (GSM5354531). Hi-C data (samples GSM5098079,
+GSM5098080, GSM5098082, and GSM5098074) are public and available from
+GEO accession GSE167150. The hg19 reference sequence and RefSeq gene
+table used for compartment validation are public and available from
+the UCSC Genome Browser (\url{http://hgdownload.soe.ucsc.edu}). No
+proprietary or restricted-access data were used in this paper.
 
 \subsection{Ethics approval and consent to participate}
 Not applicable. This study uses only publicly available, de-identified
@@ -2510,6 +2686,11 @@ M.~J.~Goldman, B.~Craft, M.~Hastie, et al.,
 A.~A.~Hagberg, D.~A.~Schult, P.~J.~Swart,
 \newblock ``Exploring Network Structure, Dynamics, and Function using NetworkX,''
 \newblock in \emph{Proceedings of the 7th Python in Science Conference (SciPy2008)}, 11--15 (2008).
+
+\bibitem[Haghverdi et al.(2016)]{haghverdi2016}
+L.~Haghverdi, M.~B\"uttner, F.~A.~Wolf, F.~Buettner, F.~J.~Theis,
+\newblock ``Diffusion pseudotime robustly reconstructs lineage branching,''
+\newblock \emph{Nature Methods} \textbf{13}(10), 845--848 (2016).
 
 \bibitem[Hern\'andez-Lemus \& Ochoa(2024)]{hernandezlemusochoa2024}
 E.~Hern\'andez-Lemus, S.~Ochoa,

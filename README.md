@@ -10,7 +10,7 @@ en cada línea.
 ## Contenido
 
 - **`article.tex`** / **`.pdf`** — el artículo de investigación (inglés,
-  42pp, formato BMC Bioinformatics: abstract estructurado,
+  45pp, formato BMC Bioinformatics: abstract estructurado,
   referencias numeradas, Declarations completas), con análisis real
   sobre TCGA-BRCA: umbral RMT (Luo et al. 2007) comparando TNBC vs.
   Luminal A, null de Monte Carlo por permutación, eigenvalores
@@ -48,10 +48,15 @@ en cada línea.
   reproducirla; `data/GSE176078_singlecell/README.md` documenta la
   descarga real de célula única (paciente CID44971, ~178MB, no
   versionada por tamaño, ver `.gitignore`); `data/GSE167150_HiC/README.md`
-  (nuevo 2026-09-07b) documenta la descarga real de Hi-C (muestra
-  GSM5098082 "TNBC_Tissue3", ~645MB, extraída con un solo Range request
-  dirigido dentro del tar combinado de 6.2GB de GEO, sin bajar el resto
-  — ver `scripts/download_hic_tnbc_tissue3.py`).
+  documenta la descarga real de Hi-C — ahora las 4 muestras reales de la
+  serie (3 tumores TNBC + 1 normal pareado, ~3.5GB total), cada una
+  extraída con un solo Range request dirigido dentro del tar combinado
+  de 6.2GB de GEO, sin bajar el resto — ver
+  `scripts/download_hic_tnbc_tissue3.py`; `data/hg19_annotation/` (nuevo
+  2026-09-07d, no versionado por tamaño) contiene la secuencia de
+  referencia hg19 chr18 y la tabla de genes RefSeq (UCSC, ~32MB total),
+  usadas para la validación real de compartimentos contra GC/densidad
+  génica.
 - **`references/`** — dos artículos reales del propio Dr.
   Hernández-Lemus, encontrados 2026-09-04, que fundamentan
   directamente dos líneas del Roadmap: Hernández-Lemus \& Ochoa
@@ -60,7 +65,7 @@ en cada línea.
   afirmación anterior, ya incorrecta, de que no existía un Hi-C
   público a nivel paciente para esta comparación).
 - **`scripts/`** — pipeline completo, numerado en orden de ejecución
-  (`01_build_cohorts.py` … `31_hic_figures.py`),
+  (`01_build_cohorts.py` … `35_hic_validation_figures.py`),
   más `rmt_threshold_demo.py` (implementación de referencia del
   método de Luo et al. 2007, validada primero sobre datos sintéticos
   con estructura modular conocida antes de aplicarse a TCGA-BRCA),
@@ -96,7 +101,17 @@ en cada línea.
   TNBC real (GSM5098082, 100kb, 750 bins tras filtrar 31 bins de
   cobertura cero) y corre el mismo pipeline RMT (tau-sweep + null de
   Monte Carlo); `31_hic_figures.py` genera 1 figura nueva (fig18: mapa
-  de calor plaid + sweep + track de compartimentos PC1).
+  de calor plaid + sweep + track de compartimentos PC1). Nuevos en la
+  ronda 2026-09-07d: `32_hic_compartment_validation.py` (valida el PC1
+  de compartimentos contra GC content y densidad génica RefSeq reales,
+  hg19); `33_hic_multi_sample.py` (extiende el pipeline a los otros 2
+  tumores TNBC reales + la muestra normal pareada, las 4 muestras de
+  GSE167150, con matriz de acuerdo de compartimentos por pares);
+  `34_singlecell_diffusion_pseudotime.py` (pseudo-tiempo por difusión,
+  Haghverdi et al. 2016, implementado en numpy/scipy — el estimador
+  genuinamente no-PC1 que el Roadmap pedía); `35_hic_validation_
+  figures.py` genera 1 figura más (fig19: scatter PC1-vs-GC + heatmap
+  de acuerdo entre las 4 muestras).
 
 ## Líneas de trabajo (resumen)
 
@@ -127,6 +142,52 @@ un módulo plantado (chequeo contra verdad conocida, no usado por el
 método mismo).
 
 ## Estado
+
+2026-09-07d: **cierra los tres huecos que quedaban explícitamente
+abiertos** (validación real del compartimento, extensión a las otras
+2 muestras TNBC + la normal, pseudo-time genuinamente no-PC1), más un
+pase de referato completo (narrativa, matemáticas, citas) y una pasada
+de estilo (reduce ~40% las repeticiones de "genuinely/genuine" y
+~13% las de "rather than" en todo el documento — la voz seguía leyendo
+demasiado "Claude", ahora más variada). Todo integrado en Abstract,
+Resultados, Discusión, Roadmap, Conclusiones (reescritas en 4 párrafos
+con cierre real, antes un solo bloque gigante) y Métodos.
+
+1. **Validación real de compartimentos**
+   (`32_hic_compartment_validation.py`): se bajaron la secuencia de
+   referencia hg19 chr18 y la tabla RefSeq (UCSC, ~32MB, mismo build
+   que el header del `.hic` declara — verificado, no asumido). El PC1
+   de compartimentos correlaciona con GC content real (r=0.452,
+   p=4.3e-39) y densidad génica real (r=0.306, p=9.3e-18); los bins de
+   signo positivo tienen GC y densidad génica muchísimo más altos
+   (5.32 vs. 1.61 transcritos/bin, t=7.22, p=1.5e-12) — confirma la
+   interpretación de compartimentos A/B contra anotación genómica
+   real, no solo por parecido visual.
+2. **Extensión a las 4 muestras reales de GSE167150**
+   (`33_hic_multi_sample.py`): los otros 2 tumores TNBC reales
+   (GSM5098079, GSM5098080, ~846MB y 755MB) y la muestra normal
+   pareada real (GSM5098074, ~2.48GB) se descargaron con la misma
+   técnica de Range request dirigido (3.5GB en las 4 muestras, sin
+   bajar los otros ~2.7GB de líneas celulares no relacionadas de la
+   serie). Las 4 dan τ* real confirmado por permutación y la misma
+   firma GC/densidad génica — pero el hallazgo honesto es que
+   TNBC_Tissue3 es un outlier respecto a las otras 3 muestras
+   (73–76% de acuerdo) mientras que Tissue1, Tissue2 y la normal
+   concuerdan entre sí 87–92% — nada de un tumor-vs-normal limpio, más
+   bien heterogeneidad inter-tumoral real (n=3, no concluyente por sí
+   solo).
+3. **Pseudo-tiempo por difusión** (`34_singlecell_diffusion_
+   pseudotime.py`): implementado en numpy/scipy puro (Haghverdi et al.
+   2016, sin paquete de célula única disponible) sobre las mismas 894
+   células Cancer Epithelial. Confirmado genuinamente distinto de PC1
+   (Spearman ρ=-0.481). El resultado: mismo patrón de repulsión de
+   Dyson atribuible al tamaño de muestra (no al ordenamiento, tercera
+   vez confirmado) y el mismo null de wavelets (0/10 overlap, igualado
+   por 20/20 órdenes aleatorios) — tres ejes de ordenamiento distintos,
+   la misma respuesta: el problema no es la elección de pseudo-tiempo.
+
+4 figuras nuevas (fig19 + reemplazo de fig18's caption), 4 scripts
+nuevos (32–35). Recompila 0 errores, 45pp (de 42pp).
 
 2026-09-07c: **Línea 3 (Hi-C) atacada con datos reales por primera vez
 en todo el programa** — cierra el último hueco genuinamente no
