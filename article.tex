@@ -19,9 +19,9 @@ framework applied to TCGA-BRCA}
 \author{
 Julio C\'esar Galindo L\'opez$^{1,*}$ \and Enrique Hern\'andez-Lemus$^{2}$
 \\[4pt]
-{\small $^{1}$ Facultad de Ciencias Empresariales, Universidad Panamericana, Ciudad de M\'exico}\\
+{\small $^{1}$ Facultad de Ciencias Empresariales, Universidad Panamericana, Ciudad de M\'exico, Mexico}\\
 {\small $^{2}$ Computational Systems Biology and Integrative Genomics Laboratory,}\\
-{\small Instituto Nacional de Medicina Gen\'omica (INMEGEN)}\\[6pt]
+{\small Instituto Nacional de Medicina Gen\'omica (INMEGEN), Ciudad de M\'exico, Mexico}\\[6pt]
 {\small $^{*}$Correspondence: Julio C\'esar Galindo L\'opez, \texttt{jcgalindo@up.edu.mx}}
 }
 
@@ -66,7 +66,7 @@ negative results with equal rigor, offers a template for
 computational-biology pipelines built on random matrix theory.
 \end{abstract}
 
-\section*{Author summary}
+\section*{Author Summary}
 Breast cancer is not one disease: triple-negative and luminal A tumors
 differ enough that grouping them together can hide real biology. We
 ask a mathematical question about this difference: when we measure how
@@ -2297,7 +2297,7 @@ of these next steps is a first attempt at an unopened question anymore
 --- every one of them is a sharper version of a question this paper has
 already answered once, for real, with real data.
 
-\section{Methods}
+\section{Materials and methods}
 
 \subsection{Data}
 \label{sec:cohorts-methods}
@@ -2652,8 +2652,7 @@ were collected and no institutional review was required.
 The authors declare no competing interests.
 
 \section*{Funding statement}
-This work received no specific grant from any funding agency in the
-public, commercial, or not-for-profit sectors.
+The author(s) received no specific funding for this work.
 
 \section*{Author contributions}
 J.C.G.: Conceptualization, Data curation, Formal analysis, Investigation,
@@ -2871,7 +2870,7 @@ S.~Z.~Wu, G.~Al-Eryani, D.~Roden, S.~Junankar, K.~Harvey, A.~Andersson, et al.,
 Tables~\ref{tab:tnbc-full} and \ref{tab:luma-full} give the complete
 sweep underlying Fig.~\ref{fig:tausweep} and Sec.~\ref{sec:tau-sweep},
 reproduced verbatim from \texttt{results/tnbc\_rmt.csv} and
-\texttt{results/luma\_rmt.csv}.
+\texttt{results/luma\_rmt.csv} (also S1 Table and S2 Table below).
 
 \begin{table}[h]
 \centering
@@ -2924,5 +2923,29 @@ $\tau$ & edges & density & KS(Poisson) & KS(GOE) & regime \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\section*{Supporting information}
+
+\paragraph{S1 Table.}
+\textbf{Full TNBC RMT threshold sweep.} Every threshold value tested
+(not only $\tau^*$), with edge count, network density, and both KS
+distances at each; reproduced in Table~\ref{tab:tnbc-full} above and
+available as \texttt{results/tnbc\_rmt.csv} in the public code
+repository (Code availability statement).
+
+\paragraph{S2 Table.}
+\textbf{Full LumA RMT threshold sweep.} Same format as S1 Table,
+reproduced in Table~\ref{tab:luma-full} above and available as
+\texttt{results/luma\_rmt.csv}.
+
+\paragraph{S1 Data.}
+\textbf{Complete analysis code and intermediate results.} All numbered
+scripts (\texttt{scripts/01\_build\_cohorts.py} through
+\texttt{scripts/35\_hic\_validation\_figures.py}), every intermediate
+result table referenced throughout the text
+(\texttt{results/*.csv}), and every figure-generation script, publicly
+available without restriction at
+\url{https://github.com/IvliCaesar/RMT_HernandezLemus} (Code
+availability statement).
 
 \end{document}

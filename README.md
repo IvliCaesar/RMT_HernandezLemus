@@ -143,6 +143,22 @@ método mismo).
 
 ## Estado
 
+2026-09-08: **listo para enviar a PLOS Computational Biology** — pase
+final de cumplimiento contra la lista real de requisitos de PLOS:
+título en sentence case; afiliaciones de ambos autores completadas con
+ciudad y país (faltaban); encabezado "Methods"→"Materials and
+methods"; Funding statement cambiado a la redacción EXACTA que PLOS
+exige ("The author(s) received no specific funding for this work",
+verificada vía web search, no parafraseada); nueva sección "Supporting
+information" al final del manuscrito (S1 Table/S2 Table = las tablas
+de barrido completo ya en el Apéndice; S1 Data = el repositorio
+público). `cover_letter_PLOS_CompBiol.txt` reescrita como checklist
+real de dos partes: lo ya hecho en el manuscrito (14 ítems) vs. lo que
+solo tú puedes hacer en el sistema de envío (ORCID, cuenta PLOS,
+campo de Financial Disclosure del formulario, revisores sugeridos,
+etc.) — nada de eso se puede completar por fuera del sistema de PLOS.
+Recompila 0 errores, 46pp.
+
 2026-09-07g: **código publicado, en GitHub, público** —
 `https://github.com/IvliCaesar/RMT_HernandezLemus`. Ya existía un repo
 privado con el mismo nombre (creado 2026-09-05, congelado en el script
