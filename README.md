@@ -143,6 +143,55 @@ método mismo).
 
 ## Estado
 
+2026-09-07e: pase de referato duro sobre las matemáticas mismas (no
+solo los resultados numéricos) — encontró y corrigió un **error
+matemático real** en la Proposición 3.1. Tal como estaba escrita, la
+Proposición afirmaba que la densidad conjunta GOE es la distribución
+estacionaria de la SDE de Dyson de la Definición 3.4 (la SDE *sin*
+término de confinamiento, usada en todo el resto del artículo para la
+analogía "tiempo = tamaño de muestra creciente"). Eso es falso: esa SDE
+sin confinamiento no tiene ley estacionaria en absoluto (los
+eigenvalores se dispersan difusivamente sin límite, igual que un
+Browniano simple) — verificado aquí con el cálculo de Fokker-Planck
+completo (condición de corriente cero), no solo citado. La densidad
+GOE Sí es estacionaria, pero para una SDE *confinada* distinta (mismo
+término de Coulomb divergente, coeficiente 1/2 en vez de 1, más un
+término de Ornstein-Uhlenbeck $-\lambda_i/4$) — un objeto relacionado
+pero genuinamente distinto, introducido ahora explícitamente como tal.
+El Corolario 3.2 (fuerza de repulsión $\propto 1/\delta$) usa
+exclusivamente la SDE sin confinar de la Definición 3.4, así que
+ninguno de sus números ni ninguna cifra empírica del artículo cambió
+— solo se corrigieron las referencias cruzadas para que cada resultado
+cite la SDE correcta. Se añadió además, por primera vez, la
+verificación real (no solo citada) de que la densidad GOE satisface la
+condición de corriente cero para la SDE confinada — la Proposición 3.1
+ahora tiene una demostración real, no solo "es un resultado de Dyson
+1962, no lo reproducimos aquí".
+
+También, por pedido explícito: cada una de las 15 figuras (19
+sub-paneles) ahora cita en su propio pie qué script(s) la generó — antes
+ninguna lo hacía, pese a que el texto ya citaba scripts extensamente en
+prosa. Revisadas también consistencia de notación (β, τ, q=p/n) y
+referencias cruzadas de tablas (10 tablas, todas usadas, ninguna
+huérfana). Recompila 0 errores, 46pp (de 45pp).
+
+**Sobre journal fit** (dado el alcance actual: RNA-seq bulk +
+célula única + Hi-C + ML + matemática real, con hallazgos honestos
+mixtos, no un solo hallazgo biológico grande): **BMC Bioinformatics**
+sigue siendo el mejor fit directo — ya está formateado para eso,
+sin límite de extensión duro, y su cultura editorial no penaliza
+resultados nulos honestos ni un pipeline metodológico como columna
+vertebral. **PLOS Computational Biology** es la alternativa Q1 más
+natural si se busca más visibilidad — comparte esa misma cultura
+(transparencia metodológica, tolera nulls), pero requiere resumen no
+estructurado + "Author Summary" aparte, un reformateo real, no
+trivial. Dado que ya son 46pp, vale la pena decidir pronto qué parte
+del Apéndice/Métodos migra a Material Suplementario antes de enviar a
+cualquiera de los dos — ambas revistas esperan el cuerpo principal
+más corto y las tablas completas de barrido (tab:tnbc-full,
+tab:luma-full) y el detalle metodológico más extenso como
+suplementario, no en el cuerpo.
+
 2026-09-07d: **cierra los tres huecos que quedaban explícitamente
 abiertos** (validación real del compartimento, extensión a las otras
 2 muestras TNBC + la normal, pseudo-time genuinamente no-PC1), más un

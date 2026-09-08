@@ -384,48 +384,87 @@ independent Brownian motion \emph{plus} a deterministic
 Coulomb-gas repulsion term that diverges as any two eigenvalues
 approach each other, mechanically preventing crossings (level
 repulsion in continuous time, the dynamical counterpart of the static
-Wigner surmise above). \citet{aarts2024} show this same SDE, empirically,
-governs the eigenvalues of a neural network's weight matrices under
-SGD training; Sec.~\ref{sec:results-dyson} asks whether the same
-qualitative repulsion signature (a trajectory approaching, then
-visibly reopening, an adjacent trajectory rather than crossing it) is
-visible when ``time'' is instead sample size, applied directly to a
+Wigner surmise above). This process is unconfined: with no restoring
+drift pulling the $\lambda_i$ back toward the origin, it has no
+stationary law of its own and its eigenvalues spread diffusively
+without bound as $t\to\infty$, exactly as a single Brownian motion does
+--- a feature, not an omission, for how this paper uses it: ``time''
+below stands for a steadily growing patient or cell sample, which never
+equilibrates either, so the absence of a stationary law is the correct
+match, not a gap to be patched. \citet{aarts2024} show this same SDE,
+empirically, governs the eigenvalues of a neural network's weight
+matrices under SGD training; Sec.~\ref{sec:results-dyson} asks whether
+the same qualitative repulsion signature (a trajectory approaching,
+then visibly reopening, an adjacent trajectory rather than crossing it)
+is visible when ``time'' is instead sample size, applied directly to a
 real gene-correlation matrix rather than a trained model.
 \end{definition}
 
-\begin{proposition}[The static and dynamic tests are the same object]
+\begin{proposition}[A confined variant has the GOE density as its exact stationary law]
 \label{prop:stationary}
-The GOE joint eigenvalue density is the unique stationary distribution
-of the Dyson Brownian motion SDE above. Explicitly, for $\beta=1$,
+The unconfined process of Definition~\ref{def:dyson-sde} has no
+stationary law, so it cannot itself be the process the static
+Wigner-surmise test and the dynamic trajectory test share. What they do
+share is the confined Dyson SDE obtained by adding one linear
+(Ornstein--Uhlenbeck) restoring term and halving the repulsion
+coefficient to match,
+\[
+d\lambda_i = dB_i + \Big[\tfrac12\sum_{j\neq i}\frac{1}{\lambda_i-\lambda_j} - \frac{\lambda_i}{4}\Big]dt,
+\qquad i=1,\dots,N,
+\]
+a genuinely different SDE from Definition~\ref{def:dyson-sde}'s (same
+divergent repulsion term in form, confined rather than unconfined, and
+rescaled to match the GOE normalization exactly), introduced here only
+because it is the process for which the following holds: the GOE joint
+eigenvalue density
 \[
 p(\lambda_1,\dots,\lambda_N) \;\propto\; \prod_{i<j}|\lambda_i-\lambda_j|
-\;\exp\!\Big(-\tfrac14\sum_i \lambda_i^2\Big),
+\;\exp\!\Big(-\tfrac14\sum_i \lambda_i^2\Big)
 \]
-and this $p$ satisfies the stationary Fokker--Planck (detailed-balance)
-equation for the SDE's generator; conversely, starting the SDE from any
+is its unique stationary distribution, and starting the SDE from any
 initial configuration and letting $t\to\infty$, the law of
 $(\lambda_1(t),\dots,\lambda_N(t))$ converges to $p$.
 \end{proposition}
-\begin{proof}[Justification]
-This is Dyson's own 1962 result \citep{dyson1962}; we do not
-reproduce the Fokker--Planck computation here, only record the
-statement, since it is the reason the two diagnostics used in this
-paper are not merely analogous. The Vandermonde factor
-$\prod_{i<j}|\lambda_i-\lambda_j|$ in $p$ is exactly the term whose
-vanishing at $\lambda_i=\lambda_j$ forces $p(0)=0$ in the Wigner
-surmise (Definition~\ref{def:goe} above, obtained by marginalizing $p$
-to a single spacing); the same term's gradient is exactly the drift
-$1/(\lambda_i-\lambda_j)$ in the SDE (Figure~\ref{fig:vectorfield}).
-The static nearest-neighbor-spacing test (Sec.~\ref{sec:tau-sweep}) and
-the dynamic trajectory test (Sec.~\ref{sec:results-dyson}) are
-therefore two different observables --- one a marginal of the
-stationary law $p$, the other a property of the SDE that has $p$ as
-its stationary law --- of the same mathematical object, not two
-separately-motivated diagnostics that happen to agree.
+\begin{proof}
+For an SDE $d\lambda_i=dB_i+b_i\,dt$ with unit-variance independent
+driving noise, the Fokker--Planck generator has diffusion coefficient
+$\tfrac12$, so a density $p$ satisfying the stronger zero-current
+(detailed-balance) condition $b_i=\tfrac12\partial_i\log p$ for every
+$i$ is automatically a stationary solution; ergodicity (convergence
+from any initial law) then follows from standard results for
+uniformly elliptic diffusions with a strictly convex confining
+potential \citep{aguz2010}, which the added $-\lambda_i/4$ term
+supplies. We verify the zero-current condition directly rather than
+only citing it. Writing $p\propto\Delta(\lambda)\exp(-\tfrac14\sum_k\lambda_k^2)$
+with $\Delta=\prod_{k<l}(\lambda_k-\lambda_l)$ and using
+$\partial_i\log|\Delta|=\sum_{j\neq i}1/(\lambda_i-\lambda_j)$ (each
+factor of $\Delta$ involving $\lambda_i$ contributes exactly one such
+term),
+\[
+\partial_i\log p = \sum_{j\neq i}\frac{1}{\lambda_i-\lambda_j} - \frac{\lambda_i}{2},
+\qquad\text{so}\qquad
+\tfrac12\partial_i\log p = \tfrac12\sum_{j\neq i}\frac{1}{\lambda_i-\lambda_j} - \frac{\lambda_i}{4},
+\]
+exactly the drift $b_i$ of the confined SDE above. This is Dyson's own
+1962 result \citep{dyson1962}, now verified rather than only recorded.
+The Vandermonde factor $\prod_{i<j}|\lambda_i-\lambda_j|$ in $p$ is
+exactly the term whose vanishing at $\lambda_i=\lambda_j$ forces
+$p(0)=0$ in the Wigner surmise (Definition~\ref{def:goe} above,
+obtained by marginalizing $p$ to a single spacing); the same term's
+gradient is exactly the Coulomb term common to both SDEs, confined and
+unconfined alike (Figure~\ref{fig:vectorfield}). The static
+nearest-neighbor-spacing test (Sec.~\ref{sec:tau-sweep}) and the
+dynamic trajectory test (Sec.~\ref{sec:results-dyson}) are therefore
+two different observables of the same underlying repulsion mechanism
+--- one a marginal of this confined process's stationary law, the
+other a direct property of the (unconfined) drift that mechanism also
+generates --- not two separately-motivated diagnostics that happen to
+agree.
 \end{proof}
 
-Figure~\ref{fig:vectorfield} plots the deterministic part of this SDE
-directly, restricted to a single pair $(\lambda_i,\lambda_j)$: the
+Figure~\ref{fig:vectorfield} plots the deterministic part of the
+unconfined SDE of Definition~\ref{def:dyson-sde} directly, restricted
+to a single pair $(\lambda_i,\lambda_j)$: the
 vector field $(\dot\lambda_i,\dot\lambda_j)=(1/(\lambda_i-\lambda_j),
 -1/(\lambda_i-\lambda_j))$ points away from the diagonal
 $\lambda_i=\lambda_j$ everywhere and diverges on it --- not a
@@ -442,7 +481,8 @@ encodes true drift magnitude on a log scale). Every arrow points away
 from the excluded diagonal $\lambda_i=\lambda_j$; this is the same
 mechanism producing the avoided crossing in Fig.~\ref{fig:avoided},
 here for an idealized two-eigenvalue system rather than the real
-60-gene TNBC correlation matrix.}
+60-gene TNBC correlation matrix. Generated by
+\texttt{scripts/09\_dyson\_vector\_field.py}.}
 \label{fig:vectorfield}
 \end{figure}
 
@@ -678,7 +718,8 @@ synthetic i.i.d.\ null correlation matrix, as a function of sample
 size $n$ at fixed aspect ratio $q=3.0$, log-log. The fitted slope
 ($-0.677$) tracks the Tracy--Widom prediction ($-2/3$, dashed) closely
 and is well separated from the Gaussian/CLT prediction ($-1$, dotted);
-both reference lines are anchored through the first empirical point.}
+both reference lines are anchored through the first empirical point.
+Generated by \texttt{scripts/16\_tracy\_widom\_figure.py}.}
 \label{fig:tw}
 \end{figure}
 
@@ -711,7 +752,8 @@ at $\tau^*$ against both null curves.
 TNBC network at $\tau^*=0.45$, against the Poisson and GOE (Wigner
 surmise) null curves. Right: Kolmogorov--Smirnov distance to each null
 curve as a function of threshold, for TNBC and LumA separately; the
-dotted line marks the selected $\tau^*$ in each panel.}
+dotted line marks the selected $\tau^*$ in each panel. Generated by
+\texttt{scripts/07\_make\_figures.py}.}
 \label{fig:nnsd}
 \label{fig:tausweep}
 \end{figure}
@@ -822,7 +864,8 @@ cohorts, genes reordered by average-linkage hierarchical clustering on
 $1-|C|$ so block structure is visible. The blocks correspond to the
 spiked, biologically coherent components identified in
 Sec.~\ref{sec:spiked}; LumA's visibly larger, denser red blocks match
-its lower $\tau^*$ and larger spiked-eigenvalue count.}
+its lower $\tau^*$ and larger spiked-eigenvalue count. Generated by
+\texttt{scripts/11\_heatmaps.py}.}
 \label{fig:heatmaps}
 \end{figure}
 
@@ -978,7 +1021,8 @@ negative result for that pair.
 matrix (60 most variable genes) as sample size $n$ grows from 15 to
 119, patients added one at a time in a fixed random order. Right:
 zoom on the closest approach, between $\lambda_7$ and $\lambda_8$ near
-$n=59$, showing the gap reopen rather than close to zero.}
+$n=59$, showing the gap reopen rather than close to zero. Generated by
+\texttt{scripts/07\_make\_figures.py}.}
 \label{fig:dyson}
 \label{fig:avoided}
 \end{figure}
@@ -1031,14 +1075,15 @@ characteristic of bulk-level repulsion is not the expected signature in
 the first place.
 
 That last sentence was, until now, an intuition rather than a
-calculation; the SDE already stated in Proposition~\ref{prop:stationary}
+calculation; the SDE already stated in Definition~\ref{def:dyson-sde}
 makes it precise and quantitative, using nothing beyond the two real
 tables already reported above.
 
 \begin{corollary}[Repulsion strength scales inversely with the gap]
 \label{cor:weak-repulsion}
 Consider two adjacent eigenvalues $\lambda_i>\lambda_{i+1}$ evolving
-under the Dyson Brownian motion of Proposition~\ref{prop:stationary},
+under the (unconfined) Dyson Brownian motion of
+Definition~\ref{def:dyson-sde},
 and isolate their mutual two-body drift term (the same restriction to a
 single pair already made in Figure~\ref{fig:vectorfield}'s vector
 field, ignoring the drift contributions from every other eigenvalue).
@@ -1055,7 +1100,11 @@ $\delta_B/\delta_A<1$: the pair with the larger gap is repelled more
 weakly, in exact proportion to how much larger its gap already is.
 \end{corollary}
 \begin{proof}
-Immediate from the SDE of Definition~\ref{def:dyson-sde}/Proposition~\ref{prop:stationary}:
+Immediate from the SDE of Definition~\ref{def:dyson-sde} (the
+unconfined process; its confined variant in
+Proposition~\ref{prop:stationary} has the same Coulomb term multiplied
+by $\tfrac12$, which would only rescale the force below by the same
+factor and leave every ratio claim unchanged):
 retaining only the $j=i+1$ term in $\lambda_i$'s drift and the $j=i$
 term in $\lambda_{i+1}$'s drift (the same idealized two-eigenvalue
 truncation already used for Figure~\ref{fig:vectorfield}) gives mean
@@ -1093,7 +1142,8 @@ each adjacent eigenvalue pair. $\lambda_2$--$\lambda_3$, reported as
 inconclusive under the single order in Fig.~\ref{fig:dyson}, in fact
 shows clear repulsion in 16/20 orders; only $\lambda_1$--$\lambda_2$,
 involving the most dominant (spike) eigenvalue, is not reliably
-repulsive.}
+repulsive. Generated by
+\texttt{scripts/18\_repulsion\_reproducibility\_figure.py}.}
 \label{fig:repro}
 \end{figure}
 
@@ -1151,7 +1201,9 @@ the full breakdown, directly comparable to Fig.~\ref{fig:repro}.
 \caption{Dyson-repulsion reproducibility across 20 independent random
 patient-inclusion orders, LumA, top 60 genes, $n=430$ --- same method
 and criterion as Fig.~\ref{fig:repro} (TNBC). The two least-reliable
-pairs are again the ones adjacent to the largest eigenvalues.}
+pairs are again the ones adjacent to the largest eigenvalues. Generated
+by \texttt{scripts/27\_luma\_dyson\_repulsion.py} and
+\texttt{scripts/29\_new\_figures\_round3.py}.}
 \label{fig:luma-repro}
 \end{figure}
 
@@ -1227,7 +1279,10 @@ $\mu_7$--$\mu_8$ & 3/20 & 2/20 & 2/20  & 13/20 \\
 \caption{Left: $W_1^\top W_1$ eigenvalue trajectories across 300 SGD
 training epochs, one representative seed. Right: reproducibility of
 the repulsion pattern across 20 independent seeds, same classification
-as Fig.~\ref{fig:repro} --- no pair matches the data side's reliability.}
+as Fig.~\ref{fig:repro} --- no pair matches the data side's reliability.
+Generated by \texttt{scripts/19\_dyson\_classifier\_weights.py},
+\texttt{scripts/20\_dyson\_classifier\_weights\_multi\_seed.py}, and
+\texttt{scripts/21\_classifier\_dyson\_figures.py}.}
 \label{fig:classifier-traj}
 \label{fig:classifier-repro}
 \end{figure}
@@ -1266,7 +1321,8 @@ epoch 29, a $4\times$ increase).
 $\mu_5$-$\mu_6$, seed 17, closest approach at epoch 5, gap reopening by
 epoch 29 --- the same approach-then-reopen shape as
 Fig.~\ref{fig:avoided} on the data side, here confined to the
-pre-convergence window (Sec.~\ref{sec:results-dyson-classifier}).}
+pre-convergence window (Sec.~\ref{sec:results-dyson-classifier}).
+Generated by \texttt{scripts/21\_classifier\_dyson\_figures.py}.}
 \label{fig:classifier-avoided}
 \end{figure}
 
@@ -1276,7 +1332,7 @@ yes/no: the classifier's weight-matrix eigenvalues do not repel as
 reliably, or for as long, as the data's correlation-matrix eigenvalues
 do, but what repulsion is there is concentrated almost entirely in the
 transient window before training converges, consistent with the same
-Dyson mechanism (Proposition~\ref{prop:stationary}) being active only
+Dyson mechanism (Definition~\ref{def:dyson-sde}) being active only
 while the matrix is still actively moving --- a small, shallow
 classifier trained for a fixed 300 epochs on 549 patients is simply not
 the regime \citet{aarts2024} study (larger networks, many more training
@@ -1367,7 +1423,9 @@ convergence point. Right: distribution of empirical convergence epochs
 across the 20 seeds (mean $549.8$, vs.\ $\sim\!50$ at the original
 learning rate) --- convergence time lengthens by roughly
 $11\times$ for a $5\times$ smaller learning rate, not a proportional
-$5\times$.}
+$5\times$. Generated by
+\texttt{scripts/28\_classifier\_dyson\_longer\_transient.py} and
+\texttt{scripts/29\_new\_figures\_round3.py}.}
 \label{fig:classifier-longer-transient}
 \end{figure}
 
@@ -1573,7 +1631,8 @@ matrix, same method as Fig.~\ref{fig:tausweep}. Right: unfolded
 nearest-neighbor spacing distribution at $\tau^*=0.10$, against the
 Poisson and GOE null curves, same method as Fig.~\ref{fig:nnsd} ($4\%$
 of spacings fall above $s=4$ and are excluded from the histogram, see
-text).}
+text). Generated by \texttt{scripts/23\_singlecell\_line4\_rmt.py} and
+\texttt{scripts/25\_singlecell\_figures.py}.}
 \label{fig:singlecell-tausweep}
 \label{fig:singlecell-nnsd}
 \end{figure}
@@ -1583,7 +1642,9 @@ text).}
 \includegraphics[width=0.6\textwidth]{figures/fig14_singlecell_spiked_spectrum.pdf}
 \caption{Raw correlation-matrix eigenvalue spectrum, single-cell TNBC,
 against the Marchenko--Pastur bulk edge $\lambda_+=2.055$
-(Table~\ref{tab:singlecell-spikes}).}
+(Table~\ref{tab:singlecell-spikes}). Generated by
+\texttt{scripts/23\_singlecell\_line4\_rmt.py} and
+\texttt{scripts/25\_singlecell\_figures.py}.}
 \label{fig:singlecell-spectrum}
 \end{figure}
 
@@ -1688,7 +1749,9 @@ nothing since there is only one such ordering) vs.\ under 20 independent
 random cell orderings (orange, count out of 20). Random orderings match
 or exceed the real ordering for every pair with a clear signal,
 consistent with repulsion here reflecting growing sample size rather
-than this specific ordering's biological content.}
+than this specific ordering's biological content. Generated by
+\texttt{scripts/26\_singlecell\_epithelial\_pseudotime.py} and
+\texttt{scripts/29\_new\_figures\_round3.py}.}
 \label{fig:singlecell-epithelial-dyson}
 \end{figure}
 
@@ -1796,7 +1859,9 @@ matrix, showing the plaid pattern characteristic of A/B chromatin
 compartments \citep{liebermanaiden2009}. Center: RMT threshold sweep,
 same method as Fig.~\ref{fig:tausweep}, selecting $\tau^*=0.15$.
 Right: the top eigenvector's sign pattern along the chromosome, forming
-contiguous blocks, not scattered signs.}
+contiguous blocks, not scattered signs. Generated by
+\texttt{scripts/30\_hic\_line3\_rmt.py} and
+\texttt{scripts/31\_hic\_figures.py}.}
 \label{fig:hic}
 \end{figure}
 
@@ -1860,7 +1925,10 @@ content per bin (hg19 chr18), colored by compartment sign --- the
 independent validation the single-sample result needed.
 Right: pairwise compartment-sign agreement across all four real
 GSE167150 samples; TNBC\_Tissue3 is the outlier against the other
-three, not the two tumors clustering against the one normal sample.}
+three, not the two tumors clustering against the one normal sample.
+Generated by \texttt{scripts/32\_hic\_compartment\_validation.py},
+\texttt{scripts/33\_hic\_multi\_sample.py}, and
+\texttt{scripts/35\_hic\_validation\_figures.py}.}
 \label{fig:hic-validation}
 \end{figure}
 
