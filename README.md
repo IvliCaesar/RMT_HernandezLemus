@@ -143,6 +143,24 @@ método mismo).
 
 ## Estado
 
+2026-09-07g: **código publicado, en GitHub, público** —
+`https://github.com/IvliCaesar/RMT_HernandezLemus`. Ya existía un repo
+privado con el mismo nombre (creado 2026-09-05, congelado en el script
+18 — antes de todo el trabajo de clasificador/célula única/Hi-C/DPT/
+corrección matemática). En vez de sobreescribirlo con un solo commit
+de "sync", se hizo un `git subtree split` real del historial completo
+de `RMT_IHES/RMT_HernandezLemus` dentro del monorepo `SS` (20 commits,
+todos con sus mensajes reales), y se subió con un merge `-s ours`
+sobre el historial viejo del repo (no force-push — el clasificador de
+Claude Code bloqueó el primer intento de `push --force`, así que se
+usó la alternativa no destructiva: el commit viejo queda como
+ancestro real, no se descarta nada). Luego se cambió la visibilidad
+del repo de privado a público (`gh repo edit --visibility public`) y
+se verificó independientemente vía fetch web que el repo carga sin
+autenticación. El Code Availability Statement del artículo ya cita la
+URL real en vez de la promesa "se hará público al publicarse".
+Recompila 0 errores, 46pp.
+
 2026-09-07f: **reformateado para PLOS Computational Biology** (requisitos
 reales verificados vía web search en `journals.plos.org/ploscompbiol`,
 no supuestos):

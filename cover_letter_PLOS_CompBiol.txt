@@ -69,14 +69,16 @@ Practical notes for submission (not part of the letter itself):
   starting the online submission.
 - Suggested short/running title (<=70 characters): "RMT and
   Dyson-Brownian-motion diagnostics for TCGA-BRCA networks"
-- Code availability statement in the manuscript currently says code
-  "will be made available in a public code repository ... upon
-  publication" -- decide before submission whether to (a) push this
-  project's scripts/ and results/ to a dedicated public GitHub repo now
-  and cite it directly in the manuscript instead of the forward-looking
-  promise, or (b) keep the promise as written and fulfill it at
-  acceptance. Not done automatically here since publishing code
-  publicly is a decision for you to make explicitly.
+- Done: code is now public at
+  https://github.com/IvliCaesar/RMT_HernandezLemus (pushed via a clean
+  subtree split of this paper's full commit history from the SS
+  monorepo, no force-push, old repo history preserved as an ancestor;
+  repo visibility changed from private to public). The manuscript's
+  Code availability statement now cites this URL directly instead of a
+  forward-looking promise. Before submitting, skim the repo once
+  yourself to confirm nothing beyond this paper's own scope is
+  exposed -- it was built from the SS monorepo's history for exactly
+  this path, but worth a final look.
 - Consider moving the full threshold-sweep tables (S1/S2, currently
   Appendix Tables tab:tnbc-full/tab:luma-full) to Supporting
   Information files rather than the main-text appendix, and referencing
