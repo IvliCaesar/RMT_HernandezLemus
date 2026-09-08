@@ -64,23 +64,58 @@ Instituto Nacional de Medicina Genómica (INMEGEN)
 
 
 ---
-Practical notes for submission (not part of the letter itself):
-- Corresponding author ORCID iD is required at submission -- add before
-  starting the online submission.
-- Suggested short/running title (<=70 characters): "RMT and
-  Dyson-Brownian-motion diagnostics for TCGA-BRCA networks"
-- Done: code is now public at
-  https://github.com/IvliCaesar/RMT_HernandezLemus (pushed via a clean
-  subtree split of this paper's full commit history from the SS
-  monorepo, no force-push, old repo history preserved as an ancestor;
-  repo visibility changed from private to public). The manuscript's
-  Code availability statement now cites this URL directly instead of a
-  forward-looking promise. Before submitting, skim the repo once
-  yourself to confirm nothing beyond this paper's own scope is
-  exposed -- it was built from the SS monorepo's history for exactly
-  this path, but worth a final look.
-- Consider moving the full threshold-sweep tables (S1/S2, currently
-  Appendix Tables tab:tnbc-full/tab:luma-full) to Supporting
-  Information files rather than the main-text appendix, and referencing
-  them as "S1 Table", "S2 Table" per PLOS's supporting-information
-  naming convention.
+SUBMISSION CHECKLIST (not part of the letter itself)
+
+Done in the manuscript (article.tex, 46pp, compiles with 0 errors):
+[x] Abstract: unstructured, no Background/Results/Conclusions headers,
+    no citations, 296/300 words.
+[x] Author Summary added: first-person, non-technical, 188/150-200 words.
+[x] Title in sentence case.
+[x] Section order matches PLOS's own list (Introduction, Results,
+    Discussion [+ Future directions, Conclusion], Materials and
+    methods, Acknowledgments, References, Supporting information).
+[x] "Materials and methods" heading (was "Methods").
+[x] Data availability statement, Code availability statement, Ethics
+    statement, Competing interests, Funding statement (now the exact
+    required wording, "The author(s) received no specific funding for
+    this work"), Author contributions (CRediT roles), Acknowledgments
+    -- each its own section, replacing the BMC-style "Declarations"
+    block.
+[x] References: Vancouver style, 6 entries with >6 authors truncated to
+    6 + "et al." (one had 38 authors listed in full).
+[x] Author affiliations include city and country (were missing both).
+[x] Supporting information section added at the end (S1 Table, S2
+    Table = the two full threshold-sweep tables already in the
+    Appendix; S1 Data = pointer to the full code/results repository).
+[x] Code is public: https://github.com/IvliCaesar/RMT_HernandezLemus
+    -- Code availability statement cites this URL directly, not a
+    forward-looking promise.
+[x] Introduction's closing paragraph rewritten to state the paper's
+    real, current scope and significance (was several rounds stale).
+
+Still needs YOU, before or during the actual online submission (none
+of this can be done on your behalf):
+[ ] Corresponding author ORCID iD -- required at submission start.
+[ ] Create a PLOS/Aperta account (or log in) and start the submission
+    at https://journals.plos.org/ploscompbiol/s/submit-now
+[ ] Short/running title field in the submission system (<=70 chars):
+    suggested "RMT and Dyson-Brownian-motion diagnostics for TCGA-BRCA
+    networks" (64 chars).
+[ ] Financial Disclosure field in the submission form: enter "The
+    author(s) received no specific funding for this work" there too
+    (PLOS wants it in the form, not only in the manuscript text).
+[ ] Suggested reviewers (optional but often requested) -- not filled
+    in here; you and E.H.L. will know the field better than I do.
+[ ] One final skim of the public repo
+    (github.com/IvliCaesar/RMT_HernandezLemus) to confirm nothing
+    beyond this paper's own scope is exposed -- it was built from the
+    SS monorepo's history filtered to exactly this path, but worth a
+    human look before the paper is formally linked to it.
+[ ] Figures will need to be uploaded as individual files at the
+    revision/production stage (PLOS's own words: "waives all
+    formatting requirements until provisional Editorial Accept"), in
+    their required format (TIFF or EPS, specific resolution) -- not
+    needed for this initial single-PDF submission, but worth knowing
+    it's coming.
+[ ] Read the manuscript once yourself, end to end -- I have not
+    verified subjective/stylistic fit the way only an author can.
