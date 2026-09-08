@@ -143,6 +143,57 @@ método mismo).
 
 ## Estado
 
+2026-09-07f: **reformateado para PLOS Computational Biology** (requisitos
+reales verificados vía web search en `journals.plos.org/ploscompbiol`,
+no supuestos):
+- Abstract reescrito: de 721 a 296 palabras, sin encabezados
+  Background/Results/Conclusions (PLOS los prohíbe explícitamente),
+  sin citas (regla dura). Verificado por conteo real de palabras del
+  archivo compilado, no estimado.
+- **Nueva sección "Author summary"** (188 palabras, rango exigido
+  150–200): resumen no técnico en primera persona para audiencia
+  general — PLOS Comp Biol la exige en TODOS sus artículos de
+  investigación, y el artículo no la tenía.
+- Título pasado a sentence case (regla de PLOS); título corto sugerido
+  (64 caracteres, bajo el límite de 70) anotado en la carta de
+  presentación, no en el cuerpo (PLOS lo pide como campo separado del
+  sistema de envío).
+- Reestructura de secciones al esquema de PLOS: "Background"→
+  "Introduction", "Roadmap"→"Future directions", "Conclusions"
+  (plural)→"Conclusion"; "Declarations" (encabezado estilo BMC, no
+  existe en PLOS) reemplazado por Data/Code availability statements,
+  Ethics statement, Competing interests, Funding statement, Author
+  contributions (taxonomía CRediT) y Acknowledgments como secciones
+  finales independientes, tal como PLOS las estructura.
+- Bibliografía: 6 entradas con más de 6 autores (Wu et al., Chappell
+  et al., Lieberman-Aiden et al., Kim et al., Margolin et al., Luo
+  et al.) truncadas a 6 + "et al." (estilo Vancouver, regla dura de
+  PLOS — antes listaban hasta 38 autores completos).
+- **Introducción**: el párrafo de cierre ("This paper does three
+  things...") describía solo el alcance original de hace varias
+  rondas (3 cosas, sin célula única ni Hi-C) — desactualizado y
+  quedaba muy por debajo de lo que el artículo realmente demuestra
+  ahora. Reescrito para reflejar el alcance real (3 modalidades de
+  datos, primera aplicación de repulsión de Dyson a expresión génica
+  real en cualquier resolución) — la clase de brecha narrativa que un
+  editor de PLOS notaría de inmediato al formar su primera impresión.
+- **`cover_letter_PLOS_CompBiol.txt`** (nuevo): carta de presentación
+  real, lista para enviar, explicando fit con la revista y
+  contribución, más notas prácticas de envío (ORCID, título corto,
+  qué falta decidir sobre el repositorio de código público antes de
+  enviar — ver abajo).
+- **Pendiente de decisión del usuario, no hecho unilateralmente**: el
+  Code Availability Statement promete que el código "will be made
+  available in a public code repository... upon publication" — el
+  repo `SS` tiene remotos públicos de GitHub
+  (`github.com/IvliCaesar/SS`, `github.com/ZesarGal/SS`) pero
+  desincronizados desde mayo 2026 y mezclados con decenas de proyectos
+  no relacionados; no empujé nada a un remoto público por decisión
+  propia — es una acción externa/visible que requiere tu confirmación
+  explícita antes de hacerse.
+
+Recompila 0 errores, 46pp.
+
 2026-09-07e: pase de referato duro sobre las matemáticas mismas (no
 solo los resultados numéricos) — encontró y corrigió un **error
 matemático real** en la Proposición 3.1. Tal como estaba escrita, la

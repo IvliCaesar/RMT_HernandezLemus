@@ -12,9 +12,9 @@
 \newtheorem{proposition}{Proposition}
 \newtheorem{corollary}{Corollary}
 
-\title{Random Matrix Theory and Dyson-Brownian-Motion Diagnostics for \\
-Breast Cancer Coexpression Networks: A Monte-Carlo-Validated \\
-Framework Applied to TCGA-BRCA}
+\title{Random matrix theory and Dyson-Brownian-motion diagnostics for \\
+breast cancer coexpression networks: a Monte-Carlo-validated \\
+framework applied to TCGA-BRCA}
 
 \author{
 Julio C\'esar Galindo L\'opez$^{1,*}$ \and Enrique Hern\'andez-Lemus$^{2}$
@@ -31,96 +31,66 @@ Julio C\'esar Galindo L\'opez$^{1,*}$ \and Enrique Hern\'andez-Lemus$^{2}$
 \maketitle
 
 \begin{abstract}
-\noindent\textbf{Background:}
+\noindent
 Random matrix theory (RMT) offers a principled way to decide which
 correlations in a noisy, finite-sample gene-expression matrix reflect
-real biology and not sampling noise. We combine the classical
-RMT correlation-threshold method with a Monte Carlo permutation null,
-a Dyson-Brownian-motion repulsion diagnostic, spectral
-entropy, and a graph-theoretic comparison against random-graph nulls,
-and apply the full pipeline to real bulk RNA-seq data from The Cancer
-Genome Atlas breast cancer cohort (TCGA-BRCA), comparing two
-clinically defined, non-overlapping cohorts: triple-negative breast
-cancer (TNBC, $n=119$) and luminal A (LumA, $n=430$), 1500 genes
-selected by variance across all 1218 samples, cohort-blind.
-
-\noindent\textbf{Results:}
-The RMT threshold method selects $\tau^*=0.45$ for TNBC and
-$\tau^*=0.25$ for LumA; the gap survives a matched-sample-size check
-and a Monte Carlo permutation null, which shows both thresholds lie
-well beyond what dense-matrix universality alone could produce. Fewer
-than $2\%$ of candidate genes' correlation directions exceed the
-Marchenko--Pastur noise bulk yet capture roughly half the total
-variance per cohort, and the leading such directions are thematically
-coherent multi-gene programs (collagen/ECM, interferon, keratin), not
-single-gene artifacts. Tracking the top eigenvalues as the
-TNBC sample grows one patient at a time shows several pairs undergoing
-Dyson-type level repulsion (approach, then reopen, rather than cross),
-reproducible across 20 random patient orders and replicated in LumA (a
-second, three-times-larger cohort), with the least reliable pair in
-both cohorts the one involving the largest, most spike-like
-eigenvalues, exactly as a new closed-form corollary of the governing
-SDE predicts. A wavelet multiscale decomposition failed a random-ordering control on
-real data but a synthetic positive control shows it works correctly at
-both scales given sufficient signal --- the real-data failure was a
-weak-ordering-axis problem, not a method problem. A classifier
-distinguishing TNBC from LumA reaches $\approx\!98\%$ accuracy
-regardless of feature-selection method, including random gene sets; a
-genetic-algorithm search finds a modest, real improvement ($99.45\%$)
-without breaking the ceiling. Tracking that same classifier's own
-weight-matrix eigenvalues across SGD training (the model-side half of
-the Dyson-repulsion question) finds far less reliable repulsion than on
-the data side over a full training run, but what repulsion is present
-concentrates almost entirely in the pre-convergence transient, a
-12-fold difference against the post-convergence window. Applying the
-identical RMT machinery to real single-cell RNA-seq data for the first
-time in this program (GSE176078, one TNBC patient, 7986 cells) finds a
-real, permutation-confirmed threshold in a regime where the gene-to-cell
-ratio inverts relative to the bulk cohorts; the largest spiked
-eigenvalues split cleanly into real cell-type axes (immune, myeloid,
-epithelial, matching independent cell-type annotation) and known
-single-cell technical artifacts (ribosomal content, dissociation
-stress), a distinction the bulk analysis never had to draw. Restricting
-pseudo-time inference to a single continuous lineage within that same
-sample (894 Cancer Epithelial cells) still finds no stronger ordering
-axis (PC1 variance share $8.6\%$, no better than the whole-sample
-$9.7\%$), and replacing that linear axis with diffusion pseudotime, a
-real non-linear trajectory estimator confirmed distinct from PC1, gives
-the identical wavelet null a third time --- ordering choice is not the
-explanation. The same random-order comparison shows the single-cell
-Dyson-repulsion pattern itself reflects growing sample size, not any
-particular ordering, clarifying rather than undermining the bulk-cohort
-repulsion result.
-
-\noindent\textbf{Conclusions:}
-Combining a static RMT threshold with an explicit Monte Carlo null and
-a Dyson-repulsion diagnostic surfaces real, validated structure in
-TCGA-BRCA coexpression networks and in single-cell data alike, and the
-same discipline exposes three honest negative results (the wavelet
-real-data application, the classification benchmark's ceiling effect,
-and the classifier's weight-matrix repulsion outside its training
-transient) instead of dropping them.
-All numbers are produced by included, re-runnable code. The one
-originally proposed line left unattempted through several earlier
-rounds --- 3D genomic structure via Hi-C --- is attempted here too, and
-extended in the same round: the identical machinery, applied to one
-chromosome of a real TNBC tumor's Hi-C contact map after the one
-standard preprocessing step Hi-C data requires (observed/expected
-normalization), selects a real, permutation-confirmed threshold and a
-bin-bin correlation matrix whose top eigenvector correlates with real
-GC content and gene density exactly as the chromatin-compartment
-literature predicts, replicated across all three real TNBC tumors and
-a matched normal sample, with one tumor an outlier against the other
-three rather than a clean tumor-vs-normal split. Every one of the six
-originally proposed research lines has now been run on real data at
-least once.
+real biology and not sampling noise. We combine a classical RMT
+correlation threshold, a Monte Carlo permutation null, and a
+Dyson-Brownian-motion repulsion diagnostic into one pipeline and apply
+it to real breast cancer data from The Cancer Genome Atlas (TCGA-BRCA),
+comparing triple-negative (TNBC, $n=119$) and luminal A (LumA,
+$n=430$) cohorts. The RMT threshold separates the two cohorts, a gap
+confirmed by a permutation null; spiked eigenvalues beyond the
+Marchenko--Pastur bulk correspond to biologically coherent gene
+programs, not artifacts. Tracking eigenvalues as the sample grows
+reveals Dyson-type level repulsion, reproducible across 20 random
+orders in both cohorts, with a new corollary explaining which pairs
+repel least reliably. The same pipeline extends, for the first time,
+to two further data modalities: single-cell RNA-seq, recovering a real
+threshold in a regime bulk data cannot reach and separating true
+cell-type signal from technical artifacts; and Hi-C chromatin contact
+data, recovering a compartment structure independently validated
+against real GC content and gene density, replicated across three
+triple-negative tumors and a matched normal sample. Three negative
+results are reported, not dropped: a wavelet decomposition fails
+identically under three unrelated cell-ordering axes, ruling out
+ordering choice as the explanation; a classifier reaches near-ceiling
+accuracy regardless of feature-selection method, showing the benchmark
+cannot discriminate methods; and a trained classifier's own
+weight-matrix eigenvalues repel only during the pre-convergence
+training transient. All six research lines originally proposed for
+this program have now been run on real data at least once, with code
+and data fully reproducible. This validation-first approach, pairing
+every positive finding with an explicit statistical null and reporting
+negative results with equal rigor, offers a template for
+computational-biology pipelines built on random matrix theory.
 \end{abstract}
+
+\section*{Author summary}
+Breast cancer is not one disease: triple-negative and luminal A tumors
+differ enough that grouping them together can hide real biology. We
+ask a mathematical question about this difference: when we measure how
+strongly every pair of genes moves together across many patients, how
+do we tell a real biological signal from statistical noise? We borrow
+a tool from physics, random matrix theory, originally developed to
+understand atomic-nucleus energy levels, that gives a principled
+threshold for this, plus a permutation test confirming the threshold
+is not an accident of the math. We apply this to real tumor data,
+extend it for the first time to single cells and to the
+three-dimensional folding of the genome, and check every positive
+finding against independent evidence. We are equally careful to
+report what did not work: a method for separating fast from slow
+biological change, a machine-learning benchmark that turned out too
+easy, and a training-dynamics diagnostic that only sees part of what
+it was built to see. All of it, code, data, successes and failures
+alike, is included so the next researcher can check, reuse, or correct
+any of it.
 
 \noindent\textbf{Keywords:} random matrix theory; gene coexpression networks;
 triple-negative breast cancer; TCGA; Monte Carlo permutation test;
 Dyson Brownian motion; Marchenko--Pastur law
 
-\section{Background}
+\section{Introduction}
 
 Triple-negative breast cancer (TNBC) --- tumors negative for estrogen
 receptor, progesterone receptor, and HER2 --- lacks the targeted
@@ -186,15 +156,29 @@ not just the static threshold it eventually selects, carries
 information, and that it applies equally to a biological correlation
 matrix and to the training dynamics of a classifier built on top of it.
 
-This paper does three things. It states, as a single explicit
-framework, how a static RMT threshold, a Monte Carlo permutation null,
-and a Dyson-repulsion diagnostic relate to one another (Methods). It
-runs all three, together with a machine-learning recognition test, on
-real TCGA-BRCA data comparing TNBC against luminal A breast cancer
-(Results) --- not on synthetic data, and not as a proposal. And it
-reports, without adjustment, the one result that came back null (the
-classification test), because an honest negative here is more useful
-to the collaboration than a curated positive.
+This paper makes three contributions. First, it states, as a single
+explicit framework, how a static RMT threshold, a Monte Carlo
+permutation null, and a Dyson-repulsion diagnostic relate to one
+another --- the same underlying repulsion mechanism observed two
+different ways, not two unrelated tools used side by side (Methods).
+Second, it runs that framework, together with a machine-learning
+recognition test, across three real, independent data modalities from
+the same disease --- bulk RNA-seq (TCGA-BRCA, comparing TNBC against
+luminal A breast cancer), single-cell RNA-seq, and Hi-C chromatin
+contact data --- not on synthetic data, and not as a proposal: this is,
+to our knowledge, the first application of a Dyson-repulsion diagnostic
+to real gene-expression data at any resolution, and the first time a
+single RMT pipeline has been run, unmodified beyond the one
+data-specific preprocessing step each modality requires, across bulk,
+single-cell, and 3D genomic data for the same cancer type. Third, it
+reports every negative result the same way it reports every positive
+one, without adjustment or omission: a wavelet multiscale method that
+fails identically under three unrelated ordering axes, a classification
+benchmark too easy to discriminate feature-selection methods, and a
+classifier training diagnostic that sees only part of what it was built
+to see. A validation-first pipeline is only as trustworthy as its
+negative results are honest; this paper treats that discipline as a
+result in itself, not as a shortfall to be hidden.
 
 \subsection{Mathematical background}
 \label{sec:math}
@@ -2075,7 +2059,7 @@ through \texttt{scripts/25\_singlecell\_figures.py} in order (see
 reproduces every number and figure in this paper from the raw
 downloaded files.
 
-\section{Roadmap: remaining and revisited lines}
+\section{Future directions}
 \label{sec:roadmap}
 
 All six originally proposed lines, including Line 3 and Line 4, both
@@ -2225,7 +2209,7 @@ Sec.~\ref{sec:limitations}) actually tell us anything new here, since
 either change would face the identical rescaling problem on its own.
 
 \subsection{RMT threshold vs.\ ARACNE on the same cohort}
-The comparison sketched in Background --- RMT spectral thresholding
+The comparison sketched in the Introduction --- RMT spectral thresholding
 against the group's own bootstrap-calibrated ARACNE/NIMEA pipeline
 --- can be run directly on the TNBC cohort already built in
 \texttt{data/TCGA-BRCA/tnbc\_expr.csv}: both methods take the same
@@ -2235,7 +2219,7 @@ methods' hub genes and modules agree, using the group's existing
 \texttt{parallel-aracne} pipeline unmodified and comparing its output
 against Table~\ref{tab:hubs} directly.
 
-\section{Conclusions}
+\section{Conclusion}
 
 Combining a static RMT correlation threshold, a Monte Carlo permutation
 null, and a Dyson-repulsion eigenvalue diagnostic into one pipeline
@@ -2639,9 +2623,7 @@ files, one single-cell sample, four Hi-C samples, one reference-genome
 sequence, one gene-annotation table), with no intermediate manual
 editing of results.
 
-\section{Declarations}
-
-\subsection{Availability of data and materials}
+\section*{Data availability statement}
 TCGA-BRCA expression and clinical data are public and available from
 the UCSC Xena TCGA hub (\url{https://tcga.xenahubs.net}). Single-cell
 RNA-seq data (patient CID44971) are public and available from GEO
@@ -2650,34 +2632,41 @@ GSM5098080, GSM5098082, and GSM5098074) are public and available from
 GEO accession GSE167150. The hg19 reference sequence and RefSeq gene
 table used for compartment validation are public and available from
 the UCSC Genome Browser (\url{http://hgdownload.soe.ucsc.edu}). No
-proprietary or restricted-access data were used in this paper.
+proprietary or restricted-access data were used in this paper; all
+accession numbers needed to reproduce every download are also listed
+in Methods.
 
-\subsection{Ethics approval and consent to participate}
+\section*{Code availability statement}
+All analysis code (\texttt{scripts/01\_build\_cohorts.py} through
+\texttt{scripts/35\_hic\_validation\_figures.py}, Methods) is included
+with this submission as Supporting Information and will be made
+available in a public code repository without restriction upon
+publication.
+
+\section*{Ethics statement}
 Not applicable. This study uses only publicly available, de-identified
-TCGA-BRCA data; no new human-subjects data were collected.
+data (TCGA-BRCA, GSE176078, GSE167150); no new human-subjects data
+were collected and no institutional review was required.
 
-\subsection{Consent for publication}
-Not applicable.
-
-\subsection{Competing interests}
+\section*{Competing interests}
 The authors declare no competing interests.
 
-\subsection{Funding}
+\section*{Funding statement}
 This work received no specific grant from any funding agency in the
 public, commercial, or not-for-profit sectors.
 
-\subsection{Authors' contributions}
-J.C.G. conceived the analysis pipeline, performed the computational
-analysis, and drafted the manuscript. E.H.L. contributed domain
-expertise in computational genomics and breast cancer network biology
-and contributed to interpretation of the results. Both authors read
-and approved the final manuscript.
+\section*{Author contributions}
+J.C.G.: Conceptualization, Data curation, Formal analysis, Investigation,
+Methodology, Software, Validation, Visualization, Writing -- original
+draft. E.H.L.: Conceptualization, Domain expertise, Supervision,
+Writing -- review \& editing. Both authors read and approved the final
+manuscript.
 
-\subsection{Acknowledgements}
+\section*{Acknowledgments}
 We thank the TCGA Research Network and the UCSC Xena platform for
 public data access, and acknowledge the CSB-IG group's publicly
 available ARACNE/NIMEA pipeline as a point of methodological
-comparison (Background, Roadmap).
+comparison (Introduction, Future directions).
 
 \bibliographystyle{unsrtnat}
 \begin{thebibliography}{99}
@@ -2709,8 +2698,7 @@ G.~Ben~Arous, A.~Guionnet,
 
 \bibitem[Chappell et al.(2021)]{tnbcmultiomics2021}
 K.~Chappell, K.~Manna, C.~L.~Washam, S.~Graw, D.~Alkam, M.~D.~Thompson,
-M.~K.~Zafar, L.~Hazeslip, C.~Randolph, A.~Gies, J.~T.~Bird, A.~K.~Byrd,
-S.~Miah, S.~D.~Byrum,
+et al.,
 \newblock ``Multi-omics data integration reveals correlated regulatory features of triple negative breast cancer,''
 \newblock \emph{Molecular Omics} \textbf{17}(5), 677--691 (2021). Data: GEO GSE171958, ProteomeXchange PXD025238.
 \newblock \url{https://doi.org/10.1039/D1MO00117E}
@@ -2771,7 +2759,7 @@ A.~Kikkawa,
 \newblock \emph{Scientific Reports} \textbf{8}, 10607 (2018).
 
 \bibitem[Kim et al.(2019)]{kim2019discordance}
-H.~K.~Kim, K.~H.~Park, Y.~Kim, S.~E.~Park, H.~S.~Lee, S.~W.~Lim, J.~H.~Cho, J.-Y.~Kim, J.~E.~Lee, J.~S.~Ahn, Y.-H.~Im, J.~H.~Yu, Y.~H.~Park,
+H.~K.~Kim, K.~H.~Park, Y.~Kim, S.~E.~Park, H.~S.~Lee, S.~W.~Lim, et al.,
 \newblock ``Discordance of the PAM50 Intrinsic Subtypes Compared with Immunohistochemistry-Based Surrogate in Breast Cancer Patients: Potential Implication of Genomic Alterations of Discordance,''
 \newblock \emph{Cancer Research and Treatment} \textbf{51}(2), 737--747 (2019).
 
@@ -2786,12 +2774,12 @@ G.~R.~Lee, R.~Gommers, F.~Wasilewski, K.~Wohlfahrt, A.~O'Leary,
 \newblock \emph{Journal of Open Source Software} \textbf{4}(36), 1237 (2019).
 
 \bibitem[Lieberman-Aiden et al.(2009)]{liebermanaiden2009}
-E.~Lieberman-Aiden, N.~L.~van~Berkum, L.~Williams, M.~Imakaev, T.~Ragoczy, A.~Telling, I.~Amit, B.~R.~Lajoie, P.~J.~Sabo, M.~O.~Dorschner, R.~Sandstrom, B.~Bernstein, M.~A.~Bender, M.~Groudine, A.~Gnirke, J.~Stamatoyannopoulos, L.~A.~Mirny, E.~S.~Lander, J.~Dekker,
+E.~Lieberman-Aiden, N.~L.~van~Berkum, L.~Williams, M.~Imakaev, T.~Ragoczy, A.~Telling, et al.,
 \newblock ``Comprehensive Mapping of Long-Range Interactions Reveals Folding Principles of the Human Genome,''
 \newblock \emph{Science} \textbf{326}(5950), 289--293 (2009).
 
 \bibitem[Luo et al.(2007)]{luo2007}
-F.~Luo, Y.~Yang, J.~Zhong, H.~Gao, L.~Khan, D.~K.~Thompson, J.~Zhou,
+F.~Luo, Y.~Yang, J.~Zhong, H.~Gao, L.~Khan, D.~K.~Thompson, et al.,
 \newblock ``Constructing gene co-expression networks and predicting functions of unknown genes by random matrix theory,''
 \newblock \emph{BMC Bioinformatics} \textbf{8}, 299 (2007).
 
@@ -2806,7 +2794,7 @@ V.~A.~Marchenko, L.~A.~Pastur,
 \newblock \emph{Mathematics of the USSR-Sbornik} \textbf{1}(4), 457--483 (1967).
 
 \bibitem[Margolin et al.(2006)]{margolin2006}
-A.~A.~Margolin, I.~Nemenman, K.~Basso, C.~Wiggins, G.~Stolovitzky, R.~Dalla~Favera, A.~Califano,
+A.~A.~Margolin, I.~Nemenman, K.~Basso, C.~Wiggins, G.~Stolovitzky, R.~Dalla~Favera, et al.,
 \newblock ``ARACNE: An Algorithm for the Reconstruction of Gene Regulatory Networks in a Mammalian Cellular Context,''
 \newblock \emph{BMC Bioinformatics} \textbf{7}(Suppl 1), S7 (2006).
 
@@ -2871,7 +2859,7 @@ D.~Voiculescu,
 \newblock \emph{Inventiones Mathematicae} \textbf{104}, 201--220 (1991).
 
 \bibitem[Wu et al.(2021)]{tnbcsc2021}
-S.~Z.~Wu, G.~Al-Eryani, D.~Roden, S.~Junankar, K.~Harvey, A.~Andersson, A.~Thennavan, C.~Wang, J.~Torpy, N.~Bartonicek, T.~Wang, L.~Larsson, D.~Kaczorowski, N.~I.~Weisenfeld, C.~R.~Uytingco, J.~G.~Chew, Z.~W.~Bent, C.-L.~Chan, V.~Gnanasambandapillai, C.-A.~Dutertre, L.~Gluch, M.~N.~Hui, J.~Beith, A.~Parker, E.~Robbins, D.~Segara, C.~Cooper, C.~Mak, B.~Chan, S.~Warrier, F.~Ginhoux, E.~Millar, J.~E.~Powell, S.~R.~Williams, X.~S.~Liu, S.~O'Toole, E.~Lim, J.~Lundeberg, C.~M.~Perou, A.~Swarbrick,
+S.~Z.~Wu, G.~Al-Eryani, D.~Roden, S.~Junankar, K.~Harvey, A.~Andersson, et al.,
 \newblock ``A single-cell and spatially resolved atlas of human breast cancers,''
 \newblock \emph{Nature Genetics} \textbf{53}, 1334--1347 (2021). Data: GEO GSE176078.
 

@@ -1,0 +1,84 @@
+Dear Editors,
+
+We are pleased to submit our manuscript, "Random matrix theory and
+Dyson-Brownian-motion diagnostics for breast cancer coexpression
+networks: a Monte-Carlo-validated framework applied to TCGA-BRCA," for
+consideration as a Research Article in PLOS Computational Biology.
+
+This paper unifies a static random-matrix-theory (RMT) correlation
+threshold, an explicit Monte Carlo permutation null, and a
+Dyson-Brownian-motion level-repulsion diagnostic into a single
+statistical framework, and applies it, unmodified beyond the one
+data-specific preprocessing step each requires, across three real,
+independent data modalities from the same disease: bulk RNA-seq
+(TCGA-BRCA, comparing triple-negative and luminal A breast cancer),
+single-cell RNA-seq, and Hi-C chromatin contact data. To our knowledge
+this is the first application of a Dyson-repulsion diagnostic to real
+gene-expression data at any resolution, and the first time one RMT
+pipeline has been run across bulk, single-cell, and 3D genomic data for
+the same cancer type. We believe this breadth, together with a
+mathematically proved result connecting the static and dynamic
+diagnostics (a corollary quantifying exactly which eigenvalue pairs
+repel least reliably, and why), gives the paper a methodological
+contribution beyond any one of its individual applications.
+
+We think PLOS Computational Biology is the right venue for this work
+for three reasons. First, the paper's central discipline --
+validating every positive finding against an explicit statistical null,
+and reporting negative results (a wavelet method that fails identically
+under three unrelated ordering axes, a classification benchmark too
+easy to discriminate feature-selection methods, and a training
+diagnostic that sees only part of what it was built to see) with the
+same rigor as positive ones -- matches the transparency and
+reproducibility standard this journal is known for upholding. Second,
+the paper sits precisely at the interface of applied random matrix
+theory and computational cancer genomics that defines this journal's
+scope. Third, every number in the paper is produced by included,
+re-runnable code against public data (TCGA, GEO accessions GSE176078
+and GSE167150, and UCSC reference annotation), consistent with the
+journal's code and data availability requirements.
+
+One of us (E.H.L.) is a computational systems biology researcher whose
+own group's prior work on breast cancer coexpression networks
+(cited in the manuscript) motivated this collaboration; the other
+(J.C.G.) developed the RMT/Dyson-repulsion framework and carried out
+the computational analysis.
+
+This manuscript has not been published previously and is not under
+consideration elsewhere. The authors declare no competing interests. We
+believe it will be of interest to PLOS Computational Biology's readers
+working on gene network inference, random matrix theory applications in
+biology, and multi-omic data integration.
+
+Thank you for your consideration.
+
+Sincerely,
+
+Julio César Galindo López (corresponding author)
+Facultad de Ciencias Empresariales, Universidad Panamericana, Ciudad de México
+jcgalindo@up.edu.mx
+
+Enrique Hernández-Lemus
+Computational Systems Biology and Integrative Genomics Laboratory,
+Instituto Nacional de Medicina Genómica (INMEGEN)
+
+
+---
+Practical notes for submission (not part of the letter itself):
+- Corresponding author ORCID iD is required at submission -- add before
+  starting the online submission.
+- Suggested short/running title (<=70 characters): "RMT and
+  Dyson-Brownian-motion diagnostics for TCGA-BRCA networks"
+- Code availability statement in the manuscript currently says code
+  "will be made available in a public code repository ... upon
+  publication" -- decide before submission whether to (a) push this
+  project's scripts/ and results/ to a dedicated public GitHub repo now
+  and cite it directly in the manuscript instead of the forward-looking
+  promise, or (b) keep the promise as written and fulfill it at
+  acceptance. Not done automatically here since publishing code
+  publicly is a decision for you to make explicitly.
+- Consider moving the full threshold-sweep tables (S1/S2, currently
+  Appendix Tables tab:tnbc-full/tab:luma-full) to Supporting
+  Information files rather than the main-text appendix, and referencing
+  them as "S1 Table", "S2 Table" per PLOS's supporting-information
+  naming convention.
