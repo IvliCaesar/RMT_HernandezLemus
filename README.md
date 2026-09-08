@@ -143,6 +143,46 @@ método mismo).
 
 ## Estado
 
+2026-09-08b: pase de referato sección por sección más 8 citas reales
+nuevas, encontradas revisando `reflectance_inverse_design.tex`
+(repos/ReflectanceInverseDesign, otro artículo del usuario que
+resulta tener su propia sección "Random Matrix Theory at Genomic
+Scale" citando trabajo real de Hernández-Lemus/red social):
+- **Ciencia de redes** (lo que el usuario señaló como "Networks"): el
+  artículo afirmaba "small-world" y "modular" y usaba nulos
+  Erdős–Rényi/modelo de configuración/Louvain/modularidad por nombre
+  sin citar NINGUNO de los papers fundacionales — hueco real de
+  referato. Añadidas: Watts \& Strogatz 1998 (Nature, small-world),
+  Newman \& Girvan 2004 (Phys. Rev. E, modularidad), Blondel et al.
+  2008 (J. Stat. Mech., Louvain), Erdős \& Rényi 1959, Newman-Strogatz-
+  Watts 2001 (modelo de configuración) — las 5 verificadas por web
+  search.
+- **3 papers reales de Hernández-Lemus no citados antes**, encontrados
+  en la bibliografía de `reflectance_inverse_design.tex` y verificados
+  independientemente: González-Espinoza et al. 2021 (Front. Oncol.,
+  coexpresión vs. distancia genómica), de Anda-Jáuregui et al. 2019a
+  (Applied Network Science, conectividad de comunidades Louvain en
+  redes de coexpresión — directamente relevante a la Sec. de topología
+  de red), de Anda-Jáuregui et al. 2019b (Entropy, organización
+  espacial información-teórica — añadida en la sección de Hi-C).
+- **Slingshot** (Street et al. 2018, BMC Genomics) citado por nombre
+  como el candidato concreto de pseudo-tiempo mecánicamente distinto
+  para un futuro cuarto intento (con la salvedad honesta de que
+  comparte la misma limitación de fondo que PC1/difusión: los tres
+  leen el pseudo-tiempo de la expresión misma, no de un reloj físico
+  independiente).
+- Corregido un error real que casi se me escapa: iba a inventar una
+  cita "Ficklin 2017" para el software RMTGeneNet — verificado que en
+  realidad ES el mismo paper Gibson et al. 2013 ya citado (`gao2012`),
+  no un paper distinto; se reusó la cita real en vez de fabricar una
+  nueva.
+- Pase de variación de prosa: "rather than" reducido de 85 a 56
+  instancias (un tercio reemplazado por "instead of"/", not" según
+  gramática, verificado caso por caso — encontré y corregí 2
+  sustituciones que quedaban mal en construcciones parentéticas).
+
+Recompila 0 errores, 47pp (de 46pp).
+
 2026-09-08: **listo para enviar a PLOS Computational Biology** — pase
 final de cumplimiento contra la lista real de requisitos de PLOS:
 título en sentence case; afiliaciones de ambos autores completadas con

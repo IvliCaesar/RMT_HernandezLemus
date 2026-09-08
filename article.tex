@@ -102,8 +102,14 @@ become a standard tool for finding this heterogeneity's structure,
 and the Hern\'andez-Lemus group has applied several such approaches
 directly to breast cancer: multilayer information-theoretic
 transcriptional networks \citep{multilayer2021}, $k$-core structural
-analysis \citep{kcore2021}, and multi-omic subtype-specific interaction
-networks \citep{multiomic2022}. The group's own network-inference
+analysis \citep{kcore2021}, multi-omic subtype-specific interaction
+networks \citep{multiomic2022}, an information-theoretic account of how
+coexpression tracks genomic (linear) distance between genes
+\citep{gonzalezespinoza2021}, and, closest in kind to the network
+characterization of Sec.~\ref{sec:networktopo} below, a direct study of
+community structure --- Louvain modules and their functional,
+transcriptional connectivity --- in the same kind of breast-cancer
+coexpression networks \citep{deandajauregui2019networks}. The group's own network-inference
 pipeline for breast cancer, publicly available as the CSB-IG
 \texttt{breast\_cancer\_networks} and \texttt{parallel-aracne}
 repositories, is built on ARACNE \citep{margolin2006}: mutual
@@ -147,7 +153,7 @@ independently, destroying every real correlation while keeping each
 gene's own marginal distribution fixed, the same kind of null the
 group's own NIMEA pipeline uses to calibrate its mutual-information
 threshold (Sec.~\ref{sec:montecarlo}, below) --- answers this directly
-rather than relying on asymptotics alone. Second, \citet{aarts2024}
+instead of relying on asymptotics alone. Second, \citet{aarts2024}
 showed that the weight matrices of a neural network undergoing
 stochastic-gradient-descent training evolve according to Dyson's
 (1962) eigenvalue Brownian motion, with the same level-repulsion
@@ -276,7 +282,7 @@ local spectral statistics, regardless of whether either is Gaussian.
 correlation matrices, the exact object built in
 Sec.~\ref{sec:cohorts-methods}, establishing universality of local
 eigenvalue statistics under the same mild moment-matching condition.
-This is the precise, rather than merely qualitative, justification for
+This is a precise, not merely qualitative, justification for
 comparing a real, non-Gaussian gene-expression correlation matrix's
 spacing statistics against the GOE Wigner surmise (Sec.~\ref{sec:tau-sweep})
 and the Marchenko--Pastur bulk (below): universality here is a theorem
@@ -380,8 +386,8 @@ empirically, governs the eigenvalues of a neural network's weight
 matrices under SGD training; Sec.~\ref{sec:results-dyson} asks whether
 the same qualitative repulsion signature (a trajectory approaching,
 then visibly reopening, an adjacent trajectory rather than crossing it)
-is visible when ``time'' is instead sample size, applied directly to a
-real gene-correlation matrix rather than a trained model.
+is visible when ``time'' is sample size instead, applied directly to a
+real gene-correlation matrix and not a trained model.
 \end{definition}
 
 \begin{proposition}[A confined variant has the GOE density as its exact stationary law]
@@ -430,7 +436,7 @@ term),
 \tfrac12\partial_i\log p = \tfrac12\sum_{j\neq i}\frac{1}{\lambda_i-\lambda_j} - \frac{\lambda_i}{4},
 \]
 exactly the drift $b_i$ of the confined SDE above. This is Dyson's own
-1962 result \citep{dyson1962}, now verified rather than only recorded.
+1962 result \citep{dyson1962}, now verified instead of only recorded.
 The Vandermonde factor $\prod_{i<j}|\lambda_i-\lambda_j|$ in $p$ is
 exactly the term whose vanishing at $\lambda_i=\lambda_j$ forces
 $p(0)=0$ in the Wigner surmise (Definition~\ref{def:goe} above,
@@ -492,7 +498,7 @@ symmetric, so every RMT statement here is unapologetically $\beta=1$
 (GOE); the other two classes never arise for a Pearson correlation
 matrix and are not used. The same 1962 papers introduced the
 \emph{circular} ensembles (COE, CUE, CSE): eigenvalues (there,
-eigenphases) confined to the unit circle rather than the real line,
+eigenphases) confined to the unit circle instead of the real line,
 for which the nearest-neighbor spacing distribution is
 \emph{exactly}, not just asymptotically, uniform along the spectrum
 --- no unfolding step is needed, unlike the polynomial-CDF unfolding
@@ -621,7 +627,7 @@ from noise here; it is the Marchenko--Pastur threshold on the
 separating, and IPR is better read as a property of what a spike
 \emph{contains} once it is already identified, not as an independent
 detector. Read that way, it says something concrete: the largest
-spikes' top-loading genes form thematically coherent sets rather than
+spikes' top-loading genes form thematically coherent sets instead of
 single-gene artifacts --- extracellular-matrix/collagen remodeling
 genes (\emph{MMP13}, \emph{COL10A1}, \emph{COL11A1}) on one TNBC spike,
 interferon/immune genes (\emph{GBP5}, \emph{CD38}, \emph{IDO1}) on
@@ -717,9 +723,13 @@ at each $\tau$ unfolded the thresholded matrix's eigenvalue spectrum
 practice) and scored the resulting nearest-neighbor spacing
 distribution against the Poisson law $e^{-s}$ and the GOE Wigner
 surmise $\frac{\pi}{2}s\,e^{-\pi s^2/4}$ by Kolmogorov--Smirnov
-distance, following \citet{luo2007} exactly (implementation in
+distance, following \citet{luo2007} exactly (own implementation in
 \texttt{scripts/rmt\_threshold\_demo.py} and
-\texttt{scripts/02\_rmt\_network\_analysis.py}).
+\texttt{scripts/02\_rmt\_network\_analysis.py}, independent of, though
+methodologically identical to, \texttt{RMTGeneNet}
+\citep{gao2012} --- the maintained public tool implementing the same
+method, now itself superseded by its authors' own successor,
+\texttt{KINC}).
 
 The sparsest threshold at which the statistics turn GOE-like is
 $\tau^*=0.45$ for TNBC (14{,}498 edges among 1218 of the 1500 genes)
@@ -855,21 +865,26 @@ its lower $\tau^*$ and larger spiked-eigenvalue count. Generated by
 
 Figure~\ref{fig:heatmaps} shows both cohorts' correlation matrices
 directly, before and after thresholding, genes reordered by
-hierarchical clustering rather than left in arbitrary variance-rank
+hierarchical clustering instead of left in arbitrary variance-rank
 order: the block structure visible here is the same structure the
 spiked eigenvalues (Sec.~\ref{sec:spiked}) and the thresholded network
 (this section) are both detecting from two different angles.
 
 \subsection{The thresholded networks are small-world and modular, beyond degree alone}
+\label{sec:networktopo}
 
 Line 2 of the original program asks specifically about large-scale
 network structure, so we characterized each thresholded network
 graph-theoretically and compared it against two random-graph nulls of
-matched size (Erd\H{o}s--R\'enyi, same node/edge count; configuration
-model, same node count \emph{and} the real network's own degree
-sequence) rather than relying on the spectral diagnostics alone.
-Table~\ref{tab:networktopo} reports clustering coefficient, giant
-component size, and Louvain-community count/modularity for both
+matched size (Erd\H{o}s--R\'enyi \citep{erdosrenyi1959}, same node/edge
+count; the configuration model \citep{newmanstrogatzwatts2001}, same
+node count \emph{and} the real network's own degree sequence) rather
+than relying on the spectral diagnostics alone, following the same
+network-science convention the Hern\'andez-Lemus group's own community-
+structure work on breast-cancer coexpression networks already uses
+\citep{deandajauregui2019networks}. Table~\ref{tab:networktopo} reports
+clustering coefficient, giant component size, and Louvain-community
+\citep{blondel2008} count/modularity \citep{newmangirvan2004} for both
 cohorts.
 
 \begin{table}[h]
@@ -892,7 +907,7 @@ LumA & Config.\ model & 0.290 & 100\% & 8.3 & 0.051 \\
 \end{tabular}
 \end{table}
 
-Both cohorts show a real, unambiguous small-world/modular signature:
+Both cohorts show a real, unambiguous small-world \citep{wattsstrogatz1998}/modular signature:
 clustering far above the Erd\H{o}s--R\'enyi null (TNBC $19\times$,
 LumA $4\times$) \emph{and} above the configuration-model null (TNBC
 $3.4\times$, LumA $1.8\times$) --- so the excess clustering is not
@@ -956,7 +971,7 @@ Roadmap anticipated. The reason is visible directly in
 Sec.~\ref{sec:results-singlecell}'s own spiked-eigenvalue result: this
 sample's real structure is spread thinly across many distinct
 cell-type axes (immune, myeloid, epithelial, stromal; 33 spikes sharing
-only $26.8\%$ of variance combined) rather than concentrated in one
+only $26.8\%$ of variance combined) instead of concentrated in one
 dominant direction, so a single global PC1 --- itself mostly a T-cell
 vs.\ everything-else split in this mixed-tumor sample, not a smooth
 developmental gradient --- is not the ``pseudo-time'' this line
@@ -987,7 +1002,7 @@ $\lambda_4$--$\lambda_5$, $\lambda_5$--$\lambda_6$,
 $\lambda_6$--$\lambda_7$, $\lambda_7$--$\lambda_8$) each reach a local
 minimum gap and then reopen by a factor of roughly five to ten within a
 few steps of $n$ --- a ``V-shaped'' approach-and-recede pattern
-characteristic of level repulsion rather than free crossing. The
+characteristic of level repulsion instead of free crossing. The
 closest approach in the whole run is between $\lambda_7$ and
 $\lambda_8$ at $n=59$ (gap $0.0422$), reopening to $0.28$--$0.35$
 within five steps on either side (Figure~\ref{fig:avoided}, Table
@@ -1058,7 +1073,7 @@ eigenvalue, for which the fine-grained approach-and-reopen dynamics
 characteristic of bulk-level repulsion is not the expected signature in
 the first place.
 
-That last sentence was, until now, an intuition rather than a
+That last sentence was, until now, an intuition instead of a
 calculation; the SDE already stated in Definition~\ref{def:dyson-sde}
 makes it precise and quantitative, using nothing beyond the two real
 tables already reported above.
@@ -1132,7 +1147,7 @@ repulsive. Generated by
 \end{figure}
 
 We read this as real evidence, now with an explicit reproducibility
-check rather than a single illustrative run, that the repulsion
+check instead of a single illustrative run, that the repulsion
 mechanism Dyson formalized for randomly evolving Hermitian matrices,
 and that \citet{aarts2024} find governing a classifier's weight
 matrices during training, is also directly observable in the spectrum
@@ -1277,7 +1292,7 @@ earlier in this paper rescued the wavelet line from one (a
 random-ordering control found the wavelet method's headline result
 indistinguishable from noise on real data, but a synthetic positive
 control then showed the method itself works correctly given enough
-signal, narrowing the failure down to a data problem rather than a
+signal, narrowing the failure down to a data problem instead of a
 method problem): every seed's training accuracy plateaus by
 roughly epoch 50 (final accuracy $0.987$--$0.991$ across all 20 seeds,
 \texttt{scripts/20\_dyson\_classifier\_weights\_multi\_seed.py}), so if
@@ -1349,7 +1364,7 @@ which repulsion is detectable should lengthen correspondingly.
 \texttt{scripts/28\_classifier\_dyson\_longer\_transient.py} tests this
 directly with a $5\times$ smaller learning rate ($0.01$) and a
 $5\times$ longer run ($1500$ epochs), splitting each of the same 20
-seeds at its own empirically measured convergence epoch rather than a
+seeds at its own empirically measured convergence epoch instead of a
 reused fixed cutoff.
 
 The learning-rate change itself does not translate linearly into a
@@ -1383,7 +1398,7 @@ weight matrix moves roughly $5\times$ less per epoch, so the same
 5-epoch window covers a proportionally smaller slice of the underlying
 dynamics --- the criterion was tuned to the original run's convergence
 speed and does not automatically rescale with it. The honest reading of
-both results together is therefore two-part rather than a single clean
+both results together is therefore two-part instead of a single clean
 confirmation: repulsion is confined to the pre-convergence transient
 regardless of how long that transient is made (the qualitative claim,
 now checked at two very different transient lengths and, if anything,
@@ -1467,7 +1482,7 @@ converged panel (\emph{COL2A1}, \emph{LTF}, \emph{KLK6}, \emph{GREB1},
 among others) shares no genes with the RMT-hub panel in
 Table~\ref{tab:hubs}, consistent with the small remaining gap coming
 from a different, less biologically interpretable direction in gene
-space rather than a sharper version of the same RMT signal. Overall
+space instead of a sharper version of the same RMT signal. Overall
 this is an honest null
 result, not a failure to report: TNBC and LumA are defined by receptor
 status and PAM50 call respectively, both of which are themselves
@@ -1521,7 +1536,7 @@ $33/1500$ eigenvalues ($2.2\%$) exceed $\lambda_+$, together carrying
 $26.8\%$ of total variance --- a smaller variance share than either
 bulk cohort ($48.2\%$, $57.3\%$), consistent with a mixed-tumor
 single-cell sample's real structure being spread across more distinct
-biological axes (cell types) rather than concentrated in a few.
+biological axes (cell types) instead of concentrated in a few.
 Figure~\ref{fig:singlecell-spectrum} shows the full raw spectrum against
 this bulk edge directly.
 
@@ -1587,7 +1602,7 @@ left panel) --- a thinner margin than the bulk cohorts show at their
 own $\tau^*$ (Table~\ref{tab:tnbc-full}), even though the sweep's
 overall shape is unambiguous (a wide, clearly-GOE region at
 $\tau\le0.075$ giving way to a wide, clearly-Poisson region at
-$\tau\ge0.125$, with $0.10$ sitting exactly at the crossover rather than
+$\tau\ge0.125$, with $0.10$ sitting exactly at the crossover instead of
 deep inside either regime). Second, the degree-7 polynomial unfolding
 used throughout this paper (Sec.~\ref{sec:math}) is a global fit
 calibrated on the bulk cohorts' much sparser thresholded networks
@@ -1603,7 +1618,7 @@ thin KS margin above than with a textbook Wigner-surmise fit. Neither
 caveat overturns the sweep's central finding (a real, permutation-
 confirmed, sparser-than-bulk threshold), but both are stated so the
 result is not read as cleaner than it is; a local or adaptive unfolding
-scheme, rather than one global polynomial shared with the much sparser
+scheme, instead of one global polynomial shared with the much sparser
 bulk cohorts, is the concrete fix for a future round.
 
 \begin{figure}[h]
@@ -1661,7 +1676,7 @@ the largest non-immune population and the natural candidate for a
 proliferation or differentiation gradient. Running the identical
 PC1-ordering, Dyson-trajectory, and wavelet-decomposition pipeline used
 elsewhere in this paper (Sec.~\ref{sec:epithelial-methods}) on this
-subset alone, rather than assuming the restriction helps, gives three
+subset alone, instead of assuming the restriction helps, gives three
 specific, honest answers.
 
 First, the ordering-axis hypothesis itself does not survive the check:
@@ -1762,7 +1777,7 @@ above, now for a third time on a genuinely different ordering:
 $\lambda_4$--$\lambda_5$ through $\lambda_6$--$\lambda_7$ show clear
 repulsion under DPT, but $15$--$18$ of $20$ random cell orderings show
 the identical pattern for those same pairs, confirming again that this
-diagnostic's repulsion signature tracks growing sample size rather than
+diagnostic's repulsion signature tracks growing sample size instead of
 which specific ordering is used --- the bulk-cohort check
 (Sec.~\ref{sec:results-dyson}), the PC1-based single-cell check above,
 and this DPT-based check now agree on the same point across three
@@ -1791,7 +1806,12 @@ attempted with real data at all --- earlier rounds of this paper
 reported no public, patient-cohort-scale TNBC Hi-C dataset as
 identified, a claim already corrected once the group's own
 \citet{reyesgopar2025} was found (Sec.~\ref{sec:limitations},
-Roadmap). We now run the identical RMT threshold/spiked-eigenvalue
+Roadmap); the same group's information-theoretic account of spatial
+regulatory organization in breast-cancer transcriptomics
+\citep{deandajauregui2019spatial} is the closest existing bridge, in
+its own prior work, between coexpression and genomic spatial
+structure, though built from expression data alone rather than Hi-C
+contact maps directly. We now run the identical RMT threshold/spiked-eigenvalue
 machinery used throughout this paper on real Hi-C data for the first
 time: GSM5098082 (``TNBC\_Tissue3''), the smallest of GSE167150's three
 real TNBC tumor \texttt{.hic} files, chromosome 18 at 100kb resolution
@@ -1944,7 +1964,7 @@ produces.
 Line 5 (wavelet multiscale decomposition), the ML recognition
 benchmark, and now Line 6b (Sec.~\ref{sec:results-dyson-classifier})
 all came back with real, nuanced negative or mixed results, reported as
-such rather than dropped: the wavelet method's real-data application
+such instead of dropped: the wavelet method's real-data application
 failed a random-ordering control, but a synthetic positive control then
 confirmed the method itself works correctly at both scales given
 enough signal, narrowing the real-data failure down to a data problem
@@ -2012,7 +2032,7 @@ $\rho=-0.481$ against PC1 --- a genuinely different ordering, not PC1
 under another name), changes nothing about either conclusion: the
 wavelet retest stays a null indistinguishable from a random ordering
 for a third distinct axis in a row, and the Dyson-repulsion signature
-at single-cell resolution again tracks growing sample size rather than
+at single-cell resolution again tracks growing sample size instead of
 which ordering is used (random cell orders match or exceed it). This is
 a clarification of what ``time'' means in this diagnostic
 (Definition~\ref{def:dyson-sde}), consistent with, not contradicted by,
@@ -2039,7 +2059,7 @@ $3/140$), and the qualitative claim holds, but the raw pre-convergence
 detection count actually falls ($11/140$ vs.\ $36/140$) because the
 closest-approach/reopening criterion's fixed 5-epoch window does not
 rescale with the slower per-epoch dynamics --- a real limitation of the
-detector, honestly surfaced rather than smoothed over, and a concrete
+detector, honestly surfaced instead of smoothed over, and a concrete
 methodological fix (a window sized to the empirical per-epoch step,
 not a fixed epoch count) for a future round.
 
@@ -2111,7 +2131,7 @@ ordering axes. First: the global PC1 of the single-cell data
 (Sec.~\ref{sec:results-singlecell}) carries only $9.7\%$ of variance,
 no improvement over bulk-patient PC1's $10.2\%$ (Sec.~\ref{sec:wavelets}),
 because this sample's real structure is spread across many distinct
-cell-type axes rather than one dominant gradient. Second, pseudo-time
+cell-type axes instead of one dominant gradient. Second, pseudo-time
 restricted to the 894-cell Cancer Epithelial lineage alone
 (Sec.~\ref{sec:singlecell-epithelial}) does not fix the problem either:
 its own PC1 explains only $8.6\%$ of variance, no better than the
@@ -2128,8 +2148,20 @@ information (not available in this processed count matrix and would
 require re-processing from raw reads) or a genuine time-course --- or
 enough additional cells, within one lineage, that any reasonable
 ordering estimator would agree on the same trajectory; a fourth
-expression-derived pseudo-time estimator on this same 894-cell sample
-is not a promising next step on its own.
+expression-derived pseudo-time estimator of the same
+kind as the two already tried --- a single global projection, linear or
+not --- is not a promising next step on its own. A mechanistically
+different expression-derived method is a partial exception worth
+naming precisely rather than folding into that same dismissal:
+\texttt{Slingshot} \citep{street2018slingshot} fits principal curves
+through pre-identified cluster centers rather than projecting all cells
+onto one axis at once, using cluster adjacency (not a single global
+direction) to build the ordering --- different enough in mechanism from
+both PC1 and diffusion pseudotime that its failure would not be
+guaranteed by this section's result, though its success is not
+guaranteed either, and it still shares the same fundamental limit as
+the two methods already tried: all three read pseudo-time off gene
+expression itself, not off an independent physical clock.
 
 \subsection{Line 1 extension: multi-omic spectral denoising}
 Sec.~\ref{sec:spiked}'s spiked-eigenvalue analysis was run on RNA-seq
@@ -2137,7 +2169,7 @@ alone. GSE171958 \citep{tnbcmultiomics2021} pairs DNA methylation,
 RNA-seq, and proteomics on the same TNBC cell lines and is public; the
 direct extension is a joint spiked-eigenvalue analysis across omic
 layers (a block correlation matrix with one block per layer), asking
-whether any spike loads across layers rather than within a single one
+whether any spike loads across layers instead of within a single one
 --- a real, checkable version of the ``multi-omic denoising'' claim in
 Line 1 of the original proposal, not attempted here since GSE171958
 covers only three cell lines, too few for the patient-cohort framing
@@ -2250,7 +2282,7 @@ across SGD training at two different learning rates, repel far less
 reliably than the data's do over a full run; what repulsion exists
 concentrates almost entirely in the pre-convergence transient
 regardless of how long that transient is made, a specific, quantified
-pattern rather than an unexplained absence, with one further honest
+pattern instead of an unexplained absence, with one further honest
 complication surfaced by the second learning-rate regime: the
 fixed-epoch-window detector used throughout this paper does not itself
 rescale with training speed, so its raw counts should not be compared
@@ -2498,15 +2530,17 @@ per-index mutation ($p=0.1$ per slot).
 
 For each cohort's thresholded network at $\tau^*$ (isolated nodes
 removed), we computed the average clustering coefficient, giant
-connected component size, and Louvain-community count and modularity
-score (\texttt{networkx}, \citealp{networkx2008}; Louvain rather than
-greedy-modularity maximization, for tractability on LumA's
-$\sim$146K-edge network), and compared each against the mean over
-3 replicates of two random-graph nulls of matched size: an
-Erd\H{o}s--R\'enyi $G(n,p)$ graph (same node and edge count, no other
-constraint) and a configuration-model graph built by fast stub-matching
-(same node count \emph{and} the real network's own degree sequence,
-testing for structure beyond degree heterogeneity alone).
+connected component size, and Louvain-community
+\citep{blondel2008} count and modularity score
+\citep{newmangirvan2004} (\texttt{networkx}, \citealp{networkx2008};
+Louvain instead of greedy-modularity maximization, for tractability on
+LumA's $\sim$146K-edge network), and compared each against the mean
+over 3 replicates of two random-graph nulls of matched size: an
+Erd\H{o}s--R\'enyi \citep{erdosrenyi1959} $G(n,p)$ graph (same node and
+edge count, no other constraint) and a configuration-model graph
+\citep{newmanstrogatzwatts2001} built by fast stub-matching (same node
+count \emph{and} the real network's own degree sequence, testing for
+structure beyond degree heterogeneity alone).
 
 \subsection{Single-cell RMT pipeline}
 \label{sec:singlecell-methods}
@@ -2615,7 +2649,7 @@ round3.py} plots results from scripts 26--28,
 \texttt{scripts/31\_hic\_figures.py} plots results from script 30,
 \texttt{scripts/32\_hic\_compartment\_validation.py} and
 \texttt{scripts/33\_hic\_multi\_sample.py} both import functions
-directly from script 30 rather than duplicating them, and
+directly from script 30 instead of duplicating them, and
 \texttt{scripts/35\_hic\_validation\_figures.py} plots results from
 scripts 32--33); every number and figure in this paper is produced
 directly by this code from the raw downloaded files (two bulk TCGA-BRCA
@@ -2695,12 +2729,27 @@ G.~Ben~Arous, A.~Guionnet,
 \newblock ``Large deviations for Wigner's law and Voiculescu's non-commutative entropy,''
 \newblock \emph{Probability Theory and Related Fields} \textbf{108}, 517--542 (1997).
 
+\bibitem[Blondel et al.(2008)]{blondel2008}
+V.~D.~Blondel, J.-L.~Guillaume, R.~Lambiotte, E.~Lefebvre,
+\newblock ``Fast unfolding of communities in large networks,''
+\newblock \emph{Journal of Statistical Mechanics: Theory and Experiment} \textbf{2008}, P10008 (2008).
+
 \bibitem[Chappell et al.(2021)]{tnbcmultiomics2021}
 K.~Chappell, K.~Manna, C.~L.~Washam, S.~Graw, D.~Alkam, M.~D.~Thompson,
 et al.,
 \newblock ``Multi-omics data integration reveals correlated regulatory features of triple negative breast cancer,''
 \newblock \emph{Molecular Omics} \textbf{17}(5), 677--691 (2021). Data: GEO GSE171958, ProteomeXchange PXD025238.
 \newblock \url{https://doi.org/10.1039/D1MO00117E}
+
+\bibitem[de Anda-J\'auregui et al.(2019a)]{deandajauregui2019networks}
+G.~de~Anda-J\'auregui, S.~A.~Alc\'ala-Corona, J.~Espinal-Enr\'iquez, E.~Hern\'andez-Lemus,
+\newblock ``Functional and transcriptional connectivity of communities in breast cancer co-expression networks,''
+\newblock \emph{Applied Network Science} \textbf{4}, 22 (2019).
+
+\bibitem[de Anda-J\'auregui et al.(2019b)]{deandajauregui2019spatial}
+G.~de~Anda-J\'auregui, J.~Espinal-Enr\'iquez, E.~Hern\'andez-Lemus,
+\newblock ``Spatial Organization of the Gene Regulatory Program: An Information Theoretical Approach to Breast Cancer Transcriptomics,''
+\newblock \emph{Entropy} \textbf{21}(2), 195 (2019).
 
 \bibitem[Dorantes-Gilardi et al.(2021)]{kcore2021}
 R.~Dorantes-Gilardi, D.~Garc\'ia-Cort\'es, E.~Hern\'andez-Lemus, J.~Espinal-Enr\'iquez,
@@ -2717,6 +2766,11 @@ F.~J.~Dyson,
 \newblock ``The Threefold Way. Algebraic Structure of Symmetry Groups and Ensembles in Quantum Mechanics,''
 \newblock \emph{Journal of Mathematical Physics} \textbf{3}(6), 1199--1215 (1962).
 
+\bibitem[Erd\H{o}s \& R\'enyi(1959)]{erdosrenyi1959}
+P.~Erd\H{o}s, A.~R\'enyi,
+\newblock ``On random graphs I,''
+\newblock \emph{Publicationes Mathematicae Debrecen} \textbf{6}, 290--297 (1959).
+
 \bibitem[Fortin et al.(2012)]{deap2012}
 F.-A.~Fortin, F.-M.~De~Rainville, M.-A.~Gardner, M.~Parizeau, C.~Gagn\'e,
 \newblock ``DEAP: Evolutionary Algorithms Made Easy,''
@@ -2731,6 +2785,11 @@ W.~D.~Foulkes, I.~E.~Smith, J.~S.~Reis-Filho,
 S.~M.~Gibson, S.~P.~Ficklin, S.~Isaacson, F.~Luo, F.~A.~Feltus, M.~C.~Smith,
 \newblock ``Massive-Scale Gene Co-Expression Network Construction and Robustness Testing Using Random Matrix Theory,''
 \newblock \emph{PLOS ONE} \textbf{8}(2), e55871 (2013).
+
+\bibitem[Gonz\'alez-Espinoza et al.(2021)]{gonzalezespinoza2021}
+A.~Gonz\'alez-Espinoza, J.~M.~Zamora-Fuentes, E.~Hern\'andez-Lemus, J.~Espinal-Enr\'iquez,
+\newblock ``Gene Co-Expression in Breast Cancer: A Matter of Distance,''
+\newblock \emph{Frontiers in Oncology} \textbf{11}, 726493 (2021).
 
 \bibitem[Goldman et al.(2020)]{xena2020}
 M.~J.~Goldman, B.~Craft, M.~Hastie, et al.,
@@ -2797,6 +2856,16 @@ A.~A.~Margolin, I.~Nemenman, K.~Basso, C.~Wiggins, G.~Stolovitzky, R.~Dalla~Fave
 \newblock ``ARACNE: An Algorithm for the Reconstruction of Gene Regulatory Networks in a Mammalian Cellular Context,''
 \newblock \emph{BMC Bioinformatics} \textbf{7}(Suppl 1), S7 (2006).
 
+\bibitem[Newman \& Girvan(2004)]{newmangirvan2004}
+M.~E.~J.~Newman, M.~Girvan,
+\newblock ``Finding and evaluating community structure in networks,''
+\newblock \emph{Physical Review E} \textbf{69}, 026113 (2004).
+
+\bibitem[Newman et al.(2001)]{newmanstrogatzwatts2001}
+M.~E.~J.~Newman, S.~H.~Strogatz, D.~J.~Watts,
+\newblock ``Random graphs with arbitrary degree distributions and their applications,''
+\newblock \emph{Physical Review E} \textbf{64}, 026118 (2001).
+
 \bibitem[Ochoa et al.(2021)]{multilayer2021}
 S.~Ochoa, G.~de~Anda-J\'auregui, E.~Hern\'andez-Lemus,
 \newblock ``An Information Theoretical Multilayer Network Approach to Breast Cancer Transcriptional Regulation,''
@@ -2827,6 +2896,11 @@ H.~Reyes-Gopar, K.~A.~P\'erez-Fuentes, M.~L.~Bendall, E.~Hern\'andez-Lemus,
 \newblock ``Integration of chromosome conformation and gene expression networks reveals regulatory mechanisms in triple negative breast cancer,''
 \newblock \emph{Frontiers in Cell and Developmental Biology} \textbf{13}, 1597245 (2025). Data: GEO GSE167150.
 
+\bibitem[Street et al.(2018)]{street2018slingshot}
+K.~Street, D.~Risso, R.~B.~Fletcher, D.~Das, J.~Ngai, N.~Yosef, E.~Purdom, S.~Dudoit,
+\newblock ``Slingshot: cell lineage and pseudotime inference for single-cell transcriptomics,''
+\newblock \emph{BMC Genomics} \textbf{19}, 477 (2018).
+
 \bibitem[TCGA(2012)]{tcga2012}
 The Cancer Genome Atlas Network,
 \newblock ``Comprehensive molecular portraits of human breast tumours,''
@@ -2856,6 +2930,11 @@ C.~A.~Tracy, H.~Widom,
 D.~Voiculescu,
 \newblock ``Limit laws for random matrices and free products,''
 \newblock \emph{Inventiones Mathematicae} \textbf{104}, 201--220 (1991).
+
+\bibitem[Watts \& Strogatz(1998)]{wattsstrogatz1998}
+D.~J.~Watts, S.~H.~Strogatz,
+\newblock ``Collective dynamics of `small-world' networks,''
+\newblock \emph{Nature} \textbf{393}, 440--442 (1998).
 
 \bibitem[Wu et al.(2021)]{tnbcsc2021}
 S.~Z.~Wu, G.~Al-Eryani, D.~Roden, S.~Junankar, K.~Harvey, A.~Andersson, et al.,
