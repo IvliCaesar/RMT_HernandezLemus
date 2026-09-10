@@ -90,11 +90,3 @@ genera sus propios datos sintéticos con estructura modular conocida y
 reporta qué fracción de las conexiones que sobreviven al umbral
 seleccionado por RMT son, en efecto, conexiones reales dentro de un
 módulo plantado.
-
-## Estado
-
-Manuscrito completo, formateado para PLOS Computational Biology.
-Código y datos públicos en este repositorio; los conjuntos de datos
-grandes (célula única, Hi-C, anotación hg19) no están versionados por
-tamaño — cada uno tiene su propio README con instrucciones de
-descarga.
